@@ -1,0 +1,13 @@
+<?php
+
+class Config
+{
+    const BASE_URL = '{{BASE_URL}}';
+    const LANGUAGE = 'english';
+    const DEBUG_MODE = true;
+
+    const DB_HOST = 'db';
+    const DB_NAME = 'easyappointments';
+    const DB_USERNAME = 'easyappointments';
+    const DB_PASSWORD = 'easyappointments';
+}

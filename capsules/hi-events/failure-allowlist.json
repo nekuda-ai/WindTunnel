@@ -1,0 +1,11 @@
+{
+  "console": [
+    "^Warning: `value` prop on `%s` should not be null\\.",
+    "^Failed to load resource: the server responded with a status of 401 \\(Unauthorized\\)$",
+    "^Warning: validateDOMNesting\\(\\.\\.\\.\\): %s cannot appear as a descendant of <%s>\\.%s <a> a",
+    "^Warning: validateDOMNesting\\(\\.\\.\\.\\): %s cannot appear as a descendant of <%s>\\.%s <div> p"
+  ],
+  "network": [
+    "^GET https?://[^/]+/api/users/me(\\?\\S*)? 401$"
+  ]
+}

@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+COMMAND=${1:-check}
+BUILDX_VERSION=v0.35.0
+BUILDX_MINIMUM=0.17.0
+
+usage() {
+  echo "usage: prereqs <check|ensure|versions>" >&2
+  exit 2
+}
+
+version_at_least() {
+  local actual=${1#v} minimum=${2#v}
+  [ "$(printf '%s\n%s\n' "$minimum" "$actual" | sort -V | head -n 1)" = "$minimum" ]
+}
+
+buildx_version() {
+  docker buildx version 2>/dev/null | awk '
+    {
+      for (i = 1; i <= NF; i++) {
+        value = $i
+        sub(/^v/, "", value)
+        if (value ~ /^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$/) {
+          print value
+          exit
+        }
+      }
+    }
+  '
+}
+
+require_commands() {
+  local missing=() command
+  for command in bash bun curl docker flock git jq node realpath rg sha256sum sort timeout unzip; do
+    command -v "$command" >/dev/null 2>&1 || missing+=("$command")
+  done
+  if [ "${#missing[@]}" -gt 0 ]; then
+    echo "missing eval harness commands: ${missing[*]}" >&2
+    return 1
+  fi
+}
+
+check() {
+  local actual_buildx docker_server compose_version node_version
+  [ "$(uname -s)" = Linux ] || {
+    echo "the phase-1 eval worker must run Linux" >&2
+    return 1
+  }
+  require_commands
+  node_version=$(node --version)
+  version_at_least "$node_version" 20.0.0 || {
+    echo "Node.js 20.0.0 or newer is required; found $node_version" >&2
+    return 1
+  }
+  docker info >/dev/null 2>&1 || {
+    echo "Docker daemon is unavailable to the current user" >&2
+    return 1
+  }
+  docker_server=$(docker version --format '{{.Server.Version}}')
+  version_at_least "$docker_server" 25.0.0 || {
+    echo "Docker Engine 25.0.0 or newer is required; found $docker_server" >&2
+    return 1
+  }
+  actual_buildx=$(buildx_version)
+  [ -n "$actual_buildx" ] && version_at_least "$actual_buildx" "$BUILDX_MINIMUM" || {
+    echo "Docker Buildx $BUILDX_MINIMUM or newer is required; run harness/bin/prereqs ensure" >&2
+    return 1
+  }
+  compose_version=$("$ROOT/harness/bin/compose" version --short)
+  [ "$compose_version" = 5.3.1 ] || {
+    echo "unexpected Docker Compose version: $compose_version (expected 5.3.1)" >&2
+    return 1
+  }
+  printf 'eval harness prerequisites ready (docker=%s compose=%s buildx=%s node=%s bun=%s)\n' \
+    "$docker_server" "$compose_version" "$actual_buildx" "$node_version" "$(bun --version)"
+}
+
+ensure_buildx() {
+  local actual asset checksum docker_config plugin_dir target temporary backup
+  actual=$(buildx_version)
+  if [ -n "$actual" ] && version_at_least "$actual" "$BUILDX_MINIMUM"; then
+    return 0
+  fi
+  case "$(uname -s)-$(uname -m)" in
+    Linux-aarch64|Linux-arm64)
+      asset=buildx-${BUILDX_VERSION}.linux-arm64
+      checksum=c4248d6cbc4a619a7e0b4609c11e509ad4ac0b475e1c64817c0ac20c5d90c766
+      ;;
+    Linux-x86_64|Linux-amd64)
+      asset=buildx-${BUILDX_VERSION}.linux-amd64
+      checksum=d41ece72044243b4f58b343441ae37446d9c29a7d6b5e11c61847bbcf8f7dfda
+      ;;
+    *)
+      echo "unsupported Buildx platform: $(uname -s)-$(uname -m)" >&2
+      return 2
+      ;;
+  esac
+  docker_config=${DOCKER_CONFIG:-"$HOME/.docker"}
+  plugin_dir="$docker_config/cli-plugins"
+  target="$plugin_dir/docker-buildx"
+  mkdir -p "$plugin_dir"
+  temporary=$(mktemp "$plugin_dir/.docker-buildx.XXXXXX")
+  trap 'rm -f "$temporary"' RETURN
+  curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 \
+    "https://github.com/docker/buildx/releases/download/$BUILDX_VERSION/$asset" \
+    --output "$temporary"
+  printf '%s  %s\n' "$checksum" "$temporary" | sha256sum -c - >/dev/null
+  chmod 0755 "$temporary"
+  if [ -e "$target" ]; then
+    backup="$target.webmcp-backup-$(date -u +%Y%m%dT%H%M%SZ)"
+    mv "$target" "$backup"
+    echo "preserved previous user Buildx plugin at $backup" >&2
+  fi
+  mv "$temporary" "$target"
+  trap - RETURN
+  echo "installed Docker Buildx $BUILDX_VERSION at $target" >&2
+}
+
+ensure() {
+  require_commands
+  ensure_buildx
+  "$ROOT/harness/bin/compose" version >/dev/null
+  check
+}
+
+versions() {
+  local buildx
+  buildx=$(buildx_version)
+  printf 'docker=%s\n' "$(docker version --format '{{.Server.Version}}' 2>/dev/null || echo unavailable)"
+  printf 'compose=%s\n' "$("$ROOT/harness/bin/compose" version --short 2>/dev/null || echo unavailable)"
+  printf 'buildx=%s\n' "${buildx:-unavailable}"
+  printf 'node=%s\n' "$(node --version 2>/dev/null || echo unavailable)"
+  printf 'bun=%s\n' "$(bun --version 2>/dev/null || echo unavailable)"
+}
+
+case "$COMMAND" in
+  check) check ;;
+  ensure) ensure ;;
+  versions) versions ;;
+  *) usage ;;
+esac

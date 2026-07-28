@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "hi-events",
+  "source": {
+    "repository": "https://github.com/HiEventsDev/hi.events.git",
+    "revision": "69acd11df7416ade52a851355a2fbf1e09c700dc"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-dev-with-source-build",
+    "resetStrategy": "database-dump",
+    "additionalResetState": "fresh verifier browser context",
+    "applicationPort": 80,
+    "healthPath": "/auth/login",
+    "composeOverlay": "compose.overlay.yaml",
+    "applicationService": "app",
+    "requiredServices": ["app", "postgres", "redis"],
+    "healthChecks": [
+      {
+        "path": "/auth/login",
+        "contains": "id=\"app\""
+      },
+      {
+        "path": "/src/entry.client.tsx",
+        "contains": "hydrateRoot"
+      },
+      {
+        "path": "/api/public/color-themes",
+        "contains": "Classic"
+      }
+    ],
+    "sourceBuild": {
+      "dockerfile": "Dockerfile.all-in-one",
+      "finalBuildGate": "docker compose build app",
+      "liveSourceMounts": [
+        "frontend/src",
+        "frontend/public",
+        "frontend/index.html",
+        "frontend/server.js",
+        "frontend/vite.config.ts",
+        "backend/app",
+        "backend/config",
+        "backend/database",
+        "backend/public",
+        "backend/resources",
+        "backend/routes"
+      ],
+      "phpBaseInput": "serversideup/php:8.3-fpm-alpine-v3.4.5@sha256:f9b8c621cf0cbcd2769fab78c24db0afea04d8b043a64474458d08ec736d29fc"
+    },
+    "images": [
+      {
+        "name": "frontend-build-node",
+        "reference": "node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+      },
+      {
+        "name": "php-runtime-build-input",
+        "reference": "serversideup/php:8.3-fpm-alpine-v3.4.5@sha256:f9b8c621cf0cbcd2769fab78c24db0afea04d8b043a64474458d08ec736d29fc"
+      },
+      {
+        "name": "postgres",
+        "reference": "postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193"
+      },
+      {
+        "name": "redis",
+        "reference": "redis:7-alpine@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99"
+      }
+    ]
+  },
+  "fixtures": {
+    "title": "WebMCP Community Workshop",
+    "kind": "free live event",
+    "seed": "../../fixtures/hi-events/seed.mjs"
+  },
+  "acceptance": {
+    "publicPath": "/event/1/webmcp-community-workshop",
+    "paths": [
+      "/auth/login",
+      "/auth/register",
+      "/manage/events",
+      "/event/1/webmcp-community-workshop"
+    ],
+    "liveness": {
+      "file": "frontend/src/entry.client.tsx",
+      "language": "typescript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "public_event",
+      "arguments": {},
+      "assert": ".status == 200 and .event.title == \"WebMCP Community Workshop\" and .event.status == \"LIVE\" and .event.products == 1",
+      "mutation": {
+        "probe": "hide_event",
+        "arguments": {},
+        "assert": ".eventId == 1 and .status == \"DRAFT\" and .publicStatus == 404"
+      },
+      "resetAssert": ".status == 200 and .event.id == 1 and .event.title == \"WebMCP Community Workshop\" and .event.status == \"LIVE\" and .event.products == 1"
+    }
+  },
+  "actors": [
+    {
+      "id": "organizer",
+      "description": "Local organizer organizer@webmcp-eval.test / WebmcpEval123!; evaluator setup logs in and installs the returned token into the fresh browser context.",
+      "setup": "actors/organizer.js",
+      "path": "/manage/events",
+      "expect": "WebMCP Community Workshop"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 254" font-family="system-ui,sans-serif" font-size="13">
+<rect width="720" height="254" fill="white"/>
+<text x="8" y="20" font-weight="600" font-size="14">Median agent time / task, seconds (lower is better)</text>
+<text x="142" y="49" text-anchor="end" font-weight="600">wm-gpt</text>
+<rect x="150" y="37" width="58.7" height="17" fill="#c8553d" rx="2"/>
+<text x="216.67832075221824" y="50" fill="#555">5.8s</text>
+<text x="142" y="79" text-anchor="end" font-weight="600">wm-claude</text>
+<rect x="150" y="67" width="72.4" height="17" fill="#c8553d" rx="2"/>
+<text x="230.4168984240498" y="80" fill="#555">7.2s</text>
+<text x="142" y="109" text-anchor="end" font-weight="600">wm-stagehand</text>
+<rect x="150" y="97" width="134.3" height="17" fill="#c8553d" rx="2"/>
+<text x="292.32604952986355" y="110" fill="#555">13.3s</text>
+<text x="142" y="139" text-anchor="end" font-weight="400">cu-openai</text>
+<rect x="150" y="127" width="205.2" height="17" fill="#9a9a92" rx="2"/>
+<text x="363.233214143822" y="140" fill="#555">20.4s</text>
+<text x="142" y="169" text-anchor="end" font-weight="400">cu-claude</text>
+<rect x="150" y="157" width="312.7" height="17" fill="#9a9a92" rx="2"/>
+<text x="470.7463912064627" y="170" fill="#555">31.1s</text>
+<text x="142" y="199" text-anchor="end" font-weight="400">a11y-stagehand</text>
+<rect x="150" y="187" width="357.9" height="17" fill="#9a9a92" rx="2"/>
+<text x="515.8572374519931" y="200" fill="#555">35.6s</text>
+<text x="142" y="229" text-anchor="end" font-weight="400">dom-browseruse</text>
+<rect x="150" y="217" width="380.0" height="17" fill="#9a9a92" rx="2"/>
+<text x="538" y="230" fill="#555">37.8s</text>
+</svg>

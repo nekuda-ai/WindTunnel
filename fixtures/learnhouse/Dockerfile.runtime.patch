@@ -1,0 +1,59 @@
+diff --git a/Dockerfile b/Dockerfile
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -64,25 +64,24 @@ COPY apps/collab/src/ ./src/
+ 
+ RUN bun run build
+ 
++# Evaluator-pinned glibc Node runtime. The upstream Dockerfile downloads Node,
++# Bun, and PM2 during the final build, which makes identical capsule inputs
++# resolve differently over time.
++FROM node:22-bookworm-slim AS node-runtime
++
+ # ───────────────────────────────────────────────
+ # Stage 5: Final image combining frontend + backend + collab
+ # ───────────────────────────────────────────────
+ FROM python:3.14.3-slim-bookworm AS runner
+ 
+-# Single apt layer: nginx, curl, netcat, node, pm2
++# Runtime packages are installed from the pinned Debian base repositories.
+ RUN apt-get update \
+-    && apt-get install -y --no-install-recommends nginx curl netcat-openbsd ca-certificates gnupg unzip build-essential \
+-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+-    && apt-get install -y --no-install-recommends nodejs \
+-    && npm install -g pm2 \
+-    && curl -fsSL https://bun.sh/install | bash \
+-    && apt-get purge -y gnupg \
+-    && apt-get autoremove -y \
++    && apt-get install -y --no-install-recommends nginx curl netcat-openbsd ca-certificates unzip build-essential \
+     && apt-get clean \
+-    && rm -rf /var/lib/apt/lists/* /tmp/* /root/.npm \
++    && rm -rf /var/lib/apt/lists/* /tmp/* \
+     && rm /etc/nginx/sites-enabled/default
+ 
+-ENV PATH="/root/.bun/bin:${PATH}"
++COPY --from=node-runtime /usr/local/ /usr/local/
+ 
+ # Copy the frontend standalone build
+ COPY --from=frontend-runner /app /app/web
+@@ -91,6 +90,6 @@ COPY --from=frontend-runner /app /app/web
+ # Backend: install deps first (better layer caching)
+ WORKDIR /app/api
+ COPY ./apps/api/uv.lock ./apps/api/pyproject.toml ./
+-RUN pip install --no-cache-dir --upgrade pip uv \
+-    && uv sync --no-dev
++RUN pip install --no-cache-dir uv==0.10.7 \
++    && uv sync --no-dev --frozen
+ COPY ./apps/api ./
+@@ -100,9 +99,9 @@ RUN if [ "$LEARNHOUSE_PUBLIC" = "true" ]; then rm -rf /app/api/ee; fi
+ 
+ # Collab server: copy built JS + production deps
+ WORKDIR /app/collab
+ COPY --from=collab-builder /app/dist ./dist
+-COPY apps/collab/package.json apps/collab/bun.lock* ./
+-RUN bun install --production
++COPY --from=collab-builder /app/node_modules ./node_modules
++COPY apps/collab/package.json ./
+ 
+ # Copy configs and scripts
+ WORKDIR /app

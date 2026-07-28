@@ -1,0 +1,14 @@
+diff --git a/package.json b/package.json
+index 60d5638..c3aa3af 100644
+--- a/package.json
++++ b/package.json
+@@ -11,7 +11,7 @@
+   "keywords": [
+     "medusa-storefront"
+   ],
+   "scripts": {
+-    "dev": "next dev --turbopack -p 8000",
++    "dev": "next dev --turbopack --hostname 0.0.0.0 -p 8000",
+     "build": "next build",
+     "start": "next start -p 8000",
+     "lint": "next lint",

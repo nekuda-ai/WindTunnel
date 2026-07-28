@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "learnhouse",
+  "source": {
+    "repository": "https://github.com/learnhouse/learnhouse.git",
+    "revision": "5b792a0e9031609766179bfb9397abf61290a242"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-image",
+    "resetStrategy": "database-dump",
+    "applicationPort": 80,
+    "healthPath": "/api/v1/health",
+    "composeOverlay": "compose.overlay.yaml",
+    "applicationService": "app",
+    "requiredServices": [
+      "app",
+      "ssr-fwd"
+    ],
+    "healthChecks": [
+      {
+        "path": "/api/v1/health",
+        "contains": "true"
+      }
+    ],
+    "images": [
+      {
+        "name": "bun",
+        "reference": "oven/bun:1-alpine@sha256:5acc90a93e91ff07bf72aa90a7c9f0fa189765aec90b47bdbf2152d2196383c0"
+      },
+      {
+        "name": "node",
+        "reference": "node:24-alpine@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd"
+      },
+      {
+        "name": "nodeRuntime",
+        "reference": "node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+      },
+      {
+        "name": "python",
+        "reference": "python:3.14.3-slim-bookworm@sha256:f21c0d5a44c56805654c15abccc1b2fd576c8d93aca0a3f74b4aba2dc92510e2"
+      },
+      {
+        "name": "postgres",
+        "reference": "pgvector/pgvector:pg16@sha256:1d533553fefe4f12e5d80c7b80622ba0c382abb5758856f52983d8789179f0fb"
+      },
+      {
+        "name": "redis",
+        "reference": "redis:7-alpine@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99"
+      },
+      {
+        "name": "socat",
+        "reference": "alpine/socat:1.8.0.0@sha256:a6be4c0262b339c53ddad723cdd178a1a13271e1137c65e27f90a08c16de02b8"
+      }
+    ]
+  },
+  "acceptance": {
+    "publicPath": "/courses",
+    "paths": [
+      "/courses",
+      "/login",
+      "/dash/courses"
+    ],
+    "liveness": {
+      "file": "apps/web/app/orgs/[orgslug]/(withmenu)/courses/courses.tsx",
+      "language": "typescript",
+      "marker": "document.documentElement.dataset.webmcpCapsuleLiveness"
+    },
+    "observation": {
+      "probe": "courses",
+      "arguments": {},
+      "assert": ".publicPublished == 1 and .seeded == 1",
+      "mutation": {
+        "probe": "hide_course",
+        "arguments": {},
+        "assert": ".publicPublished == 0 and .seeded == 1"
+      },
+      "resetAssert": ".publicPublished == 1 and .seeded == 1"
+    }
+  },
+  "actors": [
+    {
+      "id": "admin",
+      "description": "Bootstrapped administrator admin@webmcp-eval.com / WebmcpEvalAdmin!234.",
+      "setup": "actors/admin.js",
+      "path": "/dash/courses",
+      "expect": "Evaluation Foundations"
+    }
+  ]
+}

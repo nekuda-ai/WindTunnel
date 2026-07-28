@@ -1,0 +1,40 @@
+services:
+  db:
+    image: ${CAPSULE_IMAGE_MYSQL}
+    environment:
+      MYSQL_ROOT_PASSWORD: easyappointments-root
+      MYSQL_DATABASE: easyappointments
+      MYSQL_USER: easyappointments
+      MYSQL_PASSWORD: easyappointments
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=easyappointments-root mysqladmin ping -h 127.0.0.1 -u root --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 45
+    volumes:
+      - type: volume
+        source: database
+        target: /var/lib/mysql
+  app:
+    image: ${CAPSULE_IMAGE_APPLICATION}
+    working_dir: /var/www/html
+    environment:
+      BASE_URL: ${CAPSULE_BASE_URL}
+      DEBUG_MODE: "true"
+      DB_HOST: db
+      DB_NAME: easyappointments
+      DB_USERNAME: easyappointments
+      DB_PASSWORD: easyappointments
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}
+        target: /var/www/html
+      - type: bind
+        source: ${CAPSULE_PRIVATE_DIR}/application-state/storage
+        target: /var/www/html/storage
+    stop_grace_period: 15s
+volumes:
+  database: {}

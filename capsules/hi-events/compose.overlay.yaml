@@ -1,0 +1,121 @@
+services:
+  app:
+    build:
+      context: ${CAPSULE_WORKSPACE}
+      dockerfile: Dockerfile.all-in-one
+      args:
+        WEBMCP_NODE_BUILDER: ${CAPSULE_IMAGE_FRONTEND_BUILD_NODE}
+        WEBMCP_PHP_RUNTIME: ${CAPSULE_IMAGE_PHP_RUNTIME_BUILD_INPUT}
+    init: true
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "false"
+      APP_KEY: base64:d2VibWNwLWtpdC1oaS1ldmVudHMtYXBwLWtleS0wMSE=
+      APP_URL: ${CAPSULE_BASE_URL}
+      APP_FRONTEND_URL: ${CAPSULE_BASE_URL}
+      APP_CDN_URL: ${CAPSULE_BASE_URL}/storage
+      APP_DISABLE_REGISTRATION: "false"
+      APP_SAAS_MODE_ENABLED: "false"
+      APP_SAAS_STRIPE_APPLICATION_FEE_PERCENT: "0"
+      APP_SAAS_STRIPE_APPLICATION_FEE_FIXED: "0"
+      CORS_ALLOWED_ORIGINS: ${CAPSULE_BASE_URL}
+      DATABASE_URL: postgresql://postgres:webmcp-eval@postgres:5432/hi_events
+      FILESYSTEM_PUBLIC_DISK: public
+      FILESYSTEM_PRIVATE_DISK: local
+      JWT_SECRET: webmcp-kit-hi-events-jwt-secret-for-local-evaluation
+      LOG_CHANNEL: stderr
+      MAIL_MAILER: log
+      MAIL_DRIVER: log
+      MAIL_FROM_ADDRESS: organizer@webmcp-eval.test
+      MAIL_FROM_NAME: WebMCP Evaluation
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      STRIPE_PUBLIC_KEY: pk_test_webmcp_local_not_used
+      STRIPE_SECRET_KEY: sk_test_webmcp_local_not_used
+      STRIPE_WEBHOOK_SECRET: whsec_webmcp_local_not_used
+      VITE_API_URL_CLIENT: ${CAPSULE_BASE_URL}/api
+      VITE_API_URL_SERVER: http://localhost:80/api
+      VITE_APP_NAME: Hi.Events WebMCP Evaluation
+      VITE_FRONTEND_URL: ${CAPSULE_BASE_URL}
+      VITE_HMR_CLIENT_PORT: ${CAPSULE_PORT}
+      VITE_STRIPE_PUBLISHABLE_KEY: pk_test_webmcp_local_not_used
+      WEBHOOK_QUEUE_NAME: webhook-queue
+    volumes:
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/frontend/src
+        target: /app/frontend/src
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/frontend/public
+        target: /app/frontend/public
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/frontend/index.html
+        target: /app/frontend/index.html
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/frontend/server.js
+        target: /app/frontend/server.js
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/frontend/vite.config.ts
+        target: /app/frontend/vite.config.ts
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/backend/app
+        target: /app/backend/app
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/backend/config
+        target: /app/backend/config
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/backend/database
+        target: /app/backend/database
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/backend/public
+        target: /app/backend/public
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/backend/resources
+        target: /app/backend/resources
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}/backend/routes
+        target: /app/backend/routes
+      - type: volume
+        source: backend_storage
+        target: /app/backend/storage
+      - type: volume
+        source: backend_cache
+        target: /app/backend/bootstrap/cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    stop_grace_period: 15s
+  postgres:
+    image: ${CAPSULE_IMAGE_POSTGRES}
+    environment:
+      POSTGRES_DB: hi_events
+      POSTGRES_PASSWORD: webmcp-eval
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hi_events"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - type: volume
+        source: pgdata
+        target: /var/lib/postgresql/data
+  redis:
+    image: ${CAPSULE_IMAGE_REDIS}
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - type: volume
+        source: redisdata
+        target: /data
+volumes:
+  backend_cache: {}
+  backend_storage: {}
+  pgdata: {}
+  redisdata: {}

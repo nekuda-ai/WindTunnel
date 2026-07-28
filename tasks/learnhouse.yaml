@@ -1,0 +1,64 @@
+# learnhouse — public catalog + authenticated enrollment/dashboard flows.
+# Oracle probes (capsules/learnhouse/oracle.sh) only verify course publish
+# state and take no args, so agent-visible outcomes are answer-scored against
+# seeded literals (fixtures/learnhouse/seed.mjs): course "Evaluation
+# Foundations", chapters "Foundations" + "Applied Practice", 4 lessons.
+# Admin/author/superadmin (only seeded account): admin@webmcp-eval.com /
+# WebmcpEvalAdmin!234.
+tasks:
+  - id: lh-1
+    tier: answer
+    prompt: What courses does this school offer? Report every course name.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [evaluation foundations] }
+
+  - id: lh-2
+    tier: answer
+    prompt: Open the Evaluation Foundations course and report the names of its chapters.
+    # Chapter names are "Foundations" and "Applied Practice"; only the second
+    # is a distinctive literal ("Foundations" is a substring of the course name).
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [applied practice] }
+
+  - id: lh-3
+    tier: answer
+    prompt: What is the title of the first lesson in the Foundations chapter of the Evaluation Foundations course?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [what evaluation means] }
+
+  - id: lh-4
+    excluded: api-only-data
+    tier: answer
+    prompt: What tags does the Evaluation Foundations course carry?
+    # Tags are API-only data, not a comparable browser journey.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [webmcp] }
+
+  - id: lh-5
+    tier: act-short
+    prompt: Search the catalog for a course about evaluation, open it, and report its description.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [deterministic] }
+
+  - id: lh-6
+    tier: act-short
+    prompt: Does this school offer a course on machine learning? Answer with the single word AVAILABLE or MISSING.
+    # ask_site / search return empty for unseeded topics.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, matches: "\\bmissing\\b", not_contains: ["not missing", "available or missing"] }
+
+  - id: lh-7
+    auth: true
+    tier: act-long
+    prompt: Sign in as admin@webmcp-eval.com with password WebmcpEvalAdmin!234, enroll in the Evaluation Foundations course, and report which lesson you should start with.
+    # Enrollment has no oracle probe — score the reported first lesson, which
+    # only the post-enrollment state (first_lesson / my_learning) surfaces.
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate: { type: answer, contains: [what evaluation means] }
+
+  - id: lh-8
+    auth: true
+    tier: act-long
+    prompt: Sign in as admin@webmcp-eval.com with password WebmcpEvalAdmin!234, open the course dashboard, and report how many published lessons the Evaluation Foundations course contains in total.
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate: { type: answer, matches: "(lessons?|activities)[^.]{0,40}\\b(4|four)\\b|\\b(4|four)\\b[^.]{0,40}(lessons?|activities)" }

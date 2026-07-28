@@ -1,0 +1,70 @@
+services:
+  db:
+    image: ${CAPSULE_IMAGE_POSTGRES}
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: medusa
+      POSTGRES_DB: medusa
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa -d medusa"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - type: volume
+        source: database
+        target: /var/lib/postgresql/data
+  backend:
+    image: ${CAPSULE_IMAGE_NODE}
+    init: true
+    user: ${CAPSULE_UID}:${CAPSULE_GID}
+    working_dir: /backend
+    command: ["corepack", "yarn", "dev"]
+    env_file:
+      - ${CAPSULE_PRIVATE_DIR}/backend/.env
+    environment:
+      HOME: /tmp/home
+      COREPACK_HOME: /cache/corepack
+      npm_config_cache: /cache/npm
+      YARN_ENABLE_GLOBAL_CACHE: "true"
+      YARN_GLOBAL_FOLDER: /cache/yarn
+      HOST: 0.0.0.0
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: ${CAPSULE_PRIVATE_DIR}/backend
+        target: /backend
+      - type: bind
+        source: ${MEDUSA_PACKAGE_CACHE}
+        target: /cache
+    stop_grace_period: 15s
+  app:
+    image: ${CAPSULE_IMAGE_NODE}
+    init: true
+    user: ${CAPSULE_UID}:${CAPSULE_GID}
+    working_dir: /workspace
+    command: ["corepack", "yarn", "dev"]
+    env_file:
+      - ${CAPSULE_WORKSPACE}/.env.local
+    environment:
+      HOME: /tmp/home
+      COREPACK_HOME: /cache/corepack
+      npm_config_cache: /cache/npm
+      YARN_ENABLE_GLOBAL_CACHE: "true"
+      YARN_GLOBAL_FOLDER: /cache/yarn
+      NEXT_TELEMETRY_DISABLED: "1"
+    depends_on:
+      backend:
+        condition: service_started
+    volumes:
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}
+        target: /workspace
+      - type: bind
+        source: ${MEDUSA_PACKAGE_CACHE}
+        target: /cache
+    stop_grace_period: 15s
+volumes:
+  database: {}

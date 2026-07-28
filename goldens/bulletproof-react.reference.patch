@@ -1,0 +1,655 @@
+diff --git a/apps/react-vite/src/app/router.tsx b/apps/react-vite/src/app/router.tsx
+index 4ea857d..306c9cc 100644
+--- a/apps/react-vite/src/app/router.tsx
++++ b/apps/react-vite/src/app/router.tsx
+@@ -10,6 +10,7 @@ import {
+   default as AppRoot,
+   ErrorBoundary as AppRootErrorBoundary,
+ } from './routes/app/root';
++import { WebMCPTools } from './webmcp-tools';
+ 
+ const convert = (queryClient: QueryClient) => (m: any) => {
+   const { clientLoader, clientAction, default: Component, ...rest } = m;
+@@ -84,5 +85,10 @@ export const AppRouter = () => {
+ 
+   const router = useMemo(() => createAppRouter(queryClient), [queryClient]);
+ 
+-  return <RouterProvider router={router} />;
++  return (
++    <>
++      <WebMCPTools router={router} />
++      <RouterProvider router={router} />
++    </>
++  );
+ };
+diff --git a/apps/react-vite/src/app/webmcp-tools.tsx b/apps/react-vite/src/app/webmcp-tools.tsx
+new file mode 100644
+index 0000000..30d66a1
+--- /dev/null
++++ b/apps/react-vite/src/app/webmcp-tools.tsx
+@@ -0,0 +1,446 @@
++import { QueryClient, useQueryClient } from '@tanstack/react-query';
++import { useMemo } from 'react';
++
++import { paths } from '@/config/paths';
++import { createComment } from '@/features/comments/api/create-comment';
++import {
++  getComments,
++  getInfiniteCommentsQueryOptions,
++} from '@/features/comments/api/get-comments';
++import { createDiscussion } from '@/features/discussions/api/create-discussion';
++import { getDiscussionQueryOptions } from '@/features/discussions/api/get-discussion';
++import { getDiscussionsQueryOptions } from '@/features/discussions/api/get-discussions';
++import { useUser } from '@/lib/auth';
++import { textResult, useWebMCPTool, WebMCPTool } from '@/lib/webmcp';
++import { searchSiteContent, siteContentTopics } from '@/lib/webmcp-content';
++import { Comment, Discussion, User } from '@/types/api';
++
++// WebMCP tools for the page-side agent (see src/lib/webmcp.ts).
++// - ask_site is registered on every page, signed in or out.
++// - search_discussions is the conversion entry: signed out it registers in a
++//   guidance form (how to sign in / register), signed in it searches for real.
++// - read_discussion / comment_on_discussion are account-scoped: registered on
++//   login, unregistered on logout.
++// - create_discussion is ADMIN-scoped: registered only while an ADMIN is
++//   signed in, unregistered on logout or for a regular USER.
++
++type AppRouterLike = {
++  navigate: (to: string) => void | Promise<void>;
++};
++
++const formatAuthor = (author?: Partial<User>) =>
++  author?.firstName ? `${author.firstName} ${author.lastName}` : 'Unknown';
++
++const formatDate = (createdAt: number) => new Date(createdAt).toISOString();
++
++const toDiscussionSummary = (discussion: Discussion) => ({
++  id: discussion.id,
++  title: discussion.title,
++  author: formatAuthor(discussion.author),
++  createdAt: formatDate(discussion.createdAt),
++  preview:
++    discussion.body.length > 160
++      ? `${discussion.body.slice(0, 160)}…`
++      : discussion.body,
++});
++
++const toCommentSummary = (comment: Comment) => ({
++  id: comment.id,
++  body: comment.body,
++  author: formatAuthor(comment.author),
++  createdAt: formatDate(comment.createdAt),
++});
++
++const askSiteTool: WebMCPTool = {
++  name: 'ask_site',
++  description:
++    'Answer questions about this site (the Bulletproof React team ' +
++    'discussions demo) from its own content: what the app is, how to create ' +
++    'an account, create or join a team, sign in, what USER and ADMIN roles ' +
++    'may do, and how team discussions and comments work. Read-only ' +
++    'retrieval: returns the matching content sections with their source ' +
++    'paths; compose the answer from them.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      query: {
++        type: 'string',
++        description: 'Natural-language question or keywords',
++      },
++    },
++    required: ['query'],
++  },
++  annotations: { readOnlyHint: true },
++  execute: async (args: { query?: string }) => {
++    const query = typeof args?.query === 'string' ? args.query : '';
++    const results = searchSiteContent(query);
++    if (results.length === 0) {
++      return textResult({
++        query,
++        results: [],
++        note: "This site's content does not cover this question — say so rather than guessing.",
++        coveredTopics: siteContentTopics(),
++      });
++    }
++    return textResult({ query, results });
++  },
++};
++
++// Signed-out stage of the conversion entry: same name, guidance behavior.
++const createSignedOutSearchDiscussionsTool = (
++  router: AppRouterLike,
++): WebMCPTool => ({
++  name: 'search_discussions',
++  description:
++    "Browse the team's discussions — requires signing in first. While " +
++    'signed out, calling this opens the login page and returns guidance on ' +
++    'signing in or creating an account; once signed in, it lists and ' +
++    "searches the team's discussion threads.",
++  inputSchema: {
++    type: 'object',
++    properties: {
++      query: {
++        type: 'string',
++        description: 'Optional keywords (used once signed in)',
++      },
++    },
++  },
++  annotations: { readOnlyHint: true },
++  execute: async () => {
++    await router.navigate(
++      paths.auth.login.getHref(paths.app.discussions.getHref()),
++    );
++    return textResult({
++      signedIn: false,
++      guidance:
++        'Discussions are visible to signed-in team members only. The login ' +
++        'page is now open: log in with email and password, or register at ' +
++        '/auth/register — enter a Team Name to create a new team (you ' +
++        'become its admin) or toggle "Join Existing Team" to join one as a ' +
++        'member. Signing in happens in the page, not through a tool. After ' +
++        "signing in, call search_discussions again to get the team's " +
++        'discussions.',
++    });
++  },
++});
++
++const createSearchDiscussionsTool = (
++  queryClient: QueryClient,
++  router: AppRouterLike,
++): WebMCPTool => ({
++  name: 'search_discussions',
++  description:
++    "Search or list your team's discussions. Optional query keyword-matches " +
++    'titles and bodies within one page of the most recent discussions (10 ' +
++    'per page); page selects which page to list or search. Navigates to that ' +
++    'same page so the rendered list matches the returned results. Returns ' +
++    'id, title, author, date and a preview per discussion, plus the page and ' +
++    'total pages. Read-only. Use read_discussion for a full thread.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      query: {
++        type: 'string',
++        description:
++          'Optional keywords to match against titles and bodies on the page',
++      },
++      page: {
++        type: 'number',
++        description: 'Which page of the discussions list to read (default 1)',
++      },
++    },
++  },
++  annotations: { readOnlyHint: true, untrustedContentHint: true },
++  execute: async (args: { query?: string; page?: number }) => {
++    const query = typeof args?.query === 'string' ? args.query.trim() : '';
++    const page = Number(args?.page) > 0 ? Number(args.page) : 1;
++
++    // The discussions route only consumes `page` and shows one page (10) at a
++    // time, so we scan and filter that single page and navigate to it — the
++    // returned matches are exactly the rows the user sees rendered. Filtering
++    // across pages the UI cannot display would desync the agent and the user.
++    const result = await queryClient.fetchQuery(
++      getDiscussionsQueryOptions({ page }),
++    );
++
++    if (page > 1 && result.meta.totalPages > 0 && page > result.meta.totalPages) {
++      return textResult({
++        error: `Page ${page} is beyond the last page (${result.meta.totalPages}) — nothing was shown.`,
++        totalPages: result.meta.totalPages,
++        total: result.meta.total,
++      });
++    }
++
++    let discussions = result.data;
++    if (query) {
++      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
++      discussions = discussions.filter((discussion) => {
++        const haystack =
++          `${discussion.title} ${discussion.body}`.toLowerCase();
++        return terms.some((term) => haystack.includes(term));
++      });
++    }
++
++    await router.navigate(`${paths.app.discussions.getHref()}?page=${page}`);
++
++    return textResult({
++      query: query || undefined,
++      page,
++      totalPages: result.meta.totalPages,
++      total: result.meta.total,
++      matched: query ? discussions.length : undefined,
++      discussions: discussions.map(toDiscussionSummary),
++    });
++  },
++});
++
++const createReadDiscussionTool = (
++  queryClient: QueryClient,
++  router: AppRouterLike,
++): WebMCPTool => ({
++  name: 'read_discussion',
++  description:
++    'Read one team discussion in full — title, body, author — plus all of ' +
++    'its comments, and bring that thread up on the page. Requires the ' +
++    'discussion id (find it with search_discussions). Read-only; the body ' +
++    'and comments are user-written content.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      discussionId: {
++        type: 'string',
++        description: 'Discussion id, e.g. from search_discussions',
++      },
++    },
++    required: ['discussionId'],
++  },
++  annotations: { readOnlyHint: true, untrustedContentHint: true },
++  execute: async (args: { discussionId?: string }) => {
++    const discussionId = String(args?.discussionId ?? '').trim();
++    if (!discussionId) {
++      return textResult({
++        error: 'discussionId is required — find ids with search_discussions.',
++      });
++    }
++    try {
++      // The discussion GET is team-scoped in the mock API (404 if the id is
++      // not in the caller's team), so it doubles as the access check.
++      const { data: discussion } = await queryClient.fetchQuery(
++        getDiscussionQueryOptions(discussionId),
++      );
++
++      // Comments are paginated (10 per page); fetch every page so the returned
++      // comments match the reported totalComments instead of only page 1.
++      const firstComments = await getComments({ discussionId, page: 1 });
++      let comments = firstComments.data;
++      for (
++        let nextPage = 2;
++        nextPage <= firstComments.meta.totalPages;
++        nextPage++
++      ) {
++        const next = await getComments({ discussionId, page: nextPage });
++        comments = comments.concat(next.data);
++      }
++
++      await router.navigate(paths.app.discussion.getHref(discussionId));
++      return textResult({
++        discussion: {
++          id: discussion.id,
++          title: discussion.title,
++          body: discussion.body,
++          author: formatAuthor(discussion.author),
++          createdAt: formatDate(discussion.createdAt),
++        },
++        comments: comments.map(toCommentSummary),
++        totalComments: firstComments.meta.total,
++      });
++    } catch (error) {
++      if ((error as { response?: { status?: number } })?.response?.status === 404) {
++        return textResult({
++          error: `Discussion "${discussionId}" was not found in your team.`,
++        });
++      }
++      return textResult({
++        error: `Loading discussion "${discussionId}" failed with a temporary error — it may still exist. Try again.`,
++      });
++    }
++  },
++});
++
++const createCommentOnDiscussionTool = (
++  queryClient: QueryClient,
++  router: AppRouterLike,
++): WebMCPTool => ({
++  name: 'comment_on_discussion',
++  description:
++    'Post a comment to a team discussion as the signed-in user. This ' +
++    'publishes immediately: the comment appears in the thread for the whole ' +
++    'team (markdown supported). Requires discussionId (from ' +
++    'search_discussions) and body; returns the created comment and shows ' +
++    'the updated thread on the page.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      discussionId: {
++        type: 'string',
++        description: 'Discussion to comment on',
++      },
++      body: {
++        type: 'string',
++        description: 'Comment text (markdown supported)',
++      },
++    },
++    required: ['discussionId', 'body'],
++  },
++  // State-changing; the created comment echoed back is user-written content.
++  annotations: { readOnlyHint: false, untrustedContentHint: true },
++  execute: async (args: { discussionId?: string; body?: string }) => {
++    const discussionId = String(args?.discussionId ?? '').trim();
++    const body = String(args?.body ?? '').trim();
++    if (!discussionId || !body) {
++      return textResult({
++        error: 'Both discussionId and body are required.',
++      });
++    }
++    // The mock POST /comments does not verify the discussion belongs to the
++    // caller's team, so resolve it through the team-scoped discussion GET
++    // first (404 => not in team) and refuse to post to a foreign thread.
++    try {
++      await queryClient.fetchQuery(getDiscussionQueryOptions(discussionId));
++    } catch (error) {
++      if ((error as { response?: { status?: number } })?.response?.status === 404) {
++        return textResult({
++          error: `Discussion "${discussionId}" was not found in your team — verify the id with search_discussions.`,
++        });
++      }
++      return textResult({
++        error: `Verifying discussion "${discussionId}" failed with a temporary error — nothing was posted. Try again.`,
++      });
++    }
++    try {
++      const comment = await createComment({ data: { discussionId, body } });
++      queryClient.invalidateQueries({
++        queryKey: getInfiniteCommentsQueryOptions(discussionId).queryKey,
++      });
++      await router.navigate(paths.app.discussion.getHref(discussionId));
++      return textResult({
++        posted: true,
++        discussionId,
++        comment: {
++          id: comment.id,
++          body: comment.body,
++          createdAt: formatDate(comment.createdAt),
++        },
++      });
++    } catch (error) {
++      const reason =
++        error instanceof Error && error.message ? error.message : 'unknown error';
++      return textResult({
++        error: `Could not post the comment (${reason}). Verify the discussion id with search_discussions and try again.`,
++      });
++    }
++  },
++});
++
++// ADMIN-only: creating discussions is the team's content-seeding path, gated
++// to admins in the app UI and the mock API (requireAdmin on POST /discussions).
++const createCreateDiscussionTool = (
++  queryClient: QueryClient,
++  router: AppRouterLike,
++): WebMCPTool => ({
++  name: 'create_discussion',
++  description:
++    "Create a new discussion thread for your team — admins only. This " +
++    'publishes immediately: the discussion appears for the whole team (a ' +
++    'title plus a markdown body). Requires title and body; returns the ' +
++    'created discussion and shows the updated discussions list on the page.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      title: {
++        type: 'string',
++        description: 'Discussion title',
++      },
++      body: {
++        type: 'string',
++        description: 'Discussion body (markdown supported)',
++      },
++    },
++    required: ['title', 'body'],
++  },
++  annotations: { readOnlyHint: false },
++  execute: async (args: { title?: string; body?: string }) => {
++    const title = String(args?.title ?? '').trim();
++    const body = String(args?.body ?? '').trim();
++    if (!title || !body) {
++      return textResult({
++        error: 'Both title and body are required.',
++      });
++    }
++    try {
++      const discussion = await createDiscussion({ data: { title, body } });
++      await queryClient.invalidateQueries({
++        queryKey: getDiscussionsQueryOptions().queryKey,
++      });
++      await router.navigate(paths.app.discussions.getHref());
++      return textResult({
++        posted: true,
++        discussion: {
++          id: discussion.id,
++          title: discussion.title,
++          createdAt: formatDate(discussion.createdAt),
++        },
++      });
++    } catch (error) {
++      const reason =
++        error instanceof Error && error.message ? error.message : 'unknown error';
++      return textResult({
++        error: `Could not create the discussion (${reason}). Creating discussions requires an admin account.`,
++      });
++    }
++  },
++});
++
++export const WebMCPTools = ({ router }: { router: AppRouterLike }) => {
++  const user = useUser();
++  const queryClient = useQueryClient();
++
++  const authResolved = !user.isLoading;
++  const isAuthenticated = !!user.data;
++  const isAdmin = isAuthenticated && user.data?.role === 'ADMIN';
++
++  useWebMCPTool(askSiteTool);
++  useWebMCPTool(
++    useMemo(() => {
++      if (!authResolved) return null;
++      return isAuthenticated
++        ? createSearchDiscussionsTool(queryClient, router)
++        : createSignedOutSearchDiscussionsTool(router);
++    }, [authResolved, isAuthenticated, queryClient, router]),
++  );
++  useWebMCPTool(
++    useMemo(
++      () =>
++        isAuthenticated ? createReadDiscussionTool(queryClient, router) : null,
++      [isAuthenticated, queryClient, router],
++    ),
++  );
++  useWebMCPTool(
++    useMemo(
++      () =>
++        isAuthenticated
++          ? createCommentOnDiscussionTool(queryClient, router)
++          : null,
++      [isAuthenticated, queryClient, router],
++    ),
++  );
++  useWebMCPTool(
++    useMemo(
++      () =>
++        isAdmin ? createCreateDiscussionTool(queryClient, router) : null,
++      [isAdmin, queryClient, router],
++    ),
++  );
++
++  return null;
++};
+diff --git a/apps/react-vite/src/lib/webmcp-content.ts b/apps/react-vite/src/lib/webmcp-content.ts
+new file mode 100644
+index 0000000..fd72800
+--- /dev/null
++++ b/apps/react-vite/src/lib/webmcp-content.ts
+@@ -0,0 +1,94 @@
++// Build-time content bundle backing the `ask_site` WebMCP tool: the app's own
++// pages and copy, keyword-matched client-side. The calling agent composes the
++// final answer from the returned sections — no backend or AI infra needed.
++
++export type SiteContentSection = {
++  title: string;
++  path: string;
++  content: string;
++};
++
++export const siteContent: SiteContentSection[] = [
++  {
++    title: 'About Bulletproof React',
++    path: '/',
++    content:
++      'Bulletproof React showcases best practices for building React applications. ' +
++      'This demo is a team discussions app: create an account for your team, then ' +
++      'read and take part in team-scoped discussion threads with comments. Use ' +
++      '"Get started" on the landing page to sign in. Source code: ' +
++      'https://github.com/alan2207/bulletproof-react.',
++  },
++  {
++    title: 'Creating an account and signing in',
++    path: '/auth/register',
++    content:
++      'Register with first name, last name, email and a password (minimum 5 ' +
++      'characters). Pick one of two team options: enter a Team Name to create a ' +
++      "new team — you become that team's ADMIN — or toggle \"Join Existing Team\" " +
++      'and select a team to join as a regular USER (member). Existing accounts ' +
++      'log in with email and password at /auth/login. Signing in is required for ' +
++      'the app area: dashboard, discussions and comments.',
++  },
++  {
++    title: 'Roles and permissions',
++    path: '/app',
++    content:
++      'Two roles exist. USER (regular member): create comments in discussions ' +
++      'and delete their own comments. ADMIN: create, edit and delete ' +
++      "discussions, comment, delete any comment, and view the team's users " +
++      'list. Your role is shown on the dashboard after signing in.',
++  },
++  {
++    title: 'Discussions and comments',
++    path: '/app/discussions',
++    content:
++      'Discussions are threads visible only to your team, listed at ' +
++      '/app/discussions with title, author and creation date (10 per page). ' +
++      'Open a discussion to read its body (markdown) and comments, and to add ' +
++      'your own comment. Discussions themselves are created and edited by team ' +
++      'admins.',
++  },
++  {
++    title: 'Your profile and team',
++    path: '/app/profile',
++    content:
++      'The profile page shows your first name, last name, email and bio. The ' +
++      "users page at /app/users lists the team's members and is visible to " +
++      'admins only.',
++  },
++];
++
++const tokenize = (value: string) =>
++  value
++    .toLowerCase()
++    .split(/[^a-z0-9]+/)
++    .filter((token) => token.length > 2);
++
++// Tiny client-side keyword retrieval over the bundle. Returns ONLY sections
++// that actually match — an empty result means the site's content does not
++// answer the query, and the tool reports that honestly instead of dumping
++// unrelated grounding.
++export const searchSiteContent = (
++  query: string,
++  limit = 3,
++): SiteContentSection[] => {
++  const terms = [...new Set(tokenize(query))];
++  const scored = siteContent.map((section) => {
++    const haystack = `${section.title} ${section.content}`.toLowerCase();
++    return {
++      section,
++      score: terms.filter((term) => haystack.includes(term)).length,
++    };
++  });
++  const matches = scored.filter(({ score }) => score > 0);
++  return matches
++    .sort((a, b) => b.score - a.score)
++    .slice(0, limit)
++    .map(({ section }) => section);
++};
++
++// Section titles, for the honest no-match response ("here is what the site
++// does cover").
++export const siteContentTopics = (): string[] =>
++  siteContent.map((section) => section.title);
+diff --git a/apps/react-vite/src/lib/webmcp.ts b/apps/react-vite/src/lib/webmcp.ts
+new file mode 100644
+index 0000000..556209a
+--- /dev/null
++++ b/apps/react-vite/src/lib/webmcp.ts
+@@ -0,0 +1,73 @@
++import { useEffect } from 'react';
++
++// WebMCP (navigator.modelContext) integration.
++// Spec draft: https://github.com/webmachinelearning/webmcp
++//
++// Tools are registered per document. In this SPA we tie registrations to
++// component lifecycles: register in an effect, unregister by aborting the
++// registration's AbortSignal on unmount or when the tool changes (e.g. the
++// user logs out). No-ops in browsers without WebMCP support.
++
++export type WebMCPToolResult = {
++  content: Array<{ type: 'text'; text: string }>;
++};
++
++export type WebMCPTool = {
++  name: string;
++  description: string;
++  inputSchema: Record<string, unknown>;
++  annotations?: {
++    readOnlyHint?: boolean;
++    untrustedContentHint?: boolean;
++  };
++  execute: (args: any) => Promise<WebMCPToolResult>;
++};
++
++type ModelContext = {
++  registerTool: (
++    tool: WebMCPTool,
++    options?: { signal?: AbortSignal },
++  ) => Promise<void>;
++};
++
++// document.modelContext is the spec surface; navigator.modelContext is the
++// deprecated alias (warns in newer Chromium builds).
++const getModelContext = (): ModelContext | undefined => {
++  if (typeof document === 'undefined') return undefined;
++  return (
++    (document as Document & { modelContext?: ModelContext }).modelContext ??
++    (navigator as Navigator & { modelContext?: ModelContext }).modelContext
++  );
++};
++
++export const textResult = (payload: unknown): WebMCPToolResult => ({
++  content: [
++    {
++      type: 'text',
++      text:
++        typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2),
++    },
++  ],
++});
++
++// Registers `tool` while the calling component is mounted; pass null to keep
++// it unregistered (e.g. while its auth requirement is unmet).
++export const useWebMCPTool = (tool: WebMCPTool | null) => {
++  useEffect(() => {
++    const modelContext = getModelContext();
++    if (!tool || typeof modelContext?.registerTool !== 'function') return;
++
++    const controller = new AbortController();
++    Promise.resolve(
++      modelContext.registerTool(tool, { signal: controller.signal }),
++    ).catch((error) => {
++      // Rejections from an already-aborted signal are expected on fast
++      // unmount/remount cycles; anything else is worth surfacing.
++      if (!controller.signal.aborted) {
++        console.warn(`WebMCP: failed to register tool "${tool.name}"`, error);
++      }
++    });
++
++    return () => controller.abort();
++  }, [tool]);
++};

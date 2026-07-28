@@ -1,0 +1,904 @@
+diff --git a/apps/web/app/orgs/[orgslug]/layout.tsx b/apps/web/app/orgs/[orgslug]/layout.tsx
+index abba16fb..a2c9899e 100644
+--- a/apps/web/app/orgs/[orgslug]/layout.tsx
++++ b/apps/web/app/orgs/[orgslug]/layout.tsx
+@@ -1,6 +1,7 @@
+ import { Metadata } from 'next'
+ import { OrgProvider } from '@components/Contexts/OrgContext'
+ import OrgLanguageSync from '@components/Contexts/OrgLanguageSync'
++import WebMCPTools from '@components/WebMCP/WebMCPTools'
+ import NextTopLoader from 'nextjs-toploader'
+ import Toast from '@components/Objects/StyledElements/Toast/Toast'
+ import '@styles/globals.css'
+@@ -39,6 +40,7 @@ export default async function RootLayout(props: {
+     <div>
+       <OrgProvider orgslug={params.orgslug}>
+         <OrgLanguageSync />
++        <WebMCPTools orgslug={params.orgslug} />
+         <NextTopLoader color="#2e2e2e" initialPosition={0.3} height={4} easing={'ease'} speed={500} showSpinner={false} />
+         <Toast />
+         {props.children}
+diff --git a/apps/web/components/WebMCP/WebMCPTools.tsx b/apps/web/components/WebMCP/WebMCPTools.tsx
+new file mode 100644
+index 00000000..376c482e
+--- /dev/null
++++ b/apps/web/components/WebMCP/WebMCPTools.tsx
+@@ -0,0 +1,830 @@
++'use client'
++// WebMCP tools for the learner-facing org site (reference implementation).
++//
++// Registers page-scoped agent tools via document.modelContext.registerTool:
++//   - ask_site          (everywhere, read-only)  site content retrieval
++//   - search_courses    (everywhere, read-only)  catalog discovery
++//   - get_course        (everywhere, read-only)  one course in depth; course
++//                       pages re-register it with the viewed course baked in
++//   - enroll_in_course  (everywhere, two-stage)  logged-out: sign-in guidance;
++//                       logged-in: real enrollment through the app's own flow
++//   - my_learning       (authenticated only)     enrolled courses + progress,
++//                       registers on login and aborts on logout
++//   - sign_in           (logged-out only)        the way in: enrolment and
++//                       my_learning need a session, and an agent restricted to
++//                       WebMCP cannot fill in the login form
++//
++// All executes ride the app's existing session and API clients — the agent
++// never sees credentials. Mounted once inside OrgProvider (org layout), so
++// every org page re-registers the set with fresh page/auth context.
++import { useEffect, useMemo, useRef } from 'react'
++import { usePathname, useRouter } from 'next/navigation'
++import { useQuery, useQueryClient } from '@tanstack/react-query'
++import { useLHSession } from '@components/Contexts/LHSessionContext'
++import { useAuth } from '@components/Contexts/AuthContext'
++import { useOrg } from '@components/Contexts/OrgContext'
++import { getAPIUrl } from '@services/config/config'
++import { apiFetch } from '@services/utils/ts/requests'
++import {
++  getCourseMetadata,
++  getOrgCourses,
++  searchOrgCourses,
++} from '@services/courses/courses'
++import { startCourse } from '@services/courses/activity'
++import { queryKeys } from '@/lib/query/keys'
++import {
++  getModelContext,
++  mcpJson,
++  registerWebMCPTools,
++  WebMCPToolDefinition,
++} from './webmcp'
++
++const cleanUuid = (uuid: string | null | undefined) =>
++  (uuid || '').replace(/^course_/, '')
++
++const coursePath = (uuid: string) => `/course/${cleanUuid(uuid)}`
++const lessonPath = (courseUuid: string, activityUuid: string) =>
++  `/course/${cleanUuid(courseUuid)}/activity/${(activityUuid || '').replace(/^activity_/, '')}`
++
++const instructorNames = (course: any): string[] =>
++  (course?.authors ?? [])
++    .map((a: any) => {
++      const u = a?.user ?? a
++      const full = [u?.first_name, u?.last_name]
++        .filter(Boolean)
++        .join(' ')
++        .trim()
++      return full || u?.username || null
++    })
++    .filter(Boolean)
++
++const courseSummary = (c: any) => ({
++  name: c.name,
++  course_id: cleanUuid(c.course_uuid),
++  description: c.description,
++  tags: c.tags || undefined,
++  instructors: instructorNames(c),
++  path: coursePath(c.course_uuid),
++})
++
++const syllabus = (meta: any) =>
++  (meta?.chapters ?? []).map((ch: any) => ({
++    chapter: ch.name,
++    lessons: (ch.activities ?? []).map((a: any) => ({
++      title: a.name,
++      path: lessonPath(meta.course_uuid, a.activity_uuid),
++    })),
++  }))
++
++// Resolve a user-supplied course reference (id or fuzzy name) against the
++// public catalog. `confident` is true ONLY for an exact course_id or an exact
++// (case-insensitive) name match. A write tool (enroll) must refuse to act on
++// any fuzzy resolution — a partial-name match (even a unique one) or a scored
++// fallback — and surface `candidates` instead. Reads (get_course) stay lenient
++// and may navigate to the best-guess `course`.
++async function resolveCourse(orgslug: string, ref: string) {
++  const catalog: any[] = (await getOrgCourses(orgslug, null)) ?? []
++  const needle = (ref || '').trim().toLowerCase()
++  const byId = catalog.find(
++    (c) => cleanUuid(c.course_uuid) === cleanUuid(needle)
++  )
++  const exact = catalog.find((c) => c.name?.toLowerCase() === needle)
++  const partial = catalog.filter((c) => c.name?.toLowerCase().includes(needle))
++  const tokens = needle.split(/\s+/).filter((t) => t.length > 2)
++  const scored = catalog
++    .map((c) => ({
++      c,
++      score: tokens.filter((t) =>
++        `${c.name} ${c.description} ${c.tags}`.toLowerCase().includes(t)
++      ).length,
++    }))
++    .filter((x) => x.score > 0)
++    .sort((a, b) => b.score - a.score)
++  const course =
++    byId ??
++    exact ??
++    (partial.length === 1 ? partial[0] : null) ??
++    scored[0]?.c ??
++    null
++  const confident = !!(byId || exact)
++  const candidates = partial.length ? partial : scored.map((x) => x.c)
++  return { course, catalog, confident, candidates }
++}
++
++const STOPWORDS = new Set([
++  'the',
++  'and',
++  'for',
++  'with',
++  'what',
++  'which',
++  'who',
++  'how',
++  'does',
++  'this',
++  'that',
++  'you',
++  'your',
++  'have',
++  'has',
++  'are',
++  'can',
++  'about',
++  'course',
++  'courses',
++  'class',
++  'classes',
++  'learn',
++  'learning',
++  'any',
++  'there',
++  'offer',
++])
++
++interface ToolContext {
++  orgslug: string
++  isAuthed: boolean
++  // Course baked into this page's registration (course/activity pages), if any
++  baked: { uuid: string; name: string } | null
++  getSession: () => any
++  getOrg: () => any
++  // The app's own credentials sign-in (AuthContext). Only sign_in uses it.
++  signIn: (_email: string, _password: string) => Promise<any>
++  navigate: (_path: string) => void
++  currentPath: () => string
++  invalidateTrail: (_orgId: number) => void
++}
++
++async function getOrgId(ctx: ToolContext): Promise<number> {
++  const cached = ctx.getOrg()?.id
++  if (cached) return cached
++  const org = await apiFetch(`${getAPIUrl()}orgs/slug/${ctx.orgslug}`)
++  return org.id
++}
++
++async function fetchTrail(orgId: number, token: string) {
++  return apiFetch(`${getAPIUrl()}trail/org/${orgId}/trail`, token)
++}
++
++function runProgress(run: any, meta: any) {
++  const activities = (meta?.chapters ?? []).flatMap(
++    (ch: any) => ch.activities ?? []
++  )
++  const completedIds = new Set(
++    (run?.steps ?? [])
++      .filter((s: any) => s.complete)
++      .map((s: any) => s.activity_id)
++  )
++  const completed = activities.filter((a: any) => completedIds.has(a.id)).length
++  const next = activities.find((a: any) => !completedIds.has(a.id))
++  return {
++    completed,
++    total: activities.length,
++    progress_pct: activities.length
++      ? Math.round((completed / activities.length) * 100)
++      : 0,
++    next_lesson: next
++      ? {
++          title: next.name,
++          path: lessonPath(meta.course_uuid, next.activity_uuid),
++        }
++      : null,
++  }
++}
++
++function findRun(trail: any, courseUuid: string) {
++  return (trail?.runs ?? []).find(
++    (r: any) => cleanUuid(r.course?.course_uuid) === cleanUuid(courseUuid)
++  )
++}
++
++const isMember = (session: any, orgId: number): boolean => {
++  if (session?.data?.user?.is_superadmin) return true
++  const roles = session?.data?.roles
++  return Array.isArray(roles) && roles.some((r: any) => r?.org?.id === orgId)
++}
++
++function buildTools(ctx: ToolContext): WebMCPToolDefinition[] {
++  const { orgslug, isAuthed, baked } = ctx
++  const orgName = ctx.getOrg()?.name || 'this school'
++
++  const askSite: WebMCPToolDefinition = {
++    name: 'ask_site',
++    description: `Look up ${orgName}'s own content to answer a visitor question. Read-only retrieval across the school's profile (name, about, contact links) and the full course catalog: titles, descriptions, learning outcomes, tags, instructors and syllabus outlines (chapters and lesson titles). Returns matching content sections with their page paths — compose the answer from them. Use for questions like "do you have a beginner Python course?", "what does the SQL course cover?" or "who runs this school?". Returns empty matches when the site has nothing on the topic.`,
++    inputSchema: {
++      type: 'object',
++      properties: {
++        query: {
++          type: 'string',
++          description: 'Natural-language question or keywords to look up',
++        },
++      },
++      required: ['query'],
++    },
++    annotations: { readOnlyHint: true },
++    async execute(args: any) {
++      const query = String(args?.query ?? '').trim()
++      if (!query) return mcpJson({ error: 'query is required' })
++      try {
++        const tokens = query
++          .toLowerCase()
++          .split(/[^a-z0-9+#]+/)
++          .filter((t) => t.length > 2 && !STOPWORDS.has(t))
++
++        const catalog: any[] = (await getOrgCourses(orgslug, null)) ?? []
++        const metas = await Promise.all(
++          catalog.map((c) =>
++            getCourseMetadata(cleanUuid(c.course_uuid), {}, undefined, {
++              slim: true,
++            }).catch(() => null)
++          )
++        )
++
++        const sections: any[] = []
++        metas.forEach((meta, i) => {
++          if (!meta) return
++          const c = catalog[i]
++          const outline = syllabus(meta)
++          const haystack = [
++            c.name,
++            c.description,
++            c.about,
++            c.learnings,
++            c.tags,
++            ...outline.map((ch: any) => ch.chapter),
++            ...outline.flatMap((ch: any) =>
++              ch.lessons.map((l: any) => l.title)
++            ),
++            ...instructorNames(meta),
++          ]
++            .join(' ')
++            .toLowerCase()
++          const matched = tokens.filter((t) => haystack.includes(t))
++          if (matched.length === 0) return
++          const matchedLessons = outline
++            .flatMap((ch: any) =>
++              ch.lessons.filter((l: any) =>
++                tokens.some((t) => l.title.toLowerCase().includes(t))
++              )
++            )
++            .slice(0, 5)
++          sections.push({
++            type: 'course',
++            score: matched.length,
++            title: c.name,
++            description: c.description,
++            learning_outcomes: c.learnings || undefined,
++            instructors: instructorNames(meta),
++            matched_lessons: matchedLessons.length ? matchedLessons : undefined,
++            syllabus_chapters: outline.map((ch: any) => ch.chapter),
++            source_path: coursePath(c.course_uuid),
++          })
++        })
++        sections.sort((a, b) => b.score - a.score)
++
++        const org = ctx.getOrg()
++        const orgHaystack =
++          `${org?.name ?? ''} ${org?.description ?? ''} ${org?.about ?? ''} school organization about contact instructor teacher`.toLowerCase()
++        // Include the school profile ONLY when the query actually targets school
++        // content — never as a fallback when no course matched. Falling back would
++        // break the empty-on-no-match contract: an unrelated query must return no
++        // matches (plus the catalog note below), not the school profile.
++        if (org && tokens.some((t) => orgHaystack.includes(t))) {
++          sections.push({
++            type: 'school',
++            title: org.name,
++            description: org.description || undefined,
++            about: org.about || undefined,
++            email: org.email || undefined,
++            links:
++              org.links && Object.keys(org.links).length
++                ? org.links
++                : undefined,
++            course_count: catalog.length,
++            source_path: '/',
++          })
++        }
++
++        return mcpJson({
++          query,
++          matches: sections.map(({ score: _score, ...s }) => s),
++          note:
++            sections.filter((s) => s.type === 'course').length === 0
++              ? `No course content matched. ${orgName} currently offers: ${catalog.map((c) => c.name).join('; ') || 'no published courses'}.`
++              : undefined,
++        })
++      } catch {
++        return mcpJson({
++          status: 'error',
++          error:
++            'Could not answer the site question; the site may be temporarily unavailable. Please try again.',
++        })
++      }
++    },
++  }
++
++  const searchCourses: WebMCPToolDefinition = {
++    name: 'search_courses',
++    description: `Search ${orgName}'s published course catalog. Read-only. Filter with a free-text query (matches titles, descriptions, outcomes and tags); with no query it lists the whole catalog. Returns structured matches — name, course_id, description, tags, instructors, page path — and navigates the page to the catalog results so the user sees the same list. Returns an empty list when nothing matches.`,
++    inputSchema: {
++      type: 'object',
++      properties: {
++        query: {
++          type: 'string',
++          description: 'Free-text search terms (optional)',
++        },
++      },
++    },
++    annotations: { readOnlyHint: true },
++    async execute(args: any) {
++      const query = String(args?.query ?? '').trim()
++      try {
++        let results: any[] = query
++          ? ((await searchOrgCourses(orgslug, query, 1, 50, null)) ?? [])
++          : ((await getOrgCourses(orgslug, null)) ?? [])
++        // Backend search matches name/description; widen to outcomes/tags via
++        // catalog scan so "beginner" or "window functions" still resolve.
++        if (query && results.length === 0) {
++          const catalog: any[] = (await getOrgCourses(orgslug, null)) ?? []
++          const q = query.toLowerCase()
++          results = catalog.filter((c) =>
++            `${c.name} ${c.description} ${c.about} ${c.learnings} ${c.tags}`
++              .toLowerCase()
++              .includes(q)
++          )
++        }
++        const target = query
++          ? `/search?q=${encodeURIComponent(query)}`
++          : '/courses'
++        ctx.navigate(target)
++        return mcpJson({
++          count: results.length,
++          courses: results.map(courseSummary),
++          showing: `Results are now displayed on the page (${target}).`,
++        })
++      } catch {
++        return mcpJson({
++          status: 'error',
++          error:
++            'Could not search courses; the site may be temporarily unavailable. Please try again.',
++        })
++      }
++    },
++  }
++
++  const getCourse: WebMCPToolDefinition = {
++    name: 'get_course',
++    description: baked
++      ? `Get full detail for a ${orgName} course: description, learning outcomes, instructors and the complete syllabus (chapters with lesson titles), plus the signed-in learner's enrollment status. Read-only. Called without arguments it returns "${baked.name}" — the course open on this page. Pass course (name or course_id from search_courses) for a different one; the page then navigates to it.`
++      : `Get full detail for one ${orgName} course: description, learning outcomes, instructors and the complete syllabus (chapters with lesson titles), plus the signed-in learner's enrollment status. Read-only. Pass course as a name or a course_id from search_courses; the page navigates to that course so the user sees it.`,
++    inputSchema: {
++      type: 'object',
++      properties: {
++        course: {
++          type: 'string',
++          description: baked
++            ? `Course name or course_id. Optional — defaults to the course on this page ("${baked.name}").`
++            : 'Course name or course_id (from search_courses)',
++        },
++      },
++      ...(baked ? {} : { required: ['course'] }),
++    },
++    annotations: { readOnlyHint: true },
++    async execute(args: any) {
++      const ref = String(args?.course ?? '').trim() || (baked ? baked.uuid : '')
++      if (!ref)
++        return mcpJson({ error: 'Pass course: a course name or course_id.' })
++      try {
++        const { course, catalog } = await resolveCourse(orgslug, ref)
++        if (!course) {
++          return mcpJson({
++            status: 'not_found',
++            query: ref,
++            note: `No course matches "${ref}". Published courses: ${catalog.map((c) => c.name).join('; ') || 'none'}.`,
++          })
++        }
++        const uuid = cleanUuid(course.course_uuid)
++        const session = ctx.getSession()
++        const token = session?.data?.tokens?.access_token
++        const meta = await getCourseMetadata(uuid, {}, token, { slim: true })
++        let enrollment: any
++        if (ctx.isAuthed && token) {
++          try {
++            const trail = await fetchTrail(await getOrgId(ctx), token)
++            const run = findRun(trail, uuid)
++            enrollment = run
++              ? { enrolled: true, ...runProgress(run, meta) }
++              : { enrolled: false }
++          } catch {
++            enrollment = undefined
++          }
++        }
++        const path = coursePath(uuid)
++        const alreadyThere = ctx.currentPath().includes(uuid)
++        if (!alreadyThere) ctx.navigate(path)
++        return mcpJson({
++          name: meta.name,
++          course_id: uuid,
++          description: meta.description,
++          about: meta.about !== meta.description ? meta.about : undefined,
++          learning_outcomes: (meta.learnings || '').split(',').filter(Boolean),
++          tags: meta.tags || undefined,
++          instructors: instructorNames(meta),
++          syllabus: syllabus(meta),
++          enrollment,
++          path,
++          showing: alreadyThere
++            ? undefined
++            : 'The page has navigated to this course.',
++        })
++      } catch {
++        return mcpJson({
++          status: 'error',
++          error:
++            'Could not load the course; the site may be temporarily unavailable. Please try again.',
++        })
++      }
++    },
++  }
++
++  const enrollDescription = isAuthed
++    ? `Enroll the signed-in learner in a ${orgName} course through the school's own enrollment flow (free enrollment — no payment). State-changing: the course is added to the learner's personal learning trail, its lessons unlock, and the page shows the enrolled state. ${baked ? `Called without arguments it enrolls in "${baked.name}" — the course on this page.` : 'Pass course as a name or course_id from search_courses.'} If already enrolled, returns current progress instead of enrolling twice. If a course name is ambiguous, it returns the candidates and enrolls nothing — retry with the exact course_id.`
++    : `Enroll in a ${orgName} course (free enrollment). Enrolling requires a signed-in account: while signed out this tool does NOT enroll — it opens the sign-in page and returns guidance. After the user signs in, call it again to complete the real enrollment. ${baked ? `On this page it targets "${baked.name}" by default.` : 'Pass course as a name or course_id from search_courses.'}`
++
++  const enrollInCourse: WebMCPToolDefinition = {
++    name: 'enroll_in_course',
++    description: enrollDescription,
++    inputSchema: {
++      type: 'object',
++      properties: {
++        course: {
++          type: 'string',
++          description: baked
++            ? `Course name or course_id. Optional — defaults to the course on this page ("${baked.name}").`
++            : 'Course name or course_id (from search_courses)',
++        },
++      },
++      ...(baked ? {} : { required: ['course'] }),
++    },
++    annotations: { readOnlyHint: false },
++    async execute(args: any) {
++      const session = ctx.getSession()
++      if (session?.status === 'loading') {
++        return mcpJson({
++          status: 'retry',
++          message: 'The page session is still resolving — retry in a moment.',
++        })
++      }
++      if (session?.status !== 'authenticated') {
++        ctx.navigate('/login')
++        return mcpJson({
++          status: 'sign_in_required',
++          message: `Enrolling requires a ${orgName} account. The sign-in page is now open — the user should sign in (or create an account at /signup), then call enroll_in_course again to complete enrollment.`,
++          sign_in_path: '/login',
++          signup_path: '/signup',
++        })
++      }
++      const ref = String(args?.course ?? '').trim() || (baked ? baked.uuid : '')
++      if (!ref)
++        return mcpJson({ error: 'Pass course: a course name or course_id.' })
++      const { course, catalog, confident, candidates } = await resolveCourse(
++        orgslug,
++        ref
++      )
++      if (!course) {
++        return mcpJson({
++          status: 'not_found',
++          query: ref,
++          note: `No course matches "${ref}". Published courses: ${catalog.map((c) => c.name).join('; ') || 'none'}.`,
++        })
++      }
++      // Never enroll on a fuzzy resolution (partial-name or scored match, even a
++      // unique one) — surface the candidates and write nothing. Only an exact
++      // course_id or exact name is confident enough to enroll.
++      if (!confident) {
++        return mcpJson({
++          status: 'ambiguous',
++          query: ref,
++          message: `"${ref}" isn't an exact course match — nothing was enrolled. Pick the intended course below and call again with its exact course_id.`,
++          candidates: candidates.map(courseSummary),
++        })
++      }
++      const uuid = cleanUuid(course.course_uuid)
++      const token = session?.data?.tokens?.access_token
++      const orgId = await getOrgId(ctx)
++      if (!isMember(session, orgId)) {
++        ctx.navigate('/signup')
++        return mcpJson({
++          status: 'membership_required',
++          message: `This account is not a member of ${orgName}. The join page is now open — join the school, then call enroll_in_course again.`,
++        })
++      }
++      const meta = await getCourseMetadata(uuid, {}, token, { slim: true })
++      const trail = await fetchTrail(orgId, token)
++      const existing = findRun(trail, uuid)
++      if (existing) {
++        // Visible effect first: land the user on the course so they SEE the
++        // enrolled state (progress ring / Leave course), matching the golden's
++        // ui_effect promise — even though nothing is written this call.
++        const path = coursePath(uuid)
++        if (!ctx.currentPath().includes(uuid)) ctx.navigate(path)
++        return mcpJson({
++          status: 'already_enrolled',
++          course: course.name,
++          course_id: uuid,
++          ...runProgress(existing, meta),
++          path,
++          showing: 'The page shows this course and its enrolled state.',
++          note: 'Already in the learning trail — nothing was changed. Use my_learning to resume.',
++        })
++      }
++      try {
++        await startCourse(`course_${uuid}`, orgslug, token)
++      } catch (err: any) {
++        return mcpJson({
++          status: 'error',
++          message: `Enrollment failed: ${err?.message ?? 'unknown error'}`,
++        })
++      }
++      ctx.invalidateTrail(orgId)
++      const path = coursePath(uuid)
++      if (!ctx.currentPath().includes(uuid)) ctx.navigate(path)
++      const firstLesson = syllabus(meta)[0]?.lessons?.[0] ?? null
++      return mcpJson({
++        status: 'enrolled',
++        course: course.name,
++        course_id: uuid,
++        first_lesson: firstLesson,
++        path,
++        note: 'Enrolled — the course is in the learning trail and the page shows the enrolled state.',
++      })
++    },
++  }
++
++  const myLearning: WebMCPToolDefinition = {
++    name: 'my_learning',
++    description: `The signed-in learner's personal learning state at ${orgName}: every enrolled course with completed/total lessons, progress percent and the next lesson to take. Read-only, session-scoped — no arguments needed. Pass resume ("latest" or a course name/course_id) to also navigate the page to that course's next lesson so the learner continues where they left off. "latest" means the most recently listed enrollment.`,
++    inputSchema: {
++      type: 'object',
++      properties: {
++        resume: {
++          type: 'string',
++          description:
++            'Optional: "latest" (the most recently listed enrollment) or a course name/course_id — navigates to its next lesson',
++        },
++      },
++    },
++    annotations: { readOnlyHint: true },
++    async execute(args: any) {
++      const session = ctx.getSession()
++      const token = session?.data?.tokens?.access_token
++      if (session?.status !== 'authenticated' || !token) {
++        return mcpJson({
++          status: 'sign_in_required',
++          message: 'Session expired — sign in again.',
++        })
++      }
++      try {
++        const orgId = await getOrgId(ctx)
++        const trail = await fetchTrail(orgId, token)
++        const runs: any[] = trail?.runs ?? []
++        const metas = await Promise.all(
++          runs.map((r) =>
++            getCourseMetadata(cleanUuid(r.course?.course_uuid), {}, token, {
++              slim: true,
++            }).catch(() => null)
++          )
++        )
++        const courses = runs.map((run, i) => ({
++          course: run.course?.name,
++          course_id: cleanUuid(run.course?.course_uuid),
++          status: run.status,
++          path: coursePath(run.course?.course_uuid),
++          ...(metas[i] ? runProgress(run, metas[i]) : {}),
++        }))
++        if (courses.length === 0) {
++          return mcpJson({
++            courses: [],
++            note: 'No enrolled courses yet — use search_courses to find one and enroll_in_course to start.',
++          })
++        }
++        const resume = String(args?.resume ?? '')
++          .trim()
++          .toLowerCase()
++        let resumed: any
++        if (resume) {
++          let target: any
++          if (resume === 'latest') {
++            target = courses[courses.length - 1]
++          } else {
++            target = courses.find(
++              (c) =>
++                c.course_id === cleanUuid(resume) ||
++                c.course?.toLowerCase() === resume
++            )
++            const candidates = target
++              ? []
++              : courses.filter((c) => c.course?.toLowerCase().includes(resume))
++            if (candidates.length > 1) {
++              resumed = {
++                status: 'ambiguous',
++                error: `Multiple enrolled courses match "${resume}". Pass the exact course_id.`,
++                candidates: candidates.map(({ course, course_id }) => ({
++                  course,
++                  course_id,
++                })),
++              }
++            } else {
++              target = candidates[0]
++            }
++          }
++          const dest = target?.next_lesson?.path ?? target?.path
++          if (target && dest) {
++            ctx.navigate(dest)
++            resumed = {
++              course: target.course,
++              navigated_to: dest,
++              note:
++                resume === 'latest'
++                  ? '"latest" selected the most recently listed enrollment.'
++                  : undefined,
++            }
++          } else if (!resumed) {
++            resumed = {
++              error: `No enrolled course matches "${resume}". Enrolled courses: ${courses.map((c) => `${c.course} (${c.course_id})`).join('; ')}.`,
++            }
++          }
++        }
++        return mcpJson({ courses, resumed })
++      } catch {
++        return mcpJson({
++          status: 'error',
++          error:
++            'Could not load learning progress; the site may be temporarily unavailable. Please try again.',
++        })
++      }
++    },
++  }
++
++  // The learner-side tools that matter — enrolment, progress — need a session,
++  // and an agent working through WebMCP alone has no login form it may fill in.
++  // Signed out, this is the way in. It calls the app's own credentials sign-in
++  // (AuthContext), which sets the session cookies exactly as the login page
++  // does; the tool holds no credentials itself. The registration effect keys on
++  // session status, so the logged-in set replaces this one as soon as it lands.
++  const signInTool: WebMCPToolDefinition = {
++    name: 'sign_in',
++    description: `Sign in to ${orgName} with an email and password. Do this first for anything tied to an account — enrolling in a course, or reading your progress — because those tools only exist once signed in. Browsing and course questions do not need it. After signing in, re-list the tools to see what became available.`,
++    inputSchema: {
++      type: 'object',
++      properties: {
++        email: { type: 'string', description: 'Account email address.' },
++        password: { type: 'string', description: 'Account password.' },
++      },
++      required: ['email', 'password'],
++      additionalProperties: false,
++    },
++    execute: async (args: any) => {
++      const email = typeof args?.email === 'string' ? args.email.trim() : ''
++      const password = typeof args?.password === 'string' ? args.password : ''
++      if (!email || !password) {
++        return mcpJson({
++          status: 'error',
++          error: 'Both email and password are required to sign in.',
++        })
++      }
++      let result: any
++      try {
++        result = await ctx.signIn(email, password)
++      } catch {
++        return mcpJson({
++          status: 'error',
++          error:
++            'The sign-in request did not complete; the site may be temporarily unavailable. Please try again.',
++        })
++      }
++      if (!result?.ok) {
++        // The context reports failures as a JSON string so callers can tell a
++        // wrong password from a rate limit — pass that distinction on rather
++        // than flattening it to "login failed".
++        let detail: any = null
++        try {
++          detail = result?.error ? JSON.parse(result.error) : null
++        } catch {
++          detail = null
++        }
++        return mcpJson({
++          status: 'error',
++          error:
++            detail?.message ||
++            'Sign-in failed — check the email and password and try again.',
++          code: detail?.code || undefined,
++          retry_after_seconds: detail?.retry_after || undefined,
++        })
++      }
++      return mcpJson({
++        status: 'signed_in',
++        email,
++        next: 'Signed in. The account tools (enrol, my_learning) are registered now — re-list the tools to use them.',
++      })
++    },
++  }
++
++  const tools = [askSite, searchCourses, getCourse, enrollInCourse]
++  if (isAuthed) tools.push(myLearning)
++  else tools.push(signInTool)
++  return tools
++}
++
++export default function WebMCPTools({ orgslug }: { orgslug: string }) {
++  const org = useOrg() as any
++  const session = useLHSession() as any
++  const { signIn } = useAuth()
++  const router = useRouter()
++  const pathname = usePathname()
++  const queryClient = useQueryClient()
++
++  // Refs so execute() reads live state without forcing re-registration.
++  const sessionRef = useRef(session)
++  sessionRef.current = session
++  const signInRef = useRef(signIn)
++  signInRef.current = signIn
++  const orgRef = useRef(org)
++  orgRef.current = org
++  const routerRef = useRef(router)
++  routerRef.current = router
++  const pathnameRef = useRef(pathname)
++  pathnameRef.current = pathname
++
++  // Course/activity pages bake the viewed course into the registration.
++  const bakedUuid = useMemo(
++    () => pathname?.match(/\/course\/([0-9a-fA-F-]{36})/)?.[1] ?? null,
++    [pathname]
++  )
++  const { data: bakedCourse, isError: bakedError } = useQuery({
++    queryKey: queryKeys.courses.meta(bakedUuid ?? 'none'),
++    queryFn: () =>
++      getCourseMetadata(
++        bakedUuid!,
++        {},
++        sessionRef.current?.data?.tokens?.access_token,
++        {
++          slim: true,
++        }
++      ),
++    enabled: !!bakedUuid,
++    staleTime: 60_000,
++  })
++
++  // Register only on an EXPLICITLY resolved session status. Read the RAW status
++  // without coercing a missing/unknown value to 'unauthenticated' — otherwise a
++  // signed-in user whose session is still hydrating (context not yet mounted, or
++  // status transiently undefined) would briefly get the logged-out toolset, whose
++  // enroll navigates them to /login (and the tenancy proxy bounces signed-in users
++  // off /login). The loading|undefined -> authenticated|unauthenticated transition
++  // re-fires the effect, so the correct set registers as soon as status resolves.
++  const sessionStatus = session?.status
++  const orgName = org?.name
++  const bakedName = bakedUuid ? (bakedCourse?.name ?? null) : null
++
++  useEffect(() => {
++    if (!getModelContext()) return
++    // Gate on an explicit resolved status (covers 'loading', undefined, null).
++    if (
++      sessionStatus !== 'authenticated' &&
++      sessionStatus !== 'unauthenticated'
++    )
++      return
++    // On a course/activity page, defer until the baked course name resolves so we
++    // never flash the generic (course-required) variants while metadata loads; if
++    // that lookup errored, fall through and register the generic set as a fallback.
++    if (bakedUuid && !bakedName && !bakedError) return
++    const controller = new AbortController()
++    const ctx: ToolContext = {
++      orgslug,
++      isAuthed: sessionStatus === 'authenticated',
++      baked:
++        bakedUuid && bakedName ? { uuid: bakedUuid, name: bakedName } : null,
++      getSession: () => sessionRef.current,
++      getOrg: () => orgRef.current,
++      signIn: (email, password) =>
++        signInRef.current('credentials', { email, password, redirect: false }),
++      navigate: (path) => routerRef.current.push(path),
++      currentPath: () => pathnameRef.current ?? '',
++      invalidateTrail: (orgId) =>
++        queryClient.invalidateQueries({ queryKey: queryKeys.trail.org(orgId) }),
++    }
++    registerWebMCPTools(buildTools(ctx), controller.signal)
++    return () => controller.abort()
++  }, [
++    orgslug,
++    sessionStatus,
++    bakedUuid,
++    bakedName,
++    bakedError,
++    orgName,
++    queryClient,
++  ])
++
++  return null
++}
+diff --git a/apps/web/components/WebMCP/webmcp.ts b/apps/web/components/WebMCP/webmcp.ts
+new file mode 100644
+index 00000000..6203aec3
+--- /dev/null
++++ b/apps/web/components/WebMCP/webmcp.ts
+@@ -0,0 +1,42 @@
++// WebMCP core helpers (webmachinelearning/webmcp draft).
++// Feature-detects document.modelContext / navigator.modelContext and no-ops
++// when the browser doesn't expose the API.
++
++export interface WebMCPToolDefinition {
++  name: string
++  description: string
++  inputSchema: Record<string, unknown>
++  annotations?: { readOnlyHint?: boolean }
++  execute: (_args: any) => Promise<{ content: Array<{ type: 'text'; text: string }> }>
++}
++
++export function getModelContext(): any | null {
++  if (typeof document === 'undefined') return null
++  return (
++    (document as any).modelContext ??
++    (typeof navigator !== 'undefined' ? (navigator as any).modelContext : null) ??
++    null
++  )
++}
++
++// MCP-style content block from a structured payload.
++export function mcpJson(payload: unknown) {
++  return { content: [{ type: 'text' as const, text: JSON.stringify(payload) }] }
++}
++
++// Register a set of tools bound to one AbortSignal (abort = unregister all).
++// Duplicate names throw in the native implementation — warn, never crash the app.
++export function registerWebMCPTools(
++  tools: WebMCPToolDefinition[],
++  signal: AbortSignal
++): void {
++  const mc = getModelContext()
++  if (!mc?.registerTool || signal.aborted) return
++  for (const tool of tools) {
++    try {
++      mc.registerTool(tool, { signal })
++    } catch (err) {
++      console.warn(`[webmcp] failed to register ${tool.name}:`, err)
++    }
++  }
++}

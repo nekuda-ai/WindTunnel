@@ -1,0 +1,6 @@
+{
+  "console": [
+    "^Warning: \\[antd: notification\\] Static function can not consume context like dynamic theme\\. Please use 'App' component instead\\.$"
+  ],
+  "network": []
+}

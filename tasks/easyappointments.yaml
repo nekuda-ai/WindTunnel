@@ -1,0 +1,65 @@
+# easyappointments — public booking wizard + admin backend.
+# Seeded (fixtures/easyappointments/seed-services.sql): company "Riverside
+# Wellness Studio"; services Consultation (30 min, free), Haircut (45 min,
+# 35.00 USD), Deep Tissue Massage (60 min, 90.00 USD); provider Jane Doe;
+# customer James Doe; zero appointments. Booking is probe-verifiable through
+# the `appointments` oracle probe. Admin: administrator / administrator.
+tasks:
+  - id: ea-1
+    tier: answer
+    prompt: What services does this studio offer? List all of them.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [consultation, haircut, massage] }
+
+  - id: ea-2
+    tier: answer
+    prompt: How much does a haircut cost, and how long does the appointment take?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: ["35", "45"] }
+
+  - id: ea-3
+    tier: answer
+    prompt: Which of the studio's services is free of charge?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [consultation] }
+
+  - id: ea-4
+    tier: answer
+    prompt: Who provides the Deep Tissue Massage service? Report the provider's name.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [jane] }
+
+  - id: ea-5
+    tier: act-short
+    prompt: Find out whether the studio takes bookings for a service called "Yoga Class". Answer with the single word AVAILABLE or MISSING.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, matches: "\\bmissing\\b", not_contains: ["not missing", "available or missing"] }
+
+  - id: ea-6
+    tier: transaction
+    prompt: Book a Haircut appointment with Jane Doe at the earliest available slot for the customer Alex Runner, email alex.runner@example.com, phone +1 555 0199. Confirm the booking went through.
+    # Probe-verified: the appointments probe joins service+customer on the
+    # booked appointment. Slot choice is left open (working plan is installer
+    # default), so any successfully booked slot passes.
+    max_steps: { webmcp: 12, cu: 35, structured: 28 }
+    predicate:
+      probe: appointments
+      assert:
+        contains: { service: { name: Haircut }, customer: { email: alex.runner@example.com } }
+
+  - id: ea-7
+    tier: transaction
+    prompt: Book a Consultation at the earliest available slot for Casey Reed, email casey.reed@example.com, phone +1 555 0177 — then cancel that same appointment with the reason "schedule conflict". Report the cancellation result.
+    # Booking creates the customer; cancellation deletes only the appointment.
+    max_steps: { webmcp: 12, cu: 35, structured: 28 }
+    predicate:
+      probe: database
+      assert:
+        contains: { customers: 2 }
+
+  - id: ea-8
+    auth: true
+    tier: act-long
+    prompt: Log in to the admin backend at /index.php/login as administrator with password administrator, open the customers page, and report the name of the registered customer.
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate: { type: answer, contains: [james] }

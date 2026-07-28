@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "easyappointments",
+  "source": {
+    "repository": "https://github.com/alextselegidis/easyappointments.git",
+    "revision": "bf7e4d227bb138c610004f5af440e7313b8f0ce4"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-mount-pinned-dependencies",
+    "resetStrategy": "database-dump",
+    "browserStateReset": "fresh-browser-context",
+    "applicationPort": 80,
+    "healthPath": "/",
+    "composeOverlay": "compose.overlay.yaml",
+    "applicationService": "app",
+    "requiredServices": ["db", "app"],
+    "healthChecks": [
+      {
+        "path": "/",
+        "contains": "Easy!Appointments"
+      },
+      {
+        "path": "/assets/js/app.js",
+        "contains": "App"
+      }
+    ],
+    "images": [
+      {
+        "name": "application",
+        "reference": "alextselegidis/easyappointments@sha256:4faa30476ad7687334875bd674162b98f07f8e09b922787a8a81f8cc83e0859c"
+      },
+      {
+        "name": "mysql",
+        "reference": "mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b"
+      }
+    ]
+  },
+  "fixtures": {
+    "installSeed": "Upstream console install creates administrator/administrator, Service, Jane Doe provider, and James Doe customer",
+    "dependencies": "Vendor tree copied from the pinned application image only after its composer.lock matches the checked-out source"
+  },
+  "acceptance": {
+    "publicPath": "/",
+    "paths": ["/", "/index.php/login", "/index.php/calendar"],
+    "liveness": {
+      "file": "assets/js/app.js",
+      "language": "javascript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "database",
+      "arguments": {},
+      "assert": ".administrators >= 1 and .providers >= 1 and .services >= 1 and (.serviceNames | index(\"Service\") != null)",
+      "mutation": {
+        "probe": "rename_service",
+        "arguments": {"from": "Service", "to": "WebMCP Reset Sentinel"},
+        "assert": ".affectedRows == 1 and (.serviceNames | index(\"WebMCP Reset Sentinel\") != null)"
+      },
+      "resetAssert": ".administrators >= 1 and .providers >= 1 and .services >= 1 and (.serviceNames | index(\"Service\") != null) and (.serviceNames | index(\"WebMCP Reset Sentinel\") == null)"
+    }
+  },
+  "actors": [
+    {
+      "id": "administrator",
+      "description": "Local EasyAppointments administrator / administrator account",
+      "setup": "actors/administrator.js",
+      "path": "/index.php/calendar",
+      "expect": "Calendar"
+    }
+  ]
+}

@@ -1,0 +1,1153 @@
+diff --git a/application/config/autoload.php b/application/config/autoload.php
+index be63c0ff..050308e4 100644
+--- a/application/config/autoload.php
++++ b/application/config/autoload.php
+@@ -86,6 +86,7 @@ $autoload['helper'] = [
+     'string',
+     'url',
+     'validation',
++    'webmcp',
+ ];
+ 
+ /*
+diff --git a/application/helpers/webmcp_helper.php b/application/helpers/webmcp_helper.php
+new file mode 100644
+index 00000000..13d419ab
+--- /dev/null
++++ b/application/helpers/webmcp_helper.php
+@@ -0,0 +1,76 @@
++<?php defined('BASEPATH') or exit('No direct script access allowed');
++
++/* ----------------------------------------------------------------------------
++ * Easy!Appointments - WebMCP reference implementation
++ *
++ * Exposes a compact, whole-site content bundle to the WebMCP page module
++ * (assets/js/webmcp/webmcp.js) via script vars. Public layouts call
++ * webmcp_script_vars() right before the "js_vars_script" component renders,
++ * so the bundle rides the same window.vars() channel the app already uses.
++ *
++ * The bundle only contains data the site already shows or enforces publicly:
++ * bookable services, public provider info, business hours, booking policies
++ * and the configured legal documents. No credentials or private records.
++ * ---------------------------------------------------------------------------- */
++
++if (!function_exists('webmcp_script_vars')) {
++    /**
++     * Register the WebMCP content bundle as script vars for the current page.
++     */
++    function webmcp_script_vars(): void
++    {
++        if (!is_app_installed()) {
++            return; // Nothing to expose while the app is not installed yet.
++        }
++
++        /** @var EA_Controller $CI */
++        $CI = &get_instance();
++
++        $CI->load->model('services_model');
++        $CI->load->model('providers_model');
++
++        $services = $CI->services_model->get_available_services(true);
++
++        $service_fields = ['id', 'name', 'duration', 'price', 'currency', 'description', 'location'];
++
++        foreach ($services as &$service) {
++            $CI->services_model->only($service, $service_fields);
++        }
++
++        $providers = $CI->providers_model->get_available_providers(true);
++
++        $provider_fields = ['id', 'first_name', 'last_name', 'services', 'timezone'];
++
++        foreach ($providers as &$provider) {
++            $CI->providers_model->only($provider, $provider_fields);
++        }
++
++        $legal = [];
++
++        if (setting('display_terms_and_conditions') === '1') {
++            $legal['terms_and_conditions'] = trim(strip_tags((string) setting('terms_and_conditions_content')));
++        }
++
++        if (setting('display_privacy_policy') === '1') {
++            $legal['privacy_policy'] = trim(strip_tags((string) setting('privacy_policy_content')));
++        }
++
++        script_vars([
++            'webmcp_content' => [
++                'company' => [
++                    'name' => setting('company_name'),
++                    'email' => setting('company_email'),
++                    'link' => setting('company_link'),
++                ],
++                'services' => $services,
++                'providers' => filter_sensitive_users_data($providers),
++                'working_plan' => json_decode((string) setting('company_working_plan'), true),
++                'booking_policies' => [
++                    'book_advance_timeout_minutes' => (int) setting('book_advance_timeout'),
++                    'future_booking_limit_days' => (int) setting('future_booking_limit'),
++                ],
++                'legal' => $legal,
++            ],
++        ]);
++    }
++}
+diff --git a/application/views/layouts/account_layout.php b/application/views/layouts/account_layout.php
+index 52e56a8a..f8035577 100644
+--- a/application/views/layouts/account_layout.php
++++ b/application/views/layouts/account_layout.php
+@@ -64,9 +64,12 @@
+ <script src="<?= asset_url('assets/js/http/account_http_client.js') ?>"></script>
+ <script src="<?= asset_url('assets/js/http/localization_http_client.js') ?>"></script>
+ 
++<?php webmcp_script_vars(); ?>
+ <?php component('js_vars_script'); ?>
+ <?php component('js_lang_script'); ?>
+ 
++<script src="<?= asset_url('assets/js/webmcp/webmcp.js') ?>"></script>
++
+ <?php slot('scripts'); ?>
+ 
+ </body>
+diff --git a/application/views/layouts/backend_layout.php b/application/views/layouts/backend_layout.php
+index f07f0748..6721baca 100644
+--- a/application/views/layouts/backend_layout.php
++++ b/application/views/layouts/backend_layout.php
+@@ -63,9 +63,12 @@
+ <script src="<?= asset_url('assets/js/layouts/backend_layout.js') ?>"></script>
+ <script src="<?= asset_url('assets/js/http/localization_http_client.js') ?>"></script>
+ 
++<?php webmcp_script_vars(); ?>
+ <?php component('js_vars_script'); ?>
+ <?php component('js_lang_script'); ?>
+ 
++<script src="<?= asset_url('assets/js/webmcp/webmcp.js') ?>"></script>
++
+ <?php slot('scripts'); ?>
+ 
+ </body>
+diff --git a/application/views/layouts/booking_layout.php b/application/views/layouts/booking_layout.php
+index da1124c0..a57aa825 100644
+--- a/application/views/layouts/booking_layout.php
++++ b/application/views/layouts/booking_layout.php
+@@ -94,9 +94,12 @@
+ <script src="<?= asset_url('assets/js/layouts/booking_layout.js') ?>"></script>
+ <script src="<?= asset_url('assets/js/http/localization_http_client.js') ?>"></script>
+ 
++<?php webmcp_script_vars(); ?>
+ <?php component('js_vars_script'); ?>
+ <?php component('js_lang_script'); ?>
+ 
++<script src="<?= asset_url('assets/js/webmcp/webmcp.js') ?>"></script>
++
+ <?php component('google_analytics_script', ['google_analytics_code' => vars('google_analytics_code')]); ?>
+ <?php component('matomo_analytics_script', [
+     'matomo_analytics_url' => vars('matomo_analytics_url'),
+diff --git a/application/views/layouts/message_layout.php b/application/views/layouts/message_layout.php
+index cf8f15b5..1f0a2598 100644
+--- a/application/views/layouts/message_layout.php
++++ b/application/views/layouts/message_layout.php
+@@ -82,9 +82,12 @@
+ <script src="<?= asset_url('assets/js/layouts/message_layout.js') ?>"></script>
+ <script src="<?= asset_url('assets/js/http/localization_http_client.js') ?>"></script>
+ 
++<?php webmcp_script_vars(); ?>
+ <?php component('js_vars_script'); ?>
+ <?php component('js_lang_script'); ?>
+ 
++<script src="<?= asset_url('assets/js/webmcp/webmcp.js') ?>"></script>
++
+ <?php slot('scripts'); ?>
+ 
+ </body>
+diff --git a/assets/js/webmcp/webmcp.js b/assets/js/webmcp/webmcp.js
+new file mode 100644
+index 00000000..fcc299a4
+--- /dev/null
++++ b/assets/js/webmcp/webmcp.js
+@@ -0,0 +1,985 @@
++/* ----------------------------------------------------------------------------
++ * Easy!Appointments - WebMCP reference implementation
++ *
++ * Registers page-appropriate WebMCP tools (document.modelContext.registerTool)
++ * so a browser agent can answer visitor questions and complete the booking
++ * journey through the site's own logic, while the visible booking wizard
++ * stays in sync with everything the agent does.
++ *
++ * Registration map (per page document — navigation drops and re-registers):
++ * - Every page carrying the content bundle (booking, confirmation/message,
++ *   login, and the back office): ask_site, list_services (read-only, fed by
++ *   the server-injected "webmcp_content" bundle — see
++ *   application/helpers/webmcp_helper.php).
++ * - Signed out: sign_in. Signed in (back office): list_customers. A successful
++ *   sign_in registers the back-office tools in place, so an agent that can
++ *   only call tools is never stranded at the login wall with nothing to call.
++ * - Booking wizard page: check_availability, book_appointment,
++ *   cancel_appointment. In manage mode (emailed appointment link) the
++ *   book_appointment registration becomes "reschedule this appointment"
++ *   and cancel_appointment bakes in the loaded appointment.
++ * - Booking confirmation page: cancel_appointment baked to the appointment
++ *   hash in the URL.
++ *
++ * Feature-detects the WebMCP API and no-ops when it is absent.
++ * ---------------------------------------------------------------------------- */
++
++(function () {
++    'use strict';
++
++    const modelContext = document.modelContext ?? navigator.modelContext;
++
++    if (!modelContext || typeof modelContext.registerTool !== 'function') {
++        return; // WebMCP not available in this browser.
++    }
++
++    const content = window.vars ? vars('webmcp_content') : undefined;
++
++    if (!content) {
++        return; // Not a public content page (e.g. app not installed yet).
++    }
++
++    const abortController = new AbortController();
++    const signal = abortController.signal;
++
++    const WEEKDAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
++
++    function siteUrl(uri) {
++        return App.Utils.Url.siteUrl(uri);
++    }
++
++    function bookingPageUrl() {
++        return vars('base_url');
++    }
++
++    function textResult(payload) {
++        return {content: [{type: 'text', text: JSON.stringify(payload, null, 2)}]};
++    }
++
++    function errorResult(message, extra) {
++        return textResult(Object.assign({ok: false, error: message}, extra || {}));
++    }
++
++    function findService(serviceRef) {
++        return content.services.find(
++            (service) =>
++                Number(service.id) === Number(serviceRef) ||
++                String(service.name).toLowerCase() === String(serviceRef).toLowerCase().trim(),
++        );
++    }
++
++    function providersForService(serviceId) {
++        return content.providers.filter((provider) =>
++            provider.services.some((providerServiceId) => Number(providerServiceId) === Number(serviceId)),
++        );
++    }
++
++    function providerName(provider) {
++        return `${provider.first_name} ${provider.last_name}`.trim();
++    }
++
++    function serviceSummary(service) {
++        return {
++            id: Number(service.id),
++            name: service.name,
++            duration_minutes: Number(service.duration),
++            price: Number(service.price) > 0 ? `${Number(service.price).toFixed(2)} ${service.currency}`.trim() : 'free',
++            location: service.location || null,
++            description: service.description || null,
++            providers: providersForService(service.id).map((provider) => ({
++                id: Number(provider.id),
++                name: providerName(provider),
++            })),
++        };
++    }
++
++    function workingPlanReadable() {
++        const plan = content.working_plan || {};
++
++        return WEEKDAYS.map((day) => {
++            const dayPlan = plan[day];
++
++            if (!dayPlan) {
++                return `${day}: closed`;
++            }
++
++            const breaks = (dayPlan.breaks || [])
++                .map((dayBreak) => `${dayBreak.start}-${dayBreak.end}`)
++                .join(', ');
++
++            return `${day}: ${dayPlan.start}-${dayPlan.end}` + (breaks ? ` (break ${breaks})` : '');
++        });
++    }
++
++    /**
++     * Poll until the callback returns a truthy value (used to wait for the
++     * wizard's own async renders — the tool drives the page, never bypasses it).
++     */
++    function waitFor(callback, timeout = 8000, interval = 150) {
++        return new Promise((resolve, reject) => {
++            const start = Date.now();
++
++            const timer = setInterval(() => {
++                const result = callback();
++
++                if (result) {
++                    clearInterval(timer);
++                    resolve(result);
++                    return;
++                }
++
++                if (Date.now() - start > timeout) {
++                    clearInterval(timer);
++                    reject(new Error('Timed out while waiting for the page to update.'));
++                }
++            }, interval);
++        });
++    }
++
++    function postForm(uri, data) {
++        return new Promise((resolve, reject) => {
++            $.ajax({url: siteUrl(uri), method: 'post', data: data, dataType: 'json', global: false})
++                .done(resolve)
++                .fail((jqXHR) => {
++                    let message;
++
++                    try {
++                        message = JSON.parse(jqXHR.responseText).message;
++                    } catch (error) {
++                        message = jqXHR.responseText || 'Request failed';
++                    }
++
++                    reject(new Error(message));
++                });
++        });
++    }
++
++    /**
++     * Fetch the real open slots for a service/provider/date through the
++     * booking wizard's own endpoint (times are business-local, "HH:mm").
++     */
++    function fetchAvailableHours(serviceId, providerId, date) {
++        const service = findService(serviceId);
++
++        return postForm('booking/get_available_hours', {
++            csrf_token: vars('csrf_token'),
++            service_id: serviceId,
++            provider_id: providerId,
++            selected_date: date,
++            service_duration: service ? service.duration : 15,
++            manage_mode: Number(vars('manage_mode') || 0),
++            appointment_id: vars('manage_mode') ? vars('appointment_data').id : null,
++        });
++    }
++
++    /**
++     * Resolve the provider to use for a service: explicit argument, current
++     * wizard selection, the only provider that serves the service, or the
++     * site's own "any provider" option when enabled.
++     */
++    function resolveProvider(service, providerRef) {
++        const candidates = providersForService(service.id);
++
++        if (providerRef !== undefined && providerRef !== null && providerRef !== '') {
++            const provider = candidates.find(
++                (candidate) =>
++                    Number(candidate.id) === Number(providerRef) ||
++                    providerName(candidate).toLowerCase() === String(providerRef).toLowerCase().trim(),
++            );
++
++            return provider
++                ? {id: String(provider.id), provider: provider}
++                : {
++                      error:
++                          `Provider "${providerRef}" does not offer "${service.name}". ` +
++                          `Available providers: ${candidates.map((candidate) => `${candidate.id} (${providerName(candidate)})`).join(', ')}`,
++                  };
++        }
++
++        const $selectProvider = $('#select-provider');
++        const selectedProviderId = $selectProvider.length ? $selectProvider.val() : null;
++
++        if (
++            selectedProviderId &&
++            selectedProviderId !== 'any-provider' &&
++            candidates.some((candidate) => Number(candidate.id) === Number(selectedProviderId))
++        ) {
++            const provider = candidates.find((candidate) => Number(candidate.id) === Number(selectedProviderId));
++            return {id: String(provider.id), provider: provider};
++        }
++
++        if (candidates.length === 1) {
++            return {id: String(candidates[0].id), provider: candidates[0]};
++        }
++
++        if (Boolean(Number(vars('display_any_provider')))) {
++            return {id: 'any-provider', provider: null};
++        }
++
++        return {
++            error:
++                `Multiple providers offer "${service.name}" — pass provider_id. ` +
++                `Options: ${candidates.map((candidate) => `${candidate.id} (${providerName(candidate)})`).join(', ')}`,
++        };
++    }
++
++    /**
++     * Reflect a service/provider/date selection in the visible booking wizard,
++     * using the wizard's own handlers (select change events, flatpickr, the
++     * page's own available-hours fetch + render).
++     */
++    function syncWizardSelection(serviceId, providerId, date) {
++        const $selectService = $('#select-service');
++        const $selectProvider = $('#select-provider');
++        const $selectDate = $('#select-date');
++
++        if (String($selectService.val()) !== String(serviceId)) {
++            $selectService.val(String(serviceId)).trigger('change');
++        }
++
++        if (String($selectProvider.val()) !== String(providerId)) {
++            $selectProvider.val(String(providerId)).trigger('change');
++        }
++
++        // The wizard's datepicker expects a Date object (its own handlers pass moment().toDate()).
++        App.Utils.UI.setDateTimePickerValue($selectDate, moment(date, 'YYYY-MM-DD').toDate());
++        App.Http.Booking.getAvailableHours(date); // Site's own renderer fills #available-hours.
++    }
++
++    // ------------------------------------------------------------------------
++    // ask_site — universal, read-only retrieval over the site's own content
++    // ------------------------------------------------------------------------
++
++    function buildSections() {
++        const bookingUrl = bookingPageUrl();
++        const sections = [];
++
++        content.services.forEach((service) => {
++            const summary = serviceSummary(service);
++            sections.push({
++                title: `Service: ${service.name}`,
++                text:
++                    `${service.name} — ${summary.duration_minutes} minutes, ${summary.price}.` +
++                    (service.location ? ` Location: ${service.location}.` : '') +
++                    (service.description ? ` ${service.description}` : '') +
++                    ` Offered by: ${summary.providers.map((provider) => provider.name).join(', ') || 'no provider yet'}.`,
++                source: bookingUrl,
++                keywords: 'service services offer offerings treatment book price cost duration long',
++            });
++        });
++
++        content.providers.forEach((provider) => {
++            const services = content.services
++                .filter((service) => provider.services.some((id) => Number(id) === Number(service.id)))
++                .map((service) => service.name);
++            sections.push({
++                title: `Provider: ${providerName(provider)}`,
++                text: `${providerName(provider)} provides: ${services.join(', ') || 'no services yet'}. Time zone: ${provider.timezone}.`,
++                source: bookingUrl,
++                keywords: 'provider staff who specialist person team member',
++            });
++        });
++
++        sections.push({
++            title: 'Business hours',
++            text: `Weekly working hours (business-local time): ${workingPlanReadable().join('; ')}.`,
++            source: bookingUrl,
++            keywords: 'hours open opening closed schedule when time working days weekend',
++        });
++
++        sections.push({
++            title: 'Booking policies',
++            text:
++                `Appointments must be booked, rescheduled or cancelled at least ` +
++                `${content.booking_policies.book_advance_timeout_minutes} minutes before the start time, ` +
++                `and can be booked up to ${content.booking_policies.future_booking_limit_days} days in advance. ` +
++                `Each confirmation email contains a personal appointment link used to reschedule or cancel.`,
++            source: bookingUrl,
++            keywords: 'policy policies cancel cancellation reschedule change appointment rules notice how far advance',
++        });
++
++        sections.push({
++            title: `About ${content.company.name}`,
++            text: `${content.company.name} — online appointment scheduling. Email: ${content.company.email}. Website: ${content.company.link}.`,
++            source: bookingUrl,
++            keywords: 'contact email company about who website phone reach',
++        });
++
++        if (content.legal.terms_and_conditions) {
++            sections.push({
++                title: 'Terms & conditions',
++                text: content.legal.terms_and_conditions,
++                source: bookingUrl,
++                keywords: 'terms conditions legal agreement',
++            });
++        }
++
++        if (content.legal.privacy_policy) {
++            sections.push({
++                title: 'Privacy policy',
++                text: content.legal.privacy_policy,
++                source: bookingUrl,
++                keywords: 'privacy policy data personal information gdpr',
++            });
++        }
++
++        return sections;
++    }
++
++    const STOPWORDS = new Set([
++        'the', 'and', 'you', 'your', 'yours', 'for', 'can', 'could', 'how', 'what', 'when', 'who', 'where',
++        'which', 'why', 'are', 'does', 'did', 'with', 'have', 'has', 'had', 'this', 'that', 'there', 'they',
++        'will', 'would', 'should', 'may', 'might', 'must', 'about', 'any', 'some', 'get', 'need', 'want',
++        'tell', 'know', 'take', 'much', 'many', 'more', 'from', 'into', 'not', 'but', 'all', 'was', 'were',
++        'been', 'being', 'also', 'just', 'like', 'please', 'appointment', 'appointments',
++    ]);
++
++    function askSite(args) {
++        const query = String(args.query || '').toLowerCase();
++
++        if (!query.trim()) {
++            return errorResult('Provide a non-empty "query".');
++        }
++
++        const terms = query.split(/[^a-z0-9]+/).filter((term) => term.length > 2 && !STOPWORDS.has(term));
++        const sections = buildSections();
++
++        const scored = sections
++            .map((section) => {
++                const haystack = `${section.title} ${section.text} ${section.keywords}`.toLowerCase();
++                const score = terms.reduce((sum, term) => {
++                    const stem = term.endsWith('s') ? term.slice(0, -1) : term;
++                    return sum + (haystack.includes(term) || haystack.includes(stem) ? 1 : 0);
++                }, 0);
++                return {section, score};
++            })
++            .filter((entry) => entry.score > 0)
++            .sort((a, b) => b.score - a.score)
++            .slice(0, 4);
++
++        return textResult({
++            ok: true,
++            query: args.query,
++            results: scored.map((entry) => ({
++                title: entry.section.title,
++                content: entry.section.text,
++                source: entry.section.source,
++            })),
++            note: scored.length
++                ? 'Compose the answer from these site content sections.'
++                : 'No matching site content — tell the user the site does not cover this topic.',
++        });
++    }
++
++    // ------------------------------------------------------------------------
++    // Registrations
++    // ------------------------------------------------------------------------
++
++    modelContext.registerTool(
++        {
++            name: 'ask_site',
++            description:
++                `Read-only: answer questions about ${content.company.name} from the site's own content — ` +
++                'offered services (with prices and durations), providers, business hours, booking/cancellation ' +
++                'policies and contact details. Returns matching content sections plus source URLs; compose the ' +
++                'answer from them. Use for any "what/when/who/how" question about this business.',
++            inputSchema: {
++                type: 'object',
++                properties: {
++                    query: {type: 'string', description: 'The visitor question, in natural language.'},
++                },
++                required: ['query'],
++                additionalProperties: false,
++            },
++            annotations: {readOnlyHint: true},
++            execute: async (args) => askSite(args || {}),
++        },
++        {signal},
++    );
++
++    modelContext.registerTool(
++        {
++            name: 'list_services',
++            description:
++                'Read-only: list every bookable service with id, duration, price, location, description and the ' +
++                'providers who offer it. Use the returned service id (and provider id) with check_availability ' +
++                'and book_appointment.',
++            inputSchema: {type: 'object', properties: {}, additionalProperties: false},
++            annotations: {readOnlyHint: true},
++            execute: async () =>
++                textResult({
++                    ok: true,
++                    services: content.services.map(serviceSummary),
++                    booking_page: bookingPageUrl(),
++                }),
++        },
++        {signal},
++    );
++
++    // ------------------------------------------------------------------------
++    // Back office: sign-in and the tools it unlocks
++    //
++    // The back office is only reachable with a session, and an agent working
++    // through WebMCP has no login form it may touch — so signed out we expose
++    // sign_in, and nothing else from this section. On success it registers the
++    // back-office tools straight away rather than navigating: the endpoints are
++    // session-cookie authenticated and work from whichever page the agent is
++    // on, so a page load would cost a round trip and buy nothing.
++    //
++    // A direct visit to a back-office page (backend_layout) is already signed
++    // in, so the same tools register up front there.
++    // ------------------------------------------------------------------------
++
++    const signedIn = Boolean(window.vars && vars('user_id'));
++
++    function customerSummary(customer) {
++        return {
++            id: customer.id,
++            first_name: customer.first_name,
++            last_name: customer.last_name,
++            email: customer.email,
++            phone_number: customer.phone_number,
++        };
++    }
++
++    function registerBackOfficeTools() {
++        modelContext.registerTool(
++            {
++                name: 'list_customers',
++                description:
++                    'Read-only: list the customer records held in the back office — name, email and phone for ' +
++                    'each. Optionally narrow with a keyword (matched against name, email and phone). Requires a ' +
++                    'signed-in session: call sign_in first if it reports you are not signed in.',
++                inputSchema: {
++                    type: 'object',
++                    properties: {
++                        keyword: {type: 'string', description: 'Optional search term; omit to list all customers.'},
++                        limit: {type: 'number', description: 'Maximum records to return. Default 100.'},
++                    },
++                    additionalProperties: false,
++                },
++                annotations: {readOnlyHint: true},
++                execute: async (args) => {
++                    const {keyword = '', limit = 100} = args || {};
++
++                    let customers;
++
++                    try {
++                        customers = await postForm('customers/search', {
++                            csrf_token: vars('csrf_token'),
++                            keyword: keyword,
++                            limit: limit,
++                            offset: 0,
++                        });
++                    } catch (error) {
++                        // The endpoint aborts 403 without the customers privilege,
++                        // which for an agent almost always means "no session yet".
++                        return errorResult(
++                            `Could not read customers: ${error.message}. If you have not signed in yet, call ` +
++                                'sign_in with the account credentials and try again.',
++                        );
++                    }
++
++                    const rows = Array.isArray(customers) ? customers : [];
++
++                    return textResult({
++                        ok: true,
++                        count: rows.length,
++                        customers: rows.map(customerSummary),
++                    });
++                },
++            },
++            {signal},
++        );
++    }
++
++    if (signedIn) {
++        registerBackOfficeTools();
++    } else {
++        modelContext.registerTool(
++            {
++                name: 'sign_in',
++                description:
++                    'Sign in to the back office with a username and password. The back-office tools ' +
++                    '(list_customers) are not registered until this succeeds, so call it first when the task ' +
++                    'needs staff-side data; then re-list the tools to see what became available.',
++                inputSchema: {
++                    type: 'object',
++                    properties: {
++                        username: {type: 'string', description: 'Back-office account username.'},
++                        password: {type: 'string', description: 'Back-office account password.'},
++                    },
++                    required: ['username', 'password'],
++                    additionalProperties: false,
++                },
++                execute: async (args) => {
++                    const {username, password} = args || {};
++
++                    if (!username || !password) {
++                        return errorResult('Both username and password are required to sign in.');
++                    }
++
++                    let response;
++
++                    try {
++                        response = await postForm('login/validate', {
++                            csrf_token: vars('csrf_token'),
++                            username: username,
++                            password: password,
++                        });
++                    } catch (error) {
++                        // Login is rate limited to 5 attempts per 5 minutes.
++                        return errorResult(`Sign-in request failed: ${error.message}`);
++                    }
++
++                    if (!response || response.success !== true) {
++                        if (response && response.captcha_verification === false) {
++                            return errorResult('Sign-in failed: this installation requires a CAPTCHA, which cannot be solved through a tool.');
++                        }
++
++                        return errorResult(response && response.message ? response.message : 'Sign-in failed: those credentials were rejected.');
++                    }
++
++                    registerBackOfficeTools();
++
++                    return textResult({
++                        ok: true,
++                        signed_in_as: username,
++                        note: 'Signed in. The back-office tools (list_customers) are now registered — re-list the tools to use them.',
++                    });
++                },
++            },
++            {signal},
++        );
++    }
++
++    // ------------------------------------------------------------------------
++    // Booking wizard page tools
++    // ------------------------------------------------------------------------
++
++    const onBookingWizard = Boolean(document.getElementById('book-appointment-wizard')) && $('#select-service').length > 0;
++    const manageMode = Boolean(vars('manage_mode'));
++
++    if (onBookingWizard && content.services.length) {
++        modelContext.registerTool(
++            {
++                name: 'check_availability',
++                description:
++                    'Read-only: fetch the real open appointment slots for a service on one or more days ' +
++                    '(same source as the visible calendar). Times are in the business-local time zone, 24h ' +
++                    '"HH:mm", and are directly bookable via book_appointment. The visible wizard calendar is ' +
++                    'updated to the queried service/provider/date so the user sees the same slots.',
++                inputSchema: {
++                    type: 'object',
++                    properties: {
++                        service_id: {
++                            type: ['integer', 'string'],
++                            description: 'Service id or exact name (see list_services). Defaults to the service selected in the wizard.',
++                        },
++                        provider_id: {
++                            type: ['integer', 'string'],
++                            description: 'Provider id or full name. Defaults to the wizard selection or the only provider of the service.',
++                        },
++                        date: {type: 'string', description: 'First day to check, "YYYY-MM-DD". Defaults to today.'},
++                        days: {type: 'integer', description: 'Number of consecutive days to check (1-7, default 1).'},
++                    },
++                    additionalProperties: false,
++                },
++                annotations: {readOnlyHint: true},
++                execute: async (args) => {
++                    args = args || {};
++
++                    const service = findService(args.service_id ?? $('#select-service').val());
++
++                    if (!service) {
++                        return errorResult('Unknown service. Call list_services for valid ids.', {
++                            services: content.services.map((entry) => ({id: Number(entry.id), name: entry.name})),
++                        });
++                    }
++
++                    const resolved = resolveProvider(service, args.provider_id);
++
++                    if (resolved.error) {
++                        return errorResult(resolved.error);
++                    }
++
++                    const startMoment = args.date ? moment(args.date, 'YYYY-MM-DD', true) : moment();
++
++                    if (!startMoment.isValid()) {
++                        return errorResult('Invalid "date" — use the "YYYY-MM-DD" format.');
++                    }
++
++                    const days = Math.min(Math.max(Number(args.days) || 1, 1), 7);
++                    const results = [];
++
++                    for (let offset = 0; offset < days; offset++) {
++                        const date = startMoment.clone().add(offset, 'days').format('YYYY-MM-DD');
++
++                        try {
++                            const hours = await fetchAvailableHours(service.id, resolved.id, date);
++                            results.push({date: date, open_slots: hours});
++                        } catch (error) {
++                            results.push({date: date, error: error.message});
++                        }
++                    }
++
++                    syncWizardSelection(service.id, resolved.id, startMoment.format('YYYY-MM-DD'));
++
++                    return textResult({
++                        ok: true,
++                        service: {id: Number(service.id), name: service.name, duration_minutes: Number(service.duration)},
++                        provider: resolved.provider
++                            ? {id: Number(resolved.provider.id), name: providerName(resolved.provider), timezone: resolved.provider.timezone}
++                            : 'any available provider',
++                        days: results,
++                        note: 'Times are business-local "HH:mm". Book one with book_appointment (date, time).',
++                    });
++                },
++            },
++            {signal},
++        );
++
++        // Customer-detail params mirror the wizard's own contact form: only the
++        // fields the site displays become params, and the fields the site marks
++        // required become required — page state shapes the registration.
++        const CUSTOMER_FIELDS = [
++            {id: 'first-name', param: 'first_name', description: 'Customer first name.'},
++            {id: 'last-name', param: 'last_name', description: 'Customer last name.'},
++            {id: 'email', param: 'email', description: 'Customer email — receives the confirmation and manage link.'},
++            {id: 'phone-number', param: 'phone_number', description: 'Customer phone number.'},
++            {id: 'address', param: 'address', description: 'Customer street address.'},
++            {id: 'city', param: 'city', description: 'Customer city.'},
++            {id: 'zip-code', param: 'zip_code', description: 'Customer zip code.'},
++            {id: 'notes', param: 'notes', description: 'Optional notes for the business.'},
++        ].filter((field) => document.getElementById(field.id));
++
++        const requiredCustomerParams = manageMode
++            ? [] // Manage mode: contact details are prefilled from the loaded appointment.
++            : CUSTOMER_FIELDS.filter((field) => document.getElementById(field.id).classList.contains('required')).map(
++                  (field) => field.param,
++              );
++
++        const customerProperties = {};
++
++        CUSTOMER_FIELDS.forEach((field) => {
++            customerProperties[field.param] = {type: 'string', description: field.description};
++        });
++
++        modelContext.registerTool(
++            {
++                name: 'book_appointment',
++                description: manageMode
++                    ? 'RESCHEDULES the existing appointment loaded on this page to a new date/time — this changes ' +
++                      'a real booking as soon as it is called. Pick a slot from check_availability first. The page ' +
++                      'then navigates to the confirmation screen. Contact details stay as loaded unless overridden.'
++                    : 'CREATES a real appointment at this business as soon as it is called — do not call until the ' +
++                      'user has confirmed service, time and contact details. Requires an open slot from ' +
++                      'check_availability ("date" + business-local "time"). On success the visible wizard reflects ' +
++                      'the selection, the page navigates to the booking confirmation screen, and the response ' +
++                      'includes the appointment id plus the personal manage/cancel link (which the site also emails ' +
++                      'to the customer when email notifications are enabled). If the slot was just taken, the ' +
++                      'response lists the remaining open slots.',
++                inputSchema: {
++                    type: 'object',
++                    properties: Object.assign(
++                        {
++                            service_id: {
++                                type: ['integer', 'string'],
++                                description: manageMode
++                                    ? 'Service id or name — defaults to the service of the loaded appointment.'
++                                    : 'Service id or exact name (see list_services).',
++                            },
++                            provider_id: {
++                                type: ['integer', 'string'],
++                                description: 'Provider id or full name. Defaults to the only/selected provider of the service.',
++                            },
++                            date: {type: 'string', description: 'Appointment day, "YYYY-MM-DD".'},
++                            time: {type: 'string', description: 'Start time from check_availability, business-local 24h "HH:mm".'},
++                        },
++                        customerProperties,
++                    ),
++                    required: ['date', 'time'].concat(requiredCustomerParams),
++                    additionalProperties: false,
++                },
++                annotations: {readOnlyHint: false},
++                execute: async (args) => {
++                    args = args || {};
++
++                    if ($('.captcha-text').length || $('#altcha-widget').length) {
++                        return errorResult(
++                            'This site requires a human verification (CAPTCHA) step — ask the user to press ' +
++                                '"Book Appointment" in the page after completing it.',
++                        );
++                    }
++
++                    const service = findService(args.service_id ?? $('#select-service').val());
++
++                    if (!service) {
++                        return errorResult('Unknown service. Call list_services for valid ids.', {
++                            services: content.services.map((entry) => ({id: Number(entry.id), name: entry.name})),
++                        });
++                    }
++
++                    const resolved = resolveProvider(service, args.provider_id);
++
++                    if (resolved.error) {
++                        return errorResult(resolved.error);
++                    }
++
++                    const dateMoment = moment(String(args.date), 'YYYY-MM-DD', true);
++                    const timeMoment = moment(String(args.time), 'HH:mm', true);
++
++                    if (!dateMoment.isValid() || !timeMoment.isValid()) {
++                        return errorResult('Use "YYYY-MM-DD" for date and business-local 24h "HH:mm" for time.');
++                    }
++
++                    const date = dateMoment.format('YYYY-MM-DD');
++                    const time = timeMoment.format('HH:mm');
++
++                    // Honest availability check through the wizard's own endpoint.
++
++                    let openSlots;
++
++                    try {
++                        openSlots = await fetchAvailableHours(service.id, resolved.id, date);
++                    } catch (error) {
++                        return errorResult(`Could not verify availability: ${error.message}`);
++                    }
++
++                    if (!openSlots.includes(time)) {
++                        return errorResult(`${date} ${time} is not an open slot.`, {
++                            date: date,
++                            open_slots: openSlots,
++                            note: openSlots.length
++                                ? 'Pick one of the open slots and call book_appointment again.'
++                                : 'No open slots that day — use check_availability on other days.',
++                        });
++                    }
++
++                    // Drive the visible wizard: selection, calendar, slot, contact form.
++
++                    syncWizardSelection(service.id, resolved.id, date);
++
++                    let $slot;
++
++                    try {
++                        $slot = await waitFor(() => {
++                            const $match = $('#available-hours .available-hour').filter(
++                                (index, element) => String($(element).data('value')) === time,
++                            );
++                            return $match.length ? $match : null;
++                        });
++                    } catch (error) {
++                        return errorResult('The booking calendar did not load the requested slot — try again.');
++                    }
++
++                    $slot.trigger('click'); // Site handler marks it selected + updates the summary.
++
++                    CUSTOMER_FIELDS.forEach((field) => {
++                        if (args[field.param] !== undefined) {
++                            $('#' + field.id).val(String(args[field.param]));
++                        }
++                    });
++
++                    if (!App.Pages.Booking.validateCustomerForm()) {
++                        const missing = $('#wizard-frame-3 .is-invalid')
++                            .map((index, element) => element.id)
++                            .get();
++                        return errorResult('Customer details failed the site validation.', {
++                            invalid_fields: missing,
++                            note: 'Provide valid values for these fields (shown highlighted in the page).',
++                        });
++                    }
++
++                    App.Pages.Booking.updateConfirmFrame(); // Builds the wizard's own post_data payload.
++
++                    const postData = JSON.parse($('input[name="post_data"]').val());
++
++                    const requestData = {
++                        csrf_token: vars('csrf_token'),
++                        post_data: postData,
++                    };
++
++                    if (manageMode) {
++                        requestData.exclude_appointment_id = vars('appointment_data').id;
++                    }
++
++                    let response;
++
++                    try {
++                        response = await postForm('booking/register', requestData);
++                    } catch (error) {
++                        return errorResult(`The site rejected the booking: ${error.message}`);
++                    }
++
++                    const confirmationUrl = siteUrl('booking_confirmation/of/' + response.appointment_hash);
++                    const manageUrl = siteUrl('booking/reschedule/' + response.appointment_hash);
++
++                    setTimeout(() => {
++                        window.location.href = confirmationUrl; // Same navigation the wizard performs.
++                    }, 800);
++
++                    return textResult({
++                        ok: true,
++                        status: manageMode ? 'appointment_rescheduled' : 'appointment_booked',
++                        appointment_id: response.appointment_id,
++                        appointment_reference: response.appointment_hash,
++                        service: service.name,
++                        provider: resolved.provider ? providerName(resolved.provider) : 'assigned automatically',
++                        start: `${date} ${time}`,
++                        duration_minutes: Number(service.duration),
++                        manage_link: manageUrl,
++                        note:
++                            'The booking is confirmed and saved — the site returned this appointment id and ' +
++                            'reference. The page is navigating to the booking confirmation screen. A confirmation ' +
++                            'email with the manage/cancel link is sent to the customer if the site has email ' +
++                            'notifications enabled.',
++                    });
++                },
++            },
++            {signal},
++        );
++    }
++
++    // ------------------------------------------------------------------------
++    // cancel_appointment — lookup-keyed via the site's own emailed link token
++    // ------------------------------------------------------------------------
++
++    const confirmationMatch = window.location.pathname.match(/booking_confirmation\/of\/([a-zA-Z0-9]+)/);
++
++    const bakedHash = manageMode
++        ? vars('appointment_data').hash
++        : confirmationMatch
++          ? confirmationMatch[1]
++          : null;
++
++    if (onBookingWizard || bakedHash) {
++        const cancelProperties = {
++            reason: {type: 'string', description: 'Cancellation reason to record for the business (required by the site).'},
++        };
++
++        if (!bakedHash) {
++            cancelProperties.appointment_reference = {
++                type: 'string',
++                description: 'The appointment reference from the confirmation email/manage link (the token after "booking/reschedule/").',
++            };
++        }
++
++        modelContext.registerTool(
++            {
++                name: 'cancel_appointment',
++                description:
++                    (bakedHash
++                        ? 'PERMANENTLY cancels the appointment shown/confirmed on this page as soon as it is called — '
++                        : 'PERMANENTLY cancels an existing appointment as soon as it is called — ') +
++                    'only call after the user explicitly confirms. ' +
++                    (bakedHash
++                        ? ''
++                        : 'Requires the appointment_reference token from the customer\'s confirmation email (the site\'s own manage-link key); it cannot be guessed or looked up by email address. ') +
++                    'The appointment is first verified; if it exists and is still cancellable it is cancelled and ' +
++                    'the site\'s own cancellation confirmation screen is shown. The outcome is awaited, so a ' +
++                    'failed request is reported as a failure and nothing is changed. Cancellation is not reversible.',
++                inputSchema: {
++                    type: 'object',
++                    properties: cancelProperties,
++                    required: bakedHash ? ['reason'] : ['reason', 'appointment_reference'],
++                    additionalProperties: false,
++                },
++                annotations: {readOnlyHint: false},
++                execute: async (args) => {
++                    args = args || {};
++
++                    const hash = String(bakedHash || args.appointment_reference || '').trim();
++                    const reason = String(args.reason || '').trim();
++
++                    if (!hash || !/^[a-zA-Z0-9]+$/.test(hash)) {
++                        return errorResult('A valid appointment_reference token is required.');
++                    }
++
++                    if (!reason) {
++                        return errorResult('A non-empty cancellation reason is required by the site.');
++                    }
++
++                    // Verify the appointment exists and is still manageable (the site's
++                    // own manage page renders the cancel form only in that case).
++
++                    let manageHtml;
++
++                    try {
++                        const managePage = await fetch(siteUrl('booking/reschedule/' + hash), {credentials: 'same-origin'});
++                        manageHtml = await managePage.text();
++                    } catch (error) {
++                        return errorResult(`Could not verify the appointment: ${error.message}`);
++                    }
++
++                    if (!manageHtml.includes('cancel-appointment-frame')) {
++                        return errorResult(
++                            'No cancellable appointment found for this reference — it may already be cancelled, ' +
++                                'in the past, or inside the minimum-notice window.',
++                        );
++                    }
++
++                    // Submit the site's own cancellation form via fetch (the endpoint is
++                    // CSRF-exempt, exactly like the manage-page form) so the real outcome
++                    // is awaited before anything is reported. The endpoint deletes the
++                    // appointment and renders its result inline: the dedicated
++                    // "Appointment Cancelled" page on success, or the shared message page
++                    // (which carries #message-icon) for every failure — not found, rate
++                    // limited, or a server error.
++
++                    let cancelResponse;
++                    let cancelHtml;
++
++                    try {
++                        cancelResponse = await fetch(siteUrl('booking_cancellation/of/' + hash), {
++                            method: 'post',
++                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
++                            body: new URLSearchParams({cancellation_reason: reason}).toString(),
++                            credentials: 'same-origin',
++                        });
++                        cancelHtml = await cancelResponse.text();
++                    } catch (error) {
++                        return errorResult(`The cancellation request failed and nothing was changed: ${error.message}`);
++                    }
++
++                    const cancelled = cancelResponse.ok && !cancelHtml.includes('id="message-icon"');
++
++                    if (!cancelled) {
++                        // The site returned its message/error page instead of the
++                        // cancellation confirmation, so the delete did not go through.
++                        return errorResult(
++                            'The site did not cancel the appointment — it may have just been cancelled, moved ' +
++                                'inside the minimum-notice window, or the request was rejected (e.g. too many ' +
++                                'attempts). Nothing was changed; check the appointment again before retrying.',
++                            {http_status: cancelResponse.status},
++                        );
++                    }
++
++                    // Confirmed deleted. Hand off to the site's own navigation exactly the
++                    // way book_appointment does — a clean window.location navigation instead
++                    // of re-injecting the fetched HTML with document.open/write/close, which
++                    // re-executes the confirmation page's scripts and raises unhandled promise
++                    // rejections. The awaited POST above already performed the delete and
++                    // returned the site's cancellation confirmation, so the outcome is known;
++                    // the page now returns to the booking screen in a clean load (the
++                    // post-delete cancellation view, unlike a booking confirmation, has no
++                    // persistent GET route to land on).
++                    setTimeout(() => {
++                        window.location.href = bookingPageUrl(); // Same navigation the site performs after cancellation.
++                    }, 800);
++
++                    return textResult({
++                        ok: true,
++                        status: 'appointment_cancelled',
++                        appointment_reference: hash,
++                        note:
++                            'The appointment has been cancelled and removed from the schedule — confirmed by the ' +
++                            "site's cancellation response. The page is navigating back to the booking screen. A " +
++                            'cancellation email is sent to the customer if the site has email notifications enabled.',
++                    });
++                },
++            },
++            {signal},
++        );
++    }
++})();

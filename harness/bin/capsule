@@ -1,0 +1,983 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+RUNTIME_ROOT=${CAPSULE_RUNTIME_ROOT:-"/tmp/webmcp-kit-capsules-${UID}"}
+# A relative or in-repo runtime root would place the author workspace inside the
+# working tree, where the proof's `$WORKSPACE != $ROOT/*` isolation check (which
+# compares against the absolute repo path) would silently miss it. Require an
+# absolute, canonical root that lives outside the harness repository.
+[[ "$RUNTIME_ROOT" == /* ]] || {
+  echo "CAPSULE_RUNTIME_ROOT must be an absolute path: $RUNTIME_ROOT" >&2
+  exit 2
+}
+RUNTIME_ROOT=$(realpath -m "$RUNTIME_ROOT")
+ROOT_REAL=$(realpath -m "$ROOT")
+case "$RUNTIME_ROOT/" in
+  "$ROOT_REAL"/*)
+    echo "CAPSULE_RUNTIME_ROOT must be outside the harness repository: $RUNTIME_ROOT" >&2
+    exit 2
+    ;;
+esac
+DEFINITIONS_ROOT=${CAPSULE_DEFINITIONS_ROOT:-"$ROOT/capsules"}
+# The definitions root selects which site adapter a run binds to. Require an
+# absolute, canonical path — like CAPSULE_RUNTIME_ROOT above — and bake it into
+# the runbook (see capsule_write_runbook) so a lifecycle command replayed from a
+# fresh shell reloads the SAME adapter. A relative or default-resolved root would
+# reselect the built-in capsules/ tree and fail the run's post-prepare
+# config/adapter-hash integrity check.
+[[ "$DEFINITIONS_ROOT" == /* ]] || {
+  echo "CAPSULE_DEFINITIONS_ROOT must be an absolute path: $DEFINITIONS_ROOT" >&2
+  exit 2
+}
+DEFINITIONS_ROOT=$(realpath -m "$DEFINITIONS_ROOT")
+CAPSULE_DEFINITIONS_ROOT=$DEFINITIONS_ROOT
+export CAPSULE_DEFINITIONS_ROOT
+CAPSULE_PORT_REGISTRY_ROOT=${CAPSULE_PORT_REGISTRY_ROOT:-"/tmp/webmcp-kit-capsule-ports-${UID}"}
+LOCK_ROOT=${CAPSULE_LOCK_ROOT:-"/tmp/webmcp-kit-capsule-locks-${UID}"}
+CAPSULE_BROWSER_REGISTRY_ROOT=${CAPSULE_BROWSER_REGISTRY_ROOT:-"/tmp/webmcp-kit-browser-sessions-${UID}"}
+# The Compose wrapper (harness/bin/compose) resolves its pinned-binary cache from
+# XDG_CACHE_HOME; capture the value this run actually used so the runbook can
+# rebind it and lifecycle commands stay hermetic from a fresh shell.
+CAPSULE_CACHE_ROOT=${XDG_CACHE_HOME:-"/tmp/webmcp-kit-cache-${UID}"}
+
+usage() {
+  echo "usage: capsule <site> <prepare|up|status|reset|down|gc> [--run-id ID] [--port PORT]" >&2
+  exit 2
+}
+
+[ "$#" -ge 2 ] || usage
+SITE=$1
+COMMAND=$2
+shift 2
+RUN_ID=default
+REQUESTED_PORT=
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --run-id) [ "$#" -ge 2 ] || usage; RUN_ID=$2; shift 2 ;;
+    --port) [ "$#" -ge 2 ] || usage; REQUESTED_PORT=$2; shift 2 ;;
+    *) usage ;;
+  esac
+done
+
+[[ "$SITE" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "invalid site id: $SITE" >&2; exit 2; }
+[[ "$RUN_ID" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]] || { echo "invalid run id: $RUN_ID" >&2; exit 2; }
+[[ "$COMMAND" =~ ^(prepare|up|status|reset|down|gc)$ ]] || usage
+if [ -n "$REQUESTED_PORT" ]; then
+  [[ "$REQUESTED_PORT" =~ ^[0-9]+$ ]] && [ "$REQUESTED_PORT" -ge 1024 ] && [ "$REQUESTED_PORT" -le 65535 ] || {
+    echo "invalid port: $REQUESTED_PORT" >&2
+    exit 2
+  }
+fi
+
+CAPSULE_DIR="$DEFINITIONS_ROOT/$SITE"
+CONFIG="$CAPSULE_DIR/capsule.sh"
+
+CAPSULE_RUNTIME_DIR="$RUNTIME_ROOT/$SITE/$RUN_ID"
+CAPSULE_AUTHOR_DIR="$CAPSULE_RUNTIME_DIR/author"
+CAPSULE_PRIVATE_DIR="$CAPSULE_RUNTIME_DIR/private"
+CAPSULE_WORKSPACE="$CAPSULE_AUTHOR_DIR/repo"
+STATE_FILE="$CAPSULE_PRIVATE_DIR/state.env"
+PHASE_FILE="$CAPSULE_PRIVATE_DIR/phase"
+MANIFEST_FILE="$CAPSULE_PRIVATE_DIR/manifest.json"
+
+# Emergency recovery must not depend on a still-loadable site adapter. The
+# evaluator can force this path for a top-level adapter failure; missing or
+# syntactically broken adapters select it automatically when state exists.
+if [ "$COMMAND" = gc ] && [ -f "$STATE_FILE" ] &&
+  { [ "${CAPSULE_GC_STATE_ONLY:-false}" = true ] || [ ! -f "$CONFIG" ] || ! bash -n "$CONFIG"; }; then
+  # shellcheck source=/dev/null
+  source "$STATE_FILE"
+  [ "${CAPSULE_USES_DOCKER:-false}" = true ] || {
+    echo "state-only gc cannot prove cleanup for a non-Docker capsule" >&2
+    exit 1
+  }
+  [ "${CAPSULE_SITE_LABEL:-}" = "webmcp-kit.capsule=$SITE" ] &&
+    [ "${CAPSULE_RUN_LABEL:-}" = "webmcp-kit.run=$RUN_ID" ] &&
+    [[ "${CAPSULE_MANIFEST_ID:-}" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+      echo "state-only gc rejected inconsistent recovery state" >&2
+      exit 1
+  }
+  CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS=${CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS:-15}
+  CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS=${CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS:-120}
+  export ROOT SITE RUN_ID CAPSULE_RUNTIME_DIR CAPSULE_AUTHOR_DIR CAPSULE_PRIVATE_DIR CAPSULE_WORKSPACE
+  export STATE_FILE PHASE_FILE MANIFEST_FILE CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS
+  export CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS
+  # shellcheck source=../lib/capsule-lifecycle.sh
+  source "$ROOT/harness/lib/capsule-lifecycle.sh"
+  mkdir -p "$LOCK_ROOT"
+  chmod 0700 "$LOCK_ROOT"
+  exec 9>"$LOCK_ROOT/$SITE-$RUN_ID.lock"
+  flock -x 9
+  capsule_atomic_phase_write stopping
+  if ! capsule_quiesce_or_reclaim_browser_sessions ||
+    ! capsule_gc_labeled_resources || ! capsule_gc_browser_sessions; then
+    capsule_atomic_phase_write cleanup-failed
+    echo "state-only gc could not prove complete labeled cleanup" >&2
+    exit 1
+  fi
+  recovered_manifest_id=$CAPSULE_MANIFEST_ID
+  recovered_port=${CAPSULE_PORT:-}
+  recovery_state=$(mktemp "/tmp/webmcp-state-only-gc-${SITE}-${RUN_ID}.XXXXXX")
+  cp "$STATE_FILE" "$recovery_state"
+  if ! capsule_remove_runtime_dir; then
+    rm -f "$recovery_state"
+    echo "state-only gc could not remove the runtime directory" >&2
+    exit 1
+  fi
+  CAPSULE_PORT=$recovered_port
+  if ! capsule_release_port; then
+    mkdir -p "$CAPSULE_PRIVATE_DIR"
+    cp "$recovery_state" "$STATE_FILE"
+    capsule_atomic_phase_write cleanup-failed
+    rm -f "$recovery_state"
+    echo "state-only gc could not release the reserved port" >&2
+    exit 1
+  fi
+  rm -f "$recovery_state"
+  rmdir "$RUNTIME_ROOT/$SITE" "$RUNTIME_ROOT" 2>/dev/null || true
+  jq -n --arg site "$SITE" --arg runId "$RUN_ID" --arg manifestId "$recovered_manifest_id" '
+    {site:$site,runId:$runId,command:"gc",phase:"absent",healthy:false,
+      identity:{run:($site + "/" + $runId),manifest:$manifestId},recovery:"state-only"}'
+  exit 0
+fi
+
+[ -f "$CONFIG" ] || { echo "unknown capsule: $SITE" >&2; exit 2; }
+CAPSULE_PORT=
+CAPSULE_BASE_URL=
+CAPSULE_MANIFEST_ID=
+CAPSULE_BASELINE_PATH=
+CAPSULE_BASELINE_HASH=
+CAPSULE_ADAPTER_HASH="sha256:$(sha256sum "$CONFIG" | cut -d' ' -f1)"
+# CAPSULE_ADAPTER_HASH covers only the per-site capsule.sh. Fold the shared
+# harness libraries that adapter and lifecycle hooks source (clone/vendor/build/
+# reset/cache logic) into a companion hash so a change to any of them invalidates
+# every cached prepare generation too (see capsule_prepare_cache_key). Without it
+# a shared-helper edit would leave stale cache entries resolving as valid warm
+# restores.
+CAPSULE_HARNESS_ADAPTER_LIB_HASH="sha256:$(sha256sum \
+  "$ROOT/harness/lib/site-adapter.sh" "$ROOT/harness/lib/capsule-lifecycle.sh" | \
+  sha256sum | cut -d' ' -f1)"
+CAPSULE_CONFIG_HASH=$CAPSULE_ADAPTER_HASH
+CAPSULE_RUN_IDENTITY="$SITE/$RUN_ID"
+CAPSULE_SITE_LABEL="webmcp-kit.capsule=$SITE"
+CAPSULE_RUN_LABEL="webmcp-kit.run=$RUN_ID"
+CAPSULE_MANIFEST_LABEL=
+CAPSULE_RESET_STRATEGY=legacy-hook
+CAPSULE_RUNTIME_STRATEGY=adapter
+CAPSULE_USES_DOCKER=true
+CAPSULE_IMAGE_DIGESTS_JSON=
+CAPSULE_FIXTURE_HASHES_JSON='{}'
+CAPSULE_BOOTSTRAP_HASHES_JSON='{}'
+CAPSULE_RESET_ARTIFACT_HASHES_JSON='{}'
+CAPSULE_CONFIG_PATH=$CONFIG
+
+compose_identity="$SITE/$RUN_ID"
+compose_suffix=$(printf '%s-%s' "$SITE" "$RUN_ID" | tr '[:upper:]_.' '[:lower:]--')
+# Compose normalizes case and punctuation, so always bind the project name to
+# the raw run identity. Otherwise e.g. `Eval.A` and `eval-a` collide.
+# Fold the canonical runtime root into the digest as well: two runs that share a
+# site+run-id but live under different runtime roots MUST resolve to different
+# projects, or one capsule's `up`/`reset` would reconcile against — and re-seed —
+# the other's already-running containers on the shared project name.
+compose_suffix="${compose_suffix:0:35}-$(printf '%s\0%s' "$RUNTIME_ROOT" "$compose_identity" | sha256sum | cut -c1-12)"
+CAPSULE_COMPOSE_PROJECT="webmcp-$compose_suffix"
+
+export ROOT SITE RUN_ID CAPSULE_DIR CAPSULE_RUNTIME_DIR CAPSULE_AUTHOR_DIR
+export CAPSULE_PRIVATE_DIR CAPSULE_WORKSPACE CAPSULE_PORT CAPSULE_BASE_URL
+export CAPSULE_MANIFEST_ID CAPSULE_RUN_IDENTITY CAPSULE_CONFIG_HASH CAPSULE_ADAPTER_HASH
+export CAPSULE_HARNESS_ADAPTER_LIB_HASH
+export CAPSULE_SITE_LABEL CAPSULE_RUN_LABEL CAPSULE_MANIFEST_LABEL CAPSULE_COMPOSE_PROJECT
+export CAPSULE_PORT_REGISTRY_ROOT CAPSULE_CONFIG_PATH
+export CAPSULE_BROWSER_REGISTRY_ROOT
+# Re-export the roots this run resolved (canonical values, not the raw inputs) so
+# the adapter can bake a copy-paste-safe, run-bound env into the generated runbook.
+CAPSULE_RUNTIME_ROOT=$RUNTIME_ROOT
+CAPSULE_LOCK_ROOT=$LOCK_ROOT
+export CAPSULE_RUNTIME_ROOT CAPSULE_LOCK_ROOT CAPSULE_CACHE_ROOT
+
+# shellcheck source=../lib/capsule-lifecycle.sh
+source "$ROOT/harness/lib/capsule-lifecycle.sh"
+# Capsule definitions are trusted evaluator code and never copied into the
+# author workspace.
+# shellcheck source=/dev/null
+source "$CONFIG"
+CAPSULE_CONFIG_PATH=${CAPSULE_CONFIG_PATH:-$CONFIG}
+if [[ "$CAPSULE_CONFIG_PATH" != /* ]]; then
+  CAPSULE_CONFIG_PATH="$CAPSULE_DIR/$CAPSULE_CONFIG_PATH"
+fi
+[ -f "$CAPSULE_CONFIG_PATH" ] || {
+  echo "capsule config path does not exist: $CAPSULE_CONFIG_PATH" >&2
+  exit 2
+}
+CAPSULE_CONFIG_PATH=$(realpath -e "$CAPSULE_CONFIG_PATH")
+CAPSULE_DIR_REAL=$(realpath -e "$CAPSULE_DIR")
+if ! capsule_path_is_below "$CAPSULE_CONFIG_PATH" "$CAPSULE_DIR_REAL"; then
+  echo "capsule config path must remain evaluator-owned under $CAPSULE_DIR_REAL" >&2
+  exit 2
+fi
+CAPSULE_CONFIG_HASH="sha256:$(sha256sum "$CAPSULE_CONFIG_PATH" | cut -d' ' -f1)"
+CAPSULE_RESET_STRATEGY=${CAPSULE_RESET_STRATEGY:-legacy-hook}
+CAPSULE_RUNTIME_STRATEGY=${CAPSULE_RUNTIME_STRATEGY:-adapter}
+CAPSULE_USES_DOCKER=${CAPSULE_USES_DOCKER:-true}
+if [ -z "${CAPSULE_IMAGE_DIGESTS_JSON:-}" ]; then
+  CAPSULE_IMAGE_DIGESTS_JSON=$(jq -nc --arg revision "${CAPSULE_RUNTIME_REVISION:-}" \
+    'if $revision == "" then {} else {application:$revision} end')
+fi
+CAPSULE_FIXTURE_HASHES_JSON=${CAPSULE_FIXTURE_HASHES_JSON:-'{}'}
+CAPSULE_BOOTSTRAP_HASHES_JSON=${CAPSULE_BOOTSTRAP_HASHES_JSON:-'{}'}
+CAPSULE_PREPARE_TIMEOUT_SECONDS=${CAPSULE_PREPARE_TIMEOUT_SECONDS:-1800}
+CAPSULE_UP_TIMEOUT_SECONDS=${CAPSULE_UP_TIMEOUT_SECONDS:-600}
+CAPSULE_RESET_TIMEOUT_SECONDS=${CAPSULE_RESET_TIMEOUT_SECONDS:-600}
+CAPSULE_DOWN_TIMEOUT_SECONDS=${CAPSULE_DOWN_TIMEOUT_SECONDS:-120}
+CAPSULE_STATUS_TIMEOUT_SECONDS=${CAPSULE_STATUS_TIMEOUT_SECONDS:-10}
+CAPSULE_CLEANUP_VERIFY_TIMEOUT_SECONDS=${CAPSULE_CLEANUP_VERIFY_TIMEOUT_SECONDS:-30}
+CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS=${CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS:-15}
+CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS=${CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS:-120}
+CAPSULE_HEALTH_TIMEOUT_SECONDS=${CAPSULE_HEALTH_TIMEOUT_SECONDS:-30}
+for timeout_value in "$CAPSULE_PREPARE_TIMEOUT_SECONDS" "$CAPSULE_UP_TIMEOUT_SECONDS" \
+  "$CAPSULE_RESET_TIMEOUT_SECONDS" "$CAPSULE_DOWN_TIMEOUT_SECONDS" \
+  "$CAPSULE_STATUS_TIMEOUT_SECONDS" "$CAPSULE_CLEANUP_VERIFY_TIMEOUT_SECONDS" \
+  "$CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS" "$CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS" \
+  "$CAPSULE_HEALTH_TIMEOUT_SECONDS"; do
+  [[ "$timeout_value" =~ ^[1-9][0-9]*$ ]] || {
+    echo "capsule lifecycle timeouts must be positive integer seconds" >&2
+    exit 2
+  }
+done
+if jq -e '.actors | type == "array"' "$CAPSULE_CONFIG_PATH" >/dev/null 2>&1; then
+  while IFS=$'\t' read -r actor_id actor_setup; do
+    [ -n "$actor_id" ] && [ -n "$actor_setup" ] || {
+      echo "capsule actor entries require id and setup" >&2
+      exit 2
+    }
+    actor_path=$(realpath -e "$CAPSULE_DIR/$actor_setup") || {
+      echo "capsule actor setup does not exist: $actor_setup" >&2
+      exit 2
+    }
+    if ! capsule_path_is_below "$actor_path" "$CAPSULE_DIR_REAL"; then
+      echo "capsule actor setup must remain evaluator-owned under $CAPSULE_DIR_REAL" >&2
+      exit 2
+    fi
+    actor_hash="sha256:$(sha256sum "$actor_path" | cut -d' ' -f1)"
+    CAPSULE_FIXTURE_HASHES_JSON=$(jq -c \
+      --arg key "actor:$actor_id" --arg hash "$actor_hash" '. + {($key):$hash}' \
+      <<<"$CAPSULE_FIXTURE_HASHES_JSON")
+  done < <(jq -r '.actors[] | [.id, .setup] | @tsv' "$CAPSULE_CONFIG_PATH")
+fi
+if [ -f "$CAPSULE_DIR/oracle.sh" ]; then
+  oracle_hash="sha256:$(sha256sum "$CAPSULE_DIR/oracle.sh" | cut -d' ' -f1)"
+  CAPSULE_FIXTURE_HASHES_JSON=$(jq -c --arg hash "$oracle_hash" \
+    '. + {"evaluator:oracle":$hash}' <<<"$CAPSULE_FIXTURE_HASHES_JSON")
+fi
+if [ -f "$ROOT/fixtures/sdk/nekuda-webmcp-0.1.0.tgz" ]; then
+  sdk_hash="sha256:$(sha256sum "$ROOT/fixtures/sdk/nekuda-webmcp-0.1.0.tgz" | cut -d' ' -f1)"
+  CAPSULE_FIXTURE_HASHES_JSON=$(jq -c --arg hash "$sdk_hash" \
+    '. + {"evaluator:sdk":$hash}' <<<"$CAPSULE_FIXTURE_HASHES_JSON")
+fi
+compose_overlay=$(jq -r '.runtime.composeOverlay // empty' "$CAPSULE_CONFIG_PATH")
+if [ -n "$compose_overlay" ]; then
+  overlay_path=$(realpath -e "$CAPSULE_DIR/$compose_overlay") || {
+    echo "capsule Compose overlay does not exist: $compose_overlay" >&2
+    exit 2
+  }
+  capsule_path_is_below "$overlay_path" "$CAPSULE_DIR_REAL" || {
+    echo "capsule Compose overlay must remain evaluator-owned under $CAPSULE_DIR_REAL" >&2
+    exit 2
+  }
+  overlay_hash="sha256:$(sha256sum "$overlay_path" | cut -d' ' -f1)"
+  CAPSULE_BOOTSTRAP_HASHES_JSON=$(jq -c --arg hash "$overlay_hash" \
+    '. + {"topology:compose-overlay":$hash}' <<<"$CAPSULE_BOOTSTRAP_HASHES_JSON")
+fi
+jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_IMAGE_DIGESTS_JSON" >/dev/null || {
+  echo "CAPSULE_IMAGE_DIGESTS_JSON must be an object of name-to-pinned-digest strings" >&2
+  exit 2
+}
+jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_FIXTURE_HASHES_JSON" >/dev/null || {
+  echo "CAPSULE_FIXTURE_HASHES_JSON must be an object of name-to-hash strings" >&2
+  exit 2
+}
+jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_BOOTSTRAP_HASHES_JSON" >/dev/null || {
+  echo "CAPSULE_BOOTSTRAP_HASHES_JSON must be an object of name-to-hash strings" >&2
+  exit 2
+}
+jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_RESET_ARTIFACT_HASHES_JSON" >/dev/null || {
+  echo "CAPSULE_RESET_ARTIFACT_HASHES_JSON must be an object of relative-path-to-hash strings" >&2
+  exit 2
+}
+CAPSULE_CURRENT_CONFIG_HASH=$CAPSULE_CONFIG_HASH
+CAPSULE_CURRENT_ADAPTER_HASH=$CAPSULE_ADAPTER_HASH
+CAPSULE_CURRENT_FIXTURE_HASHES_JSON=$CAPSULE_FIXTURE_HASHES_JSON
+CAPSULE_CURRENT_BOOTSTRAP_HASHES_JSON=$CAPSULE_BOOTSTRAP_HASHES_JSON
+export CAPSULE_RESET_STRATEGY CAPSULE_RUNTIME_STRATEGY CAPSULE_USES_DOCKER
+export CAPSULE_IMAGE_DIGESTS_JSON CAPSULE_FIXTURE_HASHES_JSON CAPSULE_BOOTSTRAP_HASHES_JSON
+export CAPSULE_RESET_ARTIFACT_HASHES_JSON
+export CAPSULE_CONFIG_PATH CAPSULE_CONFIG_HASH
+export CAPSULE_BROWSER_STOP_TIMEOUT_SECONDS
+export CAPSULE_BROWSER_QUIESCE_TIMEOUT_SECONDS
+
+for hook in capsule_prepare capsule_up capsule_status capsule_reset capsule_down; do
+  declare -F "$hook" >/dev/null || { echo "$CONFIG is missing $hook" >&2; exit 2; }
+done
+if declare -F capsule_capture_reset_state >/dev/null || declare -F capsule_restore_reset_state >/dev/null; then
+  declare -F capsule_capture_reset_state >/dev/null && declare -F capsule_restore_reset_state >/dev/null || {
+    echo "$CONFIG must define both capsule_capture_reset_state and capsule_restore_reset_state" >&2
+    exit 2
+  }
+fi
+
+# Mutations serialize per run. Status intentionally takes no lifecycle lock: it
+# reads atomically published state so it can report preparing/starting/resetting
+# while a long mutation is in progress.
+if [ "$COMMAND" != status ]; then
+  mkdir -p "$LOCK_ROOT"
+  chmod 0700 "$LOCK_ROOT"
+  exec 9>"$LOCK_ROOT/$SITE-$RUN_ID.lock"
+  flock -x 9
+fi
+
+json() {
+  local phase=$1 healthy=$2
+  jq -n \
+    --arg site "$SITE" \
+    --arg runId "$RUN_ID" \
+    --arg command "$COMMAND" \
+    --arg phase "$phase" \
+    --arg workspace "$CAPSULE_WORKSPACE" \
+    --arg runbook "$CAPSULE_AUTHOR_DIR/RUNBOOK.md" \
+    --arg baseUrl "${CAPSULE_BASE_URL:-}" \
+    --arg sourceRevision "${CAPSULE_SOURCE_REVISION:-}" \
+    --arg runtimeRevision "${CAPSULE_RUNTIME_REVISION:-}" \
+    --arg manifestId "${CAPSULE_MANIFEST_ID:-}" \
+    --arg manifestPath "$MANIFEST_FILE" \
+    --arg runIdentity "$CAPSULE_RUN_IDENTITY" \
+    --arg siteLabel "$CAPSULE_SITE_LABEL" \
+    --arg runLabel "$CAPSULE_RUN_LABEL" \
+    --arg manifestLabel "${CAPSULE_MANIFEST_LABEL:-}" \
+    --arg composeProject "$CAPSULE_COMPOSE_PROJECT" \
+    --arg baselineHash "${CAPSULE_BASELINE_HASH:-}" \
+    --arg resetStrategy "$CAPSULE_RESET_STRATEGY" \
+    --arg runtimeStrategy "$CAPSULE_RUNTIME_STRATEGY" \
+    --argjson healthy "$healthy" \
+    '{
+      site:$site,runId:$runId,command:$command,phase:$phase,healthy:$healthy,
+      baseUrl:$baseUrl,workspace:$workspace,runbook:$runbook,
+      sourceRevision:$sourceRevision,runtimeRevision:$runtimeRevision,
+      identity:{run:$runIdentity,manifest:(if $manifestId == "" then null else $manifestId end)},
+      privateManifest:{id:(if $manifestId == "" then null else $manifestId end),path:$manifestPath},
+      protectedBaseline:{hash:(if $baselineHash == "" then null else $baselineHash end)},
+      runtime:{composeProject:$composeProject,strategy:$runtimeStrategy,resetStrategy:$resetStrategy,
+        labels:{site:$siteLabel,run:$runLabel,manifest:(if $manifestLabel == "" then null else $manifestLabel end)}}
+    }'
+}
+
+save_state() {
+  local temporary="$STATE_FILE.tmp.$$"
+  mkdir -p "$CAPSULE_PRIVATE_DIR"
+  {
+    printf 'CAPSULE_PORT=%q\n' "$CAPSULE_PORT"
+    printf 'CAPSULE_BASE_URL=%q\n' "$CAPSULE_BASE_URL"
+    printf 'CAPSULE_MANIFEST_ID=%q\n' "$CAPSULE_MANIFEST_ID"
+    printf 'CAPSULE_RUN_IDENTITY=%q\n' "$CAPSULE_RUN_IDENTITY"
+    printf 'CAPSULE_CONFIG_HASH=%q\n' "$CAPSULE_CONFIG_HASH"
+    printf 'CAPSULE_ADAPTER_HASH=%q\n' "$CAPSULE_ADAPTER_HASH"
+    printf 'CAPSULE_SOURCE_REVISION=%q\n' "${CAPSULE_SOURCE_REVISION:-}"
+    printf 'CAPSULE_RUNTIME_REVISION=%q\n' "${CAPSULE_RUNTIME_REVISION:-}"
+    printf 'CAPSULE_BASELINE_PATH=%q\n' "${CAPSULE_BASELINE_PATH:-}"
+    printf 'CAPSULE_BASELINE_HASH=%q\n' "${CAPSULE_BASELINE_HASH:-}"
+    printf 'CAPSULE_RESET_STRATEGY=%q\n' "$CAPSULE_RESET_STRATEGY"
+    printf 'CAPSULE_RUNTIME_STRATEGY=%q\n' "$CAPSULE_RUNTIME_STRATEGY"
+    printf 'CAPSULE_USES_DOCKER=%q\n' "$CAPSULE_USES_DOCKER"
+    printf 'CAPSULE_IMAGE_DIGESTS_JSON=%q\n' "$CAPSULE_IMAGE_DIGESTS_JSON"
+    printf 'CAPSULE_FIXTURE_HASHES_JSON=%q\n' "$CAPSULE_FIXTURE_HASHES_JSON"
+    printf 'CAPSULE_BOOTSTRAP_HASHES_JSON=%q\n' "$CAPSULE_BOOTSTRAP_HASHES_JSON"
+    printf 'CAPSULE_RESET_ARTIFACT_HASHES_JSON=%q\n' "$CAPSULE_RESET_ARTIFACT_HASHES_JSON"
+    printf 'CAPSULE_SITE_LABEL=%q\n' "$CAPSULE_SITE_LABEL"
+    printf 'CAPSULE_RUN_LABEL=%q\n' "$CAPSULE_RUN_LABEL"
+    printf 'CAPSULE_MANIFEST_LABEL=%q\n' "$CAPSULE_MANIFEST_LABEL"
+    printf 'CAPSULE_COMPOSE_PROJECT=%q\n' "$CAPSULE_COMPOSE_PROJECT"
+    printf 'CAPSULE_PORT_REGISTRY_ROOT=%q\n' "$CAPSULE_PORT_REGISTRY_ROOT"
+    printf 'CAPSULE_BROWSER_REGISTRY_ROOT=%q\n' "$CAPSULE_BROWSER_REGISTRY_ROOT"
+  } > "$temporary"
+  chmod 0600 "$temporary"
+  mv -f "$temporary" "$STATE_FILE"
+}
+
+load_state() {
+  [ -f "$STATE_FILE" ] || return 1
+  # shellcheck source=/dev/null
+  source "$STATE_FILE"
+  export CAPSULE_PORT CAPSULE_BASE_URL CAPSULE_MANIFEST_ID CAPSULE_RUN_IDENTITY
+  export CAPSULE_CONFIG_HASH CAPSULE_ADAPTER_HASH CAPSULE_SOURCE_REVISION CAPSULE_RUNTIME_REVISION
+  export CAPSULE_BASELINE_PATH CAPSULE_BASELINE_HASH CAPSULE_RESET_STRATEGY CAPSULE_RUNTIME_STRATEGY CAPSULE_USES_DOCKER
+  export CAPSULE_IMAGE_DIGESTS_JSON CAPSULE_FIXTURE_HASHES_JSON CAPSULE_BOOTSTRAP_HASHES_JSON
+  export CAPSULE_RESET_ARTIFACT_HASHES_JSON
+  export CAPSULE_SITE_LABEL CAPSULE_RUN_LABEL CAPSULE_MANIFEST_LABEL CAPSULE_COMPOSE_PROJECT
+  export CAPSULE_PORT_REGISTRY_ROOT
+  export CAPSULE_BROWSER_REGISTRY_ROOT
+}
+
+definition_integrity_valid() {
+  [ "$CAPSULE_CONFIG_HASH" = "$CAPSULE_CURRENT_CONFIG_HASH" ] || {
+    echo "capsule config changed after prepare" >&2
+    return 1
+  }
+  [ "$CAPSULE_ADAPTER_HASH" = "$CAPSULE_CURRENT_ADAPTER_HASH" ] || {
+    echo "capsule adapter changed after prepare" >&2
+    return 1
+  }
+  jq -en --argjson prepared "$CAPSULE_FIXTURE_HASHES_JSON" \
+    --argjson current "$CAPSULE_CURRENT_FIXTURE_HASHES_JSON" '$prepared == $current' >/dev/null || {
+      echo "capsule evaluator fixture, actor, or oracle changed after prepare" >&2
+      return 1
+    }
+  jq -en --argjson prepared "$CAPSULE_BOOTSTRAP_HASHES_JSON" \
+    --argjson current "$CAPSULE_CURRENT_BOOTSTRAP_HASHES_JSON" '
+      all($current | to_entries[]; $prepared[.key] == .value)
+    ' >/dev/null || {
+      echo "capsule evaluator bootstrap definition changed after prepare" >&2
+      return 1
+    }
+}
+
+prepare_completed() {
+  [ -f "$MANIFEST_FILE" ] && jq -e --arg identity "$CAPSULE_MANIFEST_ID" '
+    .identity == $identity and
+    .prepareComplete == true and
+    (.timestamps.preparedAt | type == "string" and length > 0) and
+    (.protectedBaseline.hash | type == "string" and startswith("sha256:"))
+  ' "$MANIFEST_FILE" >/dev/null
+}
+
+manifest_state_integrity_valid() {
+  jq -e \
+    --arg identity "$CAPSULE_MANIFEST_ID" --arg site "$SITE" --arg runId "$RUN_ID" \
+    --arg runIdentity "$CAPSULE_RUN_IDENTITY" --arg configPath "$CAPSULE_CONFIG_PATH" \
+    --arg configHash "$CAPSULE_CONFIG_HASH" --arg adapterPath "$CONFIG" \
+    --arg adapterHash "$CAPSULE_ADAPTER_HASH" --arg sourceRevision "${CAPSULE_SOURCE_REVISION:-}" \
+    --arg baseUrl "$CAPSULE_BASE_URL" --argjson port "$CAPSULE_PORT" \
+    --arg runtimeRevision "${CAPSULE_RUNTIME_REVISION:-}" \
+    --arg runtimeStrategy "$CAPSULE_RUNTIME_STRATEGY" --arg resetStrategy "$CAPSULE_RESET_STRATEGY" \
+    --arg composeProject "$CAPSULE_COMPOSE_PROJECT" --arg baselinePath "$CAPSULE_BASELINE_PATH" \
+    --arg baselineHash "$CAPSULE_BASELINE_HASH" \
+    --argjson imageDigests "$CAPSULE_IMAGE_DIGESTS_JSON" \
+    --argjson fixtureHashes "$CAPSULE_FIXTURE_HASHES_JSON" \
+    --argjson bootstrapHashes "$CAPSULE_BOOTSTRAP_HASHES_JSON" \
+    --argjson resetArtifactHashes "$CAPSULE_RESET_ARTIFACT_HASHES_JSON" '
+      (.execution.current // {
+        runtimeRevision:.runtime.revision,imageDigests:.runtime.imageDigests
+      }) as $artifact |
+      .identity == $identity and .site == $site and .runId == $runId and
+      .runIdentity == $runIdentity and
+      .config.path == $configPath and .config.hash == $configHash and
+      .config.adapterPath == $adapterPath and .config.adapterHash == $adapterHash and
+      .sourceRevision == $sourceRevision and .runtime.baseUrl == $baseUrl and
+      .runtime.port == $port and .runtime.strategy == $runtimeStrategy and
+      .runtime.composeProject == $composeProject and
+      $artifact.runtimeRevision == $runtimeRevision and $artifact.imageDigests == $imageDigests and
+      .fixtures.hashes == $fixtureHashes and .bootstrap.hashes == $bootstrapHashes and
+      .reset.strategy == $resetStrategy and .reset.artifactHashes == $resetArtifactHashes and
+      .protectedBaseline.path == $baselinePath and .protectedBaseline.hash == $baselineHash
+    ' "$MANIFEST_FILE" >/dev/null || {
+      echo "capsule manifest no longer matches its prepared state" >&2
+      return 1
+    }
+}
+
+prepared_run_integrity_valid() {
+  definition_integrity_valid && prepare_completed && manifest_state_integrity_valid && capsule_verify_baseline &&
+    capsule_verify_reset_artifacts && capsule_browser_manifest_active
+}
+
+set_phase() {
+  capsule_atomic_phase_write "$1"
+}
+
+manifest_create() {
+  local created host docker_version compose_version buildx_version temporary
+  created=$(capsule_timestamp)
+  host=$(uname -srmo)
+  docker_version=
+  compose_version=
+  buildx_version=
+  if [ "$CAPSULE_USES_DOCKER" = true ]; then
+    docker_version=$(docker version --format '{{.Server.Version}}' 2>/dev/null || true)
+    compose_version=$("$ROOT/harness/bin/compose" version --short 2>/dev/null || true)
+    buildx_version=$(docker buildx version 2>/dev/null | awk '{for (i=1;i<=NF;i++) {v=$i; sub(/^v/, "", v); if (v ~ /^[0-9]+\.[0-9]+\.[0-9]+/) {print v; exit}}}' || true)
+  fi
+  temporary="$MANIFEST_FILE.tmp.$$"
+  jq -n \
+    --arg identity "$CAPSULE_MANIFEST_ID" \
+    --arg site "$SITE" --arg runId "$RUN_ID" --arg runIdentity "$CAPSULE_RUN_IDENTITY" \
+    --arg configPath "$CAPSULE_CONFIG_PATH" --arg configHash "$CAPSULE_CONFIG_HASH" \
+    --arg adapterPath "$CONFIG" --arg adapterHash "$CAPSULE_ADAPTER_HASH" \
+    --arg sourceRevision "${CAPSULE_SOURCE_REVISION:-}" \
+    --arg runtimeRevision "${CAPSULE_RUNTIME_REVISION:-}" \
+    --arg workspace "$CAPSULE_WORKSPACE" --arg runtimeRoot "$RUNTIME_ROOT" \
+    --arg baseUrl "$CAPSULE_BASE_URL" --argjson port "$CAPSULE_PORT" \
+    --arg composeProject "$CAPSULE_COMPOSE_PROJECT" \
+    --arg siteLabel "$CAPSULE_SITE_LABEL" --arg runLabel "$CAPSULE_RUN_LABEL" \
+    --arg manifestLabel "$CAPSULE_MANIFEST_LABEL" \
+    --arg resetStrategy "$CAPSULE_RESET_STRATEGY" --arg runtimeStrategy "$CAPSULE_RUNTIME_STRATEGY" \
+    --argjson imageDigests "$CAPSULE_IMAGE_DIGESTS_JSON" \
+    --argjson fixtureHashes "$CAPSULE_FIXTURE_HASHES_JSON" \
+    --argjson bootstrapHashes "$CAPSULE_BOOTSTRAP_HASHES_JSON" \
+    --arg host "$host" --arg nodeVersion "$(node --version)" --arg dockerVersion "$docker_version" \
+    --arg composeVersion "$compose_version" --arg buildxVersion "$buildx_version" \
+    --arg createdAt "$created" \
+    '{schemaVersion:1,identity:$identity,site:$site,runId:$runId,runIdentity:$runIdentity,
+      config:{path:$configPath,hash:$configHash,adapterPath:$adapterPath,adapterHash:$adapterHash},
+      configHash:$configHash,sourceRevision:$sourceRevision,
+      runtime:{revision:$runtimeRevision,root:$runtimeRoot,baseUrl:$baseUrl,port:$port,
+        strategy:$runtimeStrategy,imageDigests:$imageDigests,composeProject:$composeProject,
+        labels:{site:$siteLabel,run:$runLabel,manifest:$manifestLabel}},
+      fixtures:{hashes:$fixtureHashes},bootstrap:{hashes:$bootstrapHashes},
+      workspace:$workspace,reset:{strategy:$resetStrategy,snapshots:[],artifactHashes:{}},protectedBaseline:null,
+      execution:{sequence:0,current:null,history:[]},
+      host:{platform:$host,node:$nodeVersion,
+        docker:(if $dockerVersion == "" then null else $dockerVersion end),
+        compose:(if $composeVersion == "" then null else $composeVersion end),
+        buildx:(if $buildxVersion == "" then null else $buildxVersion end)},
+      timestamps:{createdAt:$createdAt,preparedAt:null,lastTransitionAt:$createdAt},
+      prepareComplete:false,phase:"preparing"}' > "$temporary"
+  chmod 0600 "$temporary"
+  mv -f "$temporary" "$MANIFEST_FILE"
+}
+
+manifest_record_execution() {
+  local operation=$1 now temporary
+  [ -f "$MANIFEST_FILE" ] || return 0
+  jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_IMAGE_DIGESTS_JSON" >/dev/null || {
+    echo "capsule execution produced invalid image digests" >&2
+    return 1
+  }
+  now=$(capsule_timestamp)
+  temporary="$MANIFEST_FILE.tmp.$$"
+  jq \
+    --arg operation "$operation" \
+    --arg runtimeRevision "${CAPSULE_RUNTIME_REVISION:-}" \
+    --arg now "$now" \
+    --argjson imageDigests "$CAPSULE_IMAGE_DIGESTS_JSON" '
+      .execution = (.execution // {sequence:0,current:null,history:[]}) |
+      (.execution.sequence + 1) as $sequence |
+      {sequence:$sequence,operation:$operation,runtimeRevision:$runtimeRevision,
+        imageDigests:$imageDigests,recordedAt:$now} as $entry |
+      .execution.sequence=$sequence |
+      .execution.current=$entry |
+      .execution.history += [$entry]
+    ' "$MANIFEST_FILE" > "$temporary"
+  chmod 0600 "$temporary"
+  mv -f "$temporary" "$MANIFEST_FILE"
+}
+
+manifest_transition() {
+  local phase=$1 now temporary
+  [ -f "$MANIFEST_FILE" ] || return 0
+  now=$(capsule_timestamp)
+  temporary="$MANIFEST_FILE.tmp.$$"
+  jq --arg phase "$phase" --arg now "$now" '.phase=$phase | .timestamps.lastTransitionAt=$now' \
+    "$MANIFEST_FILE" > "$temporary"
+  chmod 0600 "$temporary"
+  mv -f "$temporary" "$MANIFEST_FILE"
+}
+
+manifest_finalize_prepare() {
+  local now temporary snapshots='[]'
+  jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_IMAGE_DIGESTS_JSON" >/dev/null || {
+    echo "capsule_prepare produced invalid image digests" >&2
+    return 1
+  }
+  jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_FIXTURE_HASHES_JSON" >/dev/null || {
+    echo "capsule_prepare produced invalid fixture hashes" >&2
+    return 1
+  }
+  jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_BOOTSTRAP_HASHES_JSON" >/dev/null || {
+    echo "capsule_prepare produced invalid bootstrap hashes" >&2
+    return 1
+  }
+  jq -e 'type == "object" and all(.[]; type == "string")' <<<"$CAPSULE_RESET_ARTIFACT_HASHES_JSON" >/dev/null || {
+    echo "capsule_prepare produced invalid reset artifact hashes" >&2
+    return 1
+  }
+  now=$(capsule_timestamp)
+  if [ -d "$CAPSULE_PRIVATE_DIR/reset-snapshots" ]; then
+    snapshots=$(find "$CAPSULE_PRIVATE_DIR/reset-snapshots" -maxdepth 1 -type f -name '*.tar' -printf '%f\n' \
+      | sed 's/\.tar$//' | sort | jq -Rsc 'split("\n") | map(select(length > 0))')
+  fi
+  temporary="$MANIFEST_FILE.tmp.$$"
+  jq --arg baselineHash "$CAPSULE_BASELINE_HASH" \
+    --arg baselinePath "$CAPSULE_BASELINE_PATH" \
+    --arg runtimeRevision "${CAPSULE_RUNTIME_REVISION:-}" \
+    --arg now "$now" --argjson snapshots "$snapshots" \
+    --argjson imageDigests "$CAPSULE_IMAGE_DIGESTS_JSON" \
+    --argjson fixtureHashes "$CAPSULE_FIXTURE_HASHES_JSON" \
+    --argjson bootstrapHashes "$CAPSULE_BOOTSTRAP_HASHES_JSON" \
+    --argjson resetArtifactHashes "$CAPSULE_RESET_ARTIFACT_HASHES_JSON" \
+    '.protectedBaseline={hash:$baselineHash,path:$baselinePath} |
+      .runtime.revision=$runtimeRevision | .runtime.imageDigests=$imageDigests |
+      .fixtures.hashes=$fixtureHashes | .bootstrap.hashes=$bootstrapHashes |
+      .reset.snapshots=$snapshots | .reset.artifactHashes=$resetArtifactHashes | .phase="prepared" |
+      .timestamps.preparedAt=$now | .timestamps.lastTransitionAt=$now' \
+    "$MANIFEST_FILE" > "$temporary"
+  chmod 0600 "$temporary"
+  mv -f "$temporary" "$MANIFEST_FILE"
+}
+
+manifest_seal_prepare() {
+  local temporary="$MANIFEST_FILE.tmp.$$"
+  jq -e '.phase == "prepared" and .prepareComplete == false and
+    (.timestamps.preparedAt | type == "string" and length > 0)' "$MANIFEST_FILE" >/dev/null || return 1
+  jq '.prepareComplete=true' "$MANIFEST_FILE" > "$temporary"
+  chmod 0600 "$temporary"
+  mv -f "$temporary" "$MANIFEST_FILE"
+}
+
+wait_healthy() {
+  local deadline=$((SECONDS + CAPSULE_HEALTH_TIMEOUT_SECONDS))
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    if capsule_status_bounded; then
+      return 0
+    fi
+    sleep 0.2
+  done
+  return 1
+}
+
+capsule_run_readonly_hook() {
+  local hook=$1 seconds=$2
+  timeout --signal=TERM --kill-after=5s "${seconds}s" bash -c '
+    set -euo pipefail
+    ROOT=$1
+    CONFIG=$2
+    STATE_FILE=$3
+    HOOK=$4
+    # shellcheck source=/dev/null
+    source "$ROOT/harness/lib/capsule-lifecycle.sh"
+    # shellcheck source=/dev/null
+    source "$CONFIG"
+    if [ -f "$STATE_FILE" ]; then
+      # shellcheck source=/dev/null
+      source "$STATE_FILE"
+    fi
+    "$HOOK" >/dev/null
+  ' capsule-readonly "$ROOT" "$CONFIG" "$STATE_FILE" "$hook"
+}
+
+capsule_status_bounded() {
+  capsule_run_readonly_hook capsule_status "$CAPSULE_STATUS_TIMEOUT_SECONDS" >/dev/null 2>&1
+}
+
+capsule_run_hook() {
+  local hook=$1 seconds result code
+  case "$hook" in
+    capsule_prepare|capsule_capture_reset_state) seconds=$CAPSULE_PREPARE_TIMEOUT_SECONDS ;;
+    capsule_up) seconds=$CAPSULE_UP_TIMEOUT_SECONDS ;;
+    capsule_reset|capsule_restore_reset_state) seconds=$CAPSULE_RESET_TIMEOUT_SECONDS ;;
+    capsule_down) seconds=$CAPSULE_DOWN_TIMEOUT_SECONDS ;;
+    *) echo "unsupported capsule hook: $hook" >&2; return 2 ;;
+  esac
+  result="$CAPSULE_PRIVATE_DIR/.hook-result-${hook}-$$.env"
+  rm -f "$result"
+  if timeout --signal=TERM --kill-after=10s "${seconds}s" bash -c '
+    set -euo pipefail
+    ROOT=$1
+    CONFIG=$2
+    STATE_FILE=$3
+    HOOK=$4
+    RESULT=$5
+    # shellcheck source=/dev/null
+    source "$ROOT/harness/lib/capsule-lifecycle.sh"
+    # shellcheck source=/dev/null
+    source "$CONFIG"
+    if [ -f "$STATE_FILE" ]; then
+      # shellcheck source=/dev/null
+      source "$STATE_FILE"
+    fi
+    "$HOOK" >&2
+    [ -n "${CAPSULE_IMAGE_DIGESTS_JSON:-}" ] || CAPSULE_IMAGE_DIGESTS_JSON="{}"
+    [ -n "${CAPSULE_FIXTURE_HASHES_JSON:-}" ] || CAPSULE_FIXTURE_HASHES_JSON="{}"
+    [ -n "${CAPSULE_BOOTSTRAP_HASHES_JSON:-}" ] || CAPSULE_BOOTSTRAP_HASHES_JSON="{}"
+    {
+      printf "CAPSULE_RUNTIME_REVISION=%q\n" "${CAPSULE_RUNTIME_REVISION:-}"
+      printf "CAPSULE_IMAGE_DIGESTS_JSON=%q\n" "$CAPSULE_IMAGE_DIGESTS_JSON"
+      printf "CAPSULE_FIXTURE_HASHES_JSON=%q\n" "$CAPSULE_FIXTURE_HASHES_JSON"
+      printf "CAPSULE_BOOTSTRAP_HASHES_JSON=%q\n" "$CAPSULE_BOOTSTRAP_HASHES_JSON"
+    } > "$RESULT"
+  ' capsule-hook "$ROOT" "$CONFIG" "$STATE_FILE" "$hook" "$result"; then
+    [ -f "$result" ] || {
+      echo "$hook completed without publishing its lifecycle state" >&2
+      return 1
+    }
+    chmod 0600 "$result"
+    # shellcheck source=/dev/null
+    source "$result"
+    rm -f "$result"
+    export CAPSULE_RUNTIME_REVISION CAPSULE_IMAGE_DIGESTS_JSON
+    export CAPSULE_FIXTURE_HASHES_JSON CAPSULE_BOOTSTRAP_HASHES_JSON
+    save_state || return 1
+    return 0
+  else
+    code=$?
+  fi
+  rm -f "$result"
+  if [ "$code" -eq 124 ] || [ "$code" -eq 137 ]; then
+    echo "$hook timed out after ${seconds}s" >&2
+  else
+    echo "$hook failed with exit code $code" >&2
+  fi
+  return "$code"
+}
+
+cleanup_run() {
+  local mode=$1 ok=true adapter_ok=true cleanup_verify_available=false
+  if ! capsule_run_hook capsule_down; then
+    echo "capsule adapter cleanup failed for $SITE/$RUN_ID" >&2
+    adapter_ok=false
+  fi
+  if ! capsule_gc_labeled_resources; then
+    ok=false
+  fi
+  if ! capsule_gc_browser_sessions; then
+    echo "capsule browser-session cleanup failed for $SITE/$RUN_ID" >&2
+    ok=false
+  fi
+  if declare -F capsule_cleanup_verify >/dev/null; then
+    cleanup_verify_available=true
+    if ! capsule_run_readonly_hook capsule_cleanup_verify "$CAPSULE_CLEANUP_VERIFY_TIMEOUT_SECONDS"; then
+      echo "capsule adapter could not verify cleanup for $SITE/$RUN_ID" >&2
+      ok=false
+    fi
+  fi
+  if [ "$mode" = down ] && [ "$adapter_ok" != true ]; then
+    ok=false
+  fi
+  if [ "$mode" = gc ] && [ "$adapter_ok" != true ] &&
+    [ "$CAPSULE_USES_DOCKER" != true ] && [ "$cleanup_verify_available" != true ]; then
+    echo "cannot prove non-Docker cleanup after adapter failure for $SITE/$RUN_ID" >&2
+    ok=false
+  fi
+  [ "$ok" = true ]
+}
+
+case "$COMMAND" in
+  prepare)
+    [ ! -e "$CAPSULE_RUNTIME_DIR" ] || { echo "run already exists: $SITE/$RUN_ID" >&2; exit 1; }
+    CAPSULE_PORT=$REQUESTED_PORT
+    [ -n "$CAPSULE_PORT" ] || { echo "prepare requires an orchestrator-reserved --port" >&2; exit 2; }
+    CAPSULE_BASE_URL="http://127.0.0.1:$CAPSULE_PORT"
+    CAPSULE_MANIFEST_ID="sha256:$(printf '%s\0' "$SITE" "$RUN_ID" "$(capsule_timestamp)" "$(node -e 'console.log(require("node:crypto").randomUUID())')" | sha256sum | cut -d' ' -f1)"
+    CAPSULE_MANIFEST_LABEL="webmcp-kit.manifest=$CAPSULE_MANIFEST_ID"
+    export CAPSULE_PORT CAPSULE_BASE_URL CAPSULE_MANIFEST_ID CAPSULE_MANIFEST_LABEL
+
+    if ! capsule_reserve_port "$CAPSULE_PORT"; then
+      rm -rf "$CAPSULE_RUNTIME_DIR"
+      exit 1
+    fi
+    mkdir -p "$CAPSULE_AUTHOR_DIR" "$CAPSULE_PRIVATE_DIR"
+    if [ "$CAPSULE_USES_DOCKER" = true ]; then
+      existing=$(capsule_labeled_resource_count) || {
+        rm -rf "$CAPSULE_RUNTIME_DIR"
+        capsule_release_port
+        echo "cannot inspect run-labeled Docker resources" >&2
+        exit 1
+      }
+      if [ "$existing" -ne 0 ]; then
+        rm -rf "$CAPSULE_RUNTIME_DIR"
+        capsule_release_port
+        echo "stale run-labeled resources exist; run gc for $SITE/$RUN_ID" >&2
+        exit 1
+      fi
+    fi
+    manifest_create
+    save_state
+    if ! capsule_register_browser_manifest; then
+      set_phase failed
+      manifest_transition failed
+      save_state
+      json failed false
+      exit 1
+    fi
+    set_phase preparing
+    if ! capsule_run_hook capsule_prepare || ! capsule_validate_compose_contract || ! capsule_protect_baseline ||
+      { declare -F capsule_capture_reset_state >/dev/null && ! capsule_run_hook capsule_capture_reset_state; } ||
+      ! capsule_validate_generated_images || ! capsule_record_reset_artifact_hashes; then
+      set_phase failed
+      manifest_transition failed
+      save_state
+      json failed false
+      exit 1
+    fi
+    if ! manifest_finalize_prepare || ! save_state || ! capsule_activate_browser_manifest ||
+      ! manifest_seal_prepare; then
+      set_phase failed
+      manifest_transition failed
+      save_state || true
+      json failed false
+      exit 1
+    fi
+    set_phase prepared
+    json prepared false
+    ;;
+  up)
+    load_state || { json absent false; exit 1; }
+    prepared_run_integrity_valid || { json rejected false; exit 1; }
+    prior_phase=$(cat "$PHASE_FILE" 2>/dev/null || echo prepared)
+    set_phase starting
+    if ! capsule_quiesce_browser_manifest; then
+      set_phase "$prior_phase"
+      [ "$prior_phase" != ready ] || capsule_mark_browser_manifest_ready || true
+      json rejected false
+      exit 1
+    fi
+    manifest_transition starting
+    if ! capsule_run_hook capsule_up || ! capsule_verify_baseline || ! capsule_verify_reset_artifacts ||
+      ! capsule_validate_compose_contract || ! wait_healthy ||
+      ! capsule_validate_generated_images || ! capsule_validate_running_images ||
+      ! manifest_record_execution up ||
+      ! manifest_state_integrity_valid || ! save_state; then
+      capsule_mark_browser_manifest_not_ready || true
+      set_phase failed
+      manifest_transition failed
+      json failed false
+      exit 1
+    fi
+    # Publish the externally visible ready phase last. Once the browser gate is
+    # ready the runtime has already passed every health/integrity check, while
+    # publishing the phase first creates a contradictory ready/not-ready
+    # window for concurrent status readers.
+    if ! manifest_transition ready || ! capsule_mark_browser_manifest_ready || ! set_phase ready; then
+      capsule_mark_browser_manifest_not_ready || true
+      set_phase failed
+      manifest_transition failed
+      json failed false
+      exit 1
+    fi
+    json ready true
+    ;;
+  status)
+    if ! load_state; then
+      json absent false
+      exit 1
+    fi
+    phase=$(cat "$PHASE_FILE" 2>/dev/null || echo unknown)
+    if ! prepare_completed; then
+      json "$phase" false
+      exit 1
+    fi
+    if ! prepared_run_integrity_valid; then
+      json "$phase" false
+      exit 1
+    fi
+    # Phase and browser readiness are separate atomic publications. A mutator
+    # can change them between these two reads without status taking the
+    # long-held lifecycle lock. Re-sample briefly so we report either the old
+    # coherent ready state or the new transitional state, never a synthetic
+    # ready/not-ready contradiction.
+    for _ in 1 2 3 4 5; do
+      phase=$(cat "$PHASE_FILE" 2>/dev/null || echo unknown)
+      if [ "$phase" != ready ]; then
+        json "$phase" false
+        exit 1
+      fi
+      if capsule_browser_manifest_ready >/dev/null 2>&1 && capsule_status_bounded; then
+        json ready true
+        exit 0
+      fi
+      observed_phase=$(cat "$PHASE_FILE" 2>/dev/null || echo unknown)
+      if [ "$observed_phase" != ready ]; then
+        json "$observed_phase" false
+        exit 1
+      fi
+      sleep 0.02
+    done
+    json ready false
+    exit 1
+    ;;
+  reset)
+    load_state || { json absent false; exit 1; }
+    prepared_run_integrity_valid || { json rejected false; exit 1; }
+    prior_phase=$(cat "$PHASE_FILE" 2>/dev/null || echo ready)
+    set_phase resetting
+    if ! capsule_quiesce_browser_manifest; then
+      set_phase "$prior_phase"
+      [ "$prior_phase" != ready ] || capsule_mark_browser_manifest_ready || true
+      json rejected false
+      exit 1
+    fi
+    manifest_transition resetting
+    if declare -F capsule_restore_reset_state >/dev/null; then
+      reset_ok=true
+      capsule_run_hook capsule_restore_reset_state || reset_ok=false
+    else
+      reset_ok=true
+      capsule_run_hook capsule_reset || reset_ok=false
+    fi
+    if [ "$reset_ok" != true ] || ! capsule_verify_baseline || ! capsule_verify_reset_artifacts ||
+      ! capsule_validate_compose_contract || ! wait_healthy ||
+      ! capsule_validate_generated_images || ! capsule_validate_running_images ||
+      ! manifest_record_execution reset ||
+      ! manifest_state_integrity_valid || ! save_state; then
+      capsule_mark_browser_manifest_not_ready || true
+      set_phase failed
+      manifest_transition failed
+      json failed false
+      exit 1
+    fi
+    if ! manifest_transition ready || ! capsule_mark_browser_manifest_ready || ! set_phase ready; then
+      capsule_mark_browser_manifest_not_ready || true
+      set_phase failed
+      manifest_transition failed
+      json failed false
+      exit 1
+    fi
+    json ready true
+    ;;
+  down|gc)
+    if ! load_state; then
+      CAPSULE_PORT=$REQUESTED_PORT
+      CAPSULE_BASE_URL=${CAPSULE_PORT:+"http://127.0.0.1:$CAPSULE_PORT"}
+      export CAPSULE_PORT CAPSULE_BASE_URL
+    fi
+    mkdir -p "$CAPSULE_PRIVATE_DIR"
+    set_phase stopping
+    manifest_transition stopping
+    # Close registration first and allow in-flight verifiers to exit before
+    # the adapter can tear down the application they are observing. Stale or
+    # malformed records take the tolerant GC path before application cleanup.
+    if ! capsule_quiesce_or_reclaim_browser_sessions; then
+      set_phase cleanup-failed
+      manifest_transition cleanup-failed
+      json cleanup-failed false
+      exit 1
+    fi
+    if ! cleanup_run "$COMMAND"; then
+      set_phase cleanup-failed
+      manifest_transition cleanup-failed
+      json cleanup-failed false
+      exit 1
+    fi
+    # Keep the reservation until source/private data are actually gone. If
+    # deletion fails, recreate the small state marker so a retry cannot treat
+    # the still-dirty run as a stale reservation.
+    if ! capsule_remove_runtime_dir; then
+      mkdir -p "$CAPSULE_PRIVATE_DIR"
+      save_state
+      set_phase cleanup-failed
+      manifest_transition cleanup-failed
+      json cleanup-failed false
+      exit 1
+    fi
+    if ! capsule_release_port; then
+      mkdir -p "$CAPSULE_PRIVATE_DIR"
+      save_state
+      set_phase cleanup-failed
+      manifest_transition cleanup-failed
+      json cleanup-failed false
+      exit 1
+    fi
+    rmdir "$RUNTIME_ROOT/$SITE" "$RUNTIME_ROOT" 2>/dev/null || true
+    json absent false
+    ;;
+esac

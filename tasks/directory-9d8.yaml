@@ -1,0 +1,26 @@
+tasks:
+  - id: directory-search
+    tier: act-short
+    prompt: Search the directory for a {params.kind} tool and report its name.
+    params:
+      kind: design
+    # The oracle (capsules/directory-9d8/oracle.sh) has no search probe — score
+    # the reported name. The seeded design-category listings are Figma and
+    # Dribbble; neither name appears in the prompt.
+    predicate:
+      type: answer
+      contains_any: [figma, dribbble]
+  - id: directory-filter
+    tier: act-short
+    prompt: Filter the directory to developer tools.
+    # Development contains the seeded GitHub and React bookmarks; report one.
+    predicate: { type: answer, contains: [github] }
+  - id: directory-detail
+    tier: answer
+    prompt: Open the Figma listing and report its one-line description.
+    # No listing-detail probe in the oracle — score the reported description.
+    # The seed describes Figma as "The collaborative interface design tool";
+    # it's visible page text, so no interface is structurally favored.
+    predicate:
+      type: answer
+      contains: [collaborative]

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "tailwind-nextjs-blog",
+  "source": {
+    "repository": "https://github.com/timlrx/tailwind-nextjs-starter-blog.git",
+    "revision": "b45bef66b40c63b6f57c15ee8cd090682238df4c"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-dev",
+    "resetStrategy": "stateless",
+    "applicationPort": 3000,
+    "healthPath": "/",
+    "images": [
+      {
+        "name": "node",
+        "reference": "node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+      }
+    ],
+    "application": {
+      "image": "node",
+      "sourceTarget": "/workspace",
+      "workingDirectory": "/workspace",
+      "command": ["node", ".yarn/releases/yarn-3.6.1.cjs", "dev", "-p", "3000"],
+      "environment": {
+        "HOME": "/tmp/home",
+        "NEXT_TELEMETRY_DISABLED": "1"
+      }
+    },
+    "healthChecks": [
+      {
+        "path": "/",
+        "contains": "Latest"
+      }
+    ]
+  },
+  "acceptance": {
+    "publicPath": "/",
+    "paths": ["/", "/blog/code-sample/"],
+    "liveness": {
+      "file": "app/theme-providers.tsx",
+      "language": "typescript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "content",
+      "arguments": {},
+      "assert": ".home.status == 200 and .home.hasLatest and .article.status == 200 and .article.hasCodeSample",
+      "resetAssert": ".home.status == 200 and .home.hasLatest and .article.status == 200 and .article.hasCodeSample"
+    }
+  },
+  "actors": []
+}

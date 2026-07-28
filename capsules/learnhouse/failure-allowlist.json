@@ -1,0 +1,8 @@
+{
+  "console": [
+    "^Failed to load resource: the server responded with a status of 401 \\(Unauthorized\\)$"
+  ],
+  "network": [
+    "^GET https?://[^/]+/api/v1/trail/org/[0-9]+/trail 401$"
+  ]
+}

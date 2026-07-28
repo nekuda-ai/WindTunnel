@@ -1,0 +1,16 @@
+tasks:
+  - id: blog-find-post
+    tier: answer
+    prompt: Find the post whose title starts with "Introducing" and report its full title.
+    # The oracle (capsules/tailwind-nextjs-blog/oracle.sh) only exposes page
+    # render probes — both matching seeded titles satisfy the prompt as worded.
+    predicate:
+      type: answer
+      contains_any: [tailwind nextjs starter blog, multi-part posts]
+  - id: blog-read-author
+    tier: answer
+    prompt: Who authors this blog?
+    # No author probe in the oracle — the seeded author is Tails Azimuth.
+    predicate:
+      type: answer
+      contains: [azimuth]

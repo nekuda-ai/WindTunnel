@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "idurar-erp-crm",
+  "source": {
+    "repository": "https://github.com/idurar/idurar-erp-crm.git",
+    "revision": "5b2cf28969dc9a720c3fca20f0d2c7606534b277"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-dev-gateway",
+    "packageManager": "npm@10.2.4",
+    "resetStrategy": "database-dump",
+    "browserStateReset": "fresh-browser-context",
+    "applicationPort": 3000,
+    "healthPath": "/login",
+    "composeOverlay": "compose.overlay.yaml",
+    "applicationService": "gateway",
+    "requiredServices": ["db", "backend", "frontend", "gateway"],
+    "healthChecks": [
+      {
+        "path": "/login",
+        "contains": "id=\"root\""
+      },
+      {
+        "path": "/src/apps/IdurarOs.jsx",
+        "contains": "function IdurarOs"
+      }
+    ],
+    "images": [
+      {
+        "name": "node",
+        "reference": "node:20.9.0-bookworm-slim@sha256:d272d96f3ad3a4e5bb2b6c36ea7427b4e83d1b23fb24b9df8b71d01aa59951b1"
+      },
+      {
+        "name": "mongo",
+        "reference": "mongo:4.4@sha256:4be76f674fc4b27859816811b8baa3c51830eb1dbf4ca81a51e26b79edd662ef"
+      }
+    ]
+  },
+  "fixtures": {
+    "admin": "Upstream deterministic setup account admin@admin.com / admin123",
+    "crm": "One local Acme Evaluation client and one draft invoice created through authenticated APIs"
+  },
+  "acceptance": {
+    "publicPath": "/login",
+    "paths": ["/login", "/invoice", "/invoice/create", "/customer"],
+    "liveness": {
+      "file": "frontend/src/apps/IdurarOs.jsx",
+      "language": "javascript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "database",
+      "arguments": {},
+      "assert": ".administrators >= 1 and .clients >= 1 and .invoices >= 1 and (.clientNames | index(\"Acme Evaluation\") != null)",
+      "mutation": {
+        "probe": "rename_client",
+        "arguments": {"from": "Acme Evaluation", "to": "WebMCP Reset Sentinel"},
+        "assert": ".affectedRows == 1 and (.clientNames | index(\"WebMCP Reset Sentinel\") != null)"
+      },
+      "resetAssert": ".administrators >= 1 and .clients >= 1 and .invoices >= 1 and (.clientNames | index(\"Acme Evaluation\") != null) and (.clientNames | index(\"WebMCP Reset Sentinel\") == null)"
+    }
+  },
+  "actors": [
+    {
+      "id": "administrator",
+      "description": "Local IDURAR owner admin@admin.com / admin123",
+      "setup": "actors/administrator.js",
+      "path": "/invoice",
+      "expect": "Invoices"
+    }
+  ]
+}

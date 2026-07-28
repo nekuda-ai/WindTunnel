@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 254" font-family="system-ui,sans-serif" font-size="13">
+<rect width="720" height="254" fill="white"/>
+<text x="8" y="20" font-weight="600" font-size="14">Median tokens processed / task (lower is better)</text>
+<text x="142" y="49" text-anchor="end" font-weight="600">wm-gpt</text>
+<rect x="150" y="37" width="24.9" height="17" fill="#c8553d" rx="2"/>
+<text x="182.89911467984354" y="50" fill="#555">2,546</text>
+<text x="142" y="79" text-anchor="end" font-weight="600">wm-stagehand</text>
+<rect x="150" y="67" width="35.2" height="17" fill="#c8553d" rx="2"/>
+<text x="193.2362569487338" y="80" fill="#555">3,603</text>
+<text x="142" y="109" text-anchor="end" font-weight="600">wm-claude</text>
+<rect x="150" y="97" width="35.5" height="17" fill="#c8553d" rx="2"/>
+<text x="193.46119003500104" y="110" fill="#555">3,626</text>
+<text x="142" y="139" text-anchor="end" font-weight="400">a11y-stagehand</text>
+<rect x="150" y="127" width="115.2" height="17" fill="#9a9a92" rx="2"/>
+<text x="273.24397776405186" y="140" fill="#555">11,784</text>
+<text x="142" y="169" text-anchor="end" font-weight="400">cu-openai</text>
+<rect x="150" y="157" width="182.5" height="17" fill="#9a9a92" rx="2"/>
+<text x="340.4794111591517" y="170" fill="#555">18,659</text>
+<text x="142" y="199" text-anchor="end" font-weight="400">dom-browseruse</text>
+<rect x="150" y="187" width="326.3" height="17" fill="#9a9a92" rx="2"/>
+<text x="484.29967057854645" y="200" fill="#555">33,365</text>
+<text x="142" y="229" text-anchor="end" font-weight="400">cu-claude</text>
+<rect x="150" y="217" width="380.0" height="17" fill="#9a9a92" rx="2"/>
+<text x="538" y="230" fill="#555">38,856</text>
+</svg>

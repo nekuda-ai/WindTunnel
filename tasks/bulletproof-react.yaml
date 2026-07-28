@@ -1,0 +1,11 @@
+tasks:
+  - id: react-public-content
+    tier: answer
+    prompt: Identify the public application shown on the home page.
+    # The rendered public page identifies Bulletproof React.
+    predicate: { type: answer, contains: [bulletproof] }
+  - id: react-auth-boundary
+    tier: answer
+    prompt: Check whether the private app is accessible while signed out; do not sign in.
+    # Score the signed-out redirect or access-denied result the agent observes.
+    predicate: { type: answer, matches: "(log ?in|sign ?in|redirect|unauthorized|denied)" }

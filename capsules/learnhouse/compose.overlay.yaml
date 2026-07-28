@@ -1,0 +1,93 @@
+services:
+  app:
+    image: "${LEARNHOUSE_APP_IMAGE:?}"
+    build:
+      context: "${CAPSULE_WORKSPACE:?}"
+      dockerfile: "${CAPSULE_PRIVATE_DIR:?}/evaluator/Dockerfile"
+      args:
+        LEARNHOUSE_PUBLIC: "true"
+    init: true
+    command: ["sh", "-c", "(cd /app/web && node server-wrapper.js) & (cd /app/api && uv run uvicorn app:app --host 0.0.0.0 --port 9000 --timeout-keep-alive 600) & (cd /app/collab && node dist/index.js) & exec nginx -g 'daemon off;'"]
+    environment:
+      HOSTNAME: 0.0.0.0
+      LEARNHOUSE_API_URL: http://localhost:9000
+      LEARNHOUSE_DOMAIN: "127.0.0.1:${CAPSULE_PORT:?}"
+      LEARNHOUSE_FRONTEND_DOMAIN: "127.0.0.1:${CAPSULE_PORT:?}"
+      LEARNHOUSE_TENANCY: single
+      LEARNHOUSE_ALLOWED_ORIGINS: "${CAPSULE_BASE_URL:?}"
+      NEXT_PUBLIC_LEARNHOUSE_API_URL: "${CAPSULE_BASE_URL:?}/api/v1/"
+      NEXT_PUBLIC_LEARNHOUSE_BACKEND_URL: "${CAPSULE_BASE_URL:?}/"
+      NEXT_PUBLIC_LEARNHOUSE_DOMAIN: "127.0.0.1:${CAPSULE_PORT:?}"
+      NEXT_PUBLIC_LEARNHOUSE_TOP_DOMAIN: 127.0.0.1
+      NEXT_PUBLIC_LEARNHOUSE_MULTI_ORG: "False"
+      NEXT_PUBLIC_LEARNHOUSE_DEFAULT_ORG: phase-one
+      NEXT_PUBLIC_LEARNHOUSE_HTTPS: "False"
+      NEXTAUTH_URL: "${CAPSULE_BASE_URL:?}"
+      NEXTAUTH_SECRET: webmcp-eval-nextauth-secret-000000000000
+      LEARNHOUSE_SQL_CONNECTION_STRING: postgresql://learnhouse:learnhouse@db:5432/learnhouse
+      LEARNHOUSE_REDIS_CONNECTION_STRING: redis://redis:6379/learnhouse
+      LEARNHOUSE_REDIS_URL: redis://redis:6379
+      LEARNHOUSE_COOKIE_DOMAIN: 127.0.0.1
+      LEARNHOUSE_PORT: "9000"
+      LEARNHOUSE_AUTH_JWT_SECRET_KEY: webmcp-eval-jwt-secret-0000000000000000
+      LEARNHOUSE_INITIAL_ADMIN_EMAIL: admin@webmcp-eval.com
+      LEARNHOUSE_INITIAL_ADMIN_PASSWORD: WebmcpEvalAdmin!234
+      LEARNHOUSE_INITIAL_ORG_NAME: Phase One School
+      LEARNHOUSE_INITIAL_ORG_SLUG: phase-one
+      COLLAB_INTERNAL_KEY: webmcp-eval-collab-secret-000000000000
+      NEXT_PUBLIC_COLLAB_URL: "ws://127.0.0.1:${CAPSULE_PORT:?}/collab"
+      LEARNHOUSE_DEVELOPMENT_MODE: "False"
+      LEARNHOUSE_LOGFIRE_ENABLED: "False"
+      LEARNHOUSE_IS_AI_ENABLED: "False"
+      LEARNHOUSE_CONTENT_DELIVERY_TYPE: filesystem
+      LEARNHOUSE_OSS: "true"
+      NEXT_PUBLIC_LEARNHOUSE_OSS: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: "${CAPSULE_PRIVATE_DIR:?}/application-state/content"
+        target: /app/api/content
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/api/v1/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
+    stop_grace_period: 20s
+  ssr-fwd:
+    image: "${CAPSULE_IMAGE_SOCAT:?}"
+    network_mode: "service:app"
+    command: ["TCP-LISTEN:${CAPSULE_PORT:?},fork,reuseaddr", "TCP:127.0.0.1:80"]
+    depends_on:
+      app:
+        condition: service_healthy
+  db:
+    image: "${CAPSULE_IMAGE_POSTGRES:?}"
+    environment:
+      POSTGRES_USER: learnhouse
+      POSTGRES_PASSWORD: learnhouse
+      POSTGRES_DB: learnhouse
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learnhouse -d learnhouse"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+  redis:
+    image: "${CAPSULE_IMAGE_REDIS:?}"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+volumes:
+  db-data: {}
+  redis-data: {}

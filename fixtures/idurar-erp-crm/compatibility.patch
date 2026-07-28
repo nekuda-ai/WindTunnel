@@ -1,0 +1,135 @@
+diff --git a/backend/src/setup/reset.js b/backend/src/setup/reset.js
+index 73569bd..2c2c0cc 100644
+--- a/backend/src/setup/reset.js
++++ b/backend/src/setup/reset.js
+@@ -8,13 +8,9 @@ async function deleteData() {
+   const Admin = require('../models/coreModels/Admin');
+   const AdminPassword = require('../models/coreModels/AdminPassword');
+   const Setting = require('../models/coreModels/Setting');
+-  const PaymentMode = require('../models/appModels/PaymentMode');
+-  const Taxes = require('../models/appModels/Taxes');
+ 
+   await Admin.deleteMany();
+   await AdminPassword.deleteMany();
+-  await PaymentMode.deleteMany();
+-  await Taxes.deleteMany();
+   console.log('👍 Admin Deleted. To setup demo admin data, run\n\n\t npm run setup\n\n');
+   await Setting.deleteMany();
+   console.log('👍 Setting Deleted. To setup Setting data, run\n\n\t npm run setup\n\n');
+diff --git a/backend/src/setup/setup.js b/backend/src/setup/setup.js
+index 89932b6..57dc6a9 100644
+--- a/backend/src/setup/setup.js
++++ b/backend/src/setup/setup.js
+@@ -51,21 +51,6 @@ async function setupApp() {
+ 
+     console.log('👍 Settings created : Done!');
+ 
+-    const PaymentMode = require('../models/appModels/PaymentMode');
+-    const Taxes = require('../models/appModels/Taxes');
+-
+-    await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true }]);
+-    console.log('👍 Taxes created : Done!');
+-
+-    await PaymentMode.insertMany([
+-      {
+-        name: 'Default Payment',
+-        description: 'Default Payment Mode (Cash , Wire Transfer)',
+-        isDefault: true,
+-      },
+-    ]);
+-    console.log('👍 PaymentMode created : Done!');
+-
+     console.log('🥳 Setup completed :Success!');
+     process.exit();
+   } catch (e) {
+diff --git a/frontend/src/apps/Navigation/NavigationContainer.jsx b/frontend/src/apps/Navigation/NavigationContainer.jsx
+index 7d4f426..52ae9ac 100644
+--- a/frontend/src/apps/Navigation/NavigationContainer.jsx
++++ b/frontend/src/apps/Navigation/NavigationContainer.jsx
+@@ -14,16 +14,13 @@ import {
+   SettingOutlined,
+   CustomerServiceOutlined,
+   ContainerOutlined,
+-  FileSyncOutlined,
+   DashboardOutlined,
+   TagOutlined,
+   TagsOutlined,
+   UserOutlined,
+   CreditCardOutlined,
+   MenuOutlined,
+   FileOutlined,
+-  ShopOutlined,
+   FilterOutlined,
+-  WalletOutlined,
+   ReconciliationOutlined,
+ } from '@ant-design/icons';
+@@ -65,11 +62,6 @@ function Sidebar({ collapsible, isMobile = false }) {
+       icon: <ContainerOutlined />,
+       label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
+     },
+-    {
+-      key: 'quote',
+-      icon: <FileSyncOutlined />,
+-      label: <Link to={'/quote'}>{translate('quote')}</Link>,
+-    },
+     {
+       key: 'payment',
+       icon: <CreditCardOutlined />,
+@@ -77,15 +69,5 @@ function Sidebar({ collapsible, isMobile = false }) {
+     },
+ 
+-    {
+-      key: 'paymentMode',
+-      label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
+-      icon: <WalletOutlined />,
+-    },
+-    {
+-      key: 'taxes',
+-      label: <Link to={'/taxes'}>{translate('taxes')}</Link>,
+-      icon: <ShopOutlined />,
+-    },
+     {
+       key: 'generalSettings',
+       label: <Link to={'/settings'}>{translate('settings')}</Link>,
+diff --git a/frontend/src/router/routes.jsx b/frontend/src/router/routes.jsx
+index fea8efb..7e7fda2 100644
+--- a/frontend/src/router/routes.jsx
++++ b/frontend/src/router/routes.jsx
+@@ -69,22 +69,6 @@ let routes = {
+       path: '/invoice/pay/:id',
+       element: <InvoiceRecordPayment />,
+     },
+-    {
+-      path: '/quote',
+-      element: <Quote />,
+-    },
+-    {
+-      path: '/quote/create',
+-      element: <QuoteCreate />,
+-    },
+-    {
+-      path: '/quote/read/:id',
+-      element: <QuoteRead />,
+-    },
+-    {
+-      path: '/quote/update/:id',
+-      element: <QuoteUpdate />,
+-    },
+     {
+       path: '/payment',
+       element: <Payment />,
+@@ -106,14 +90,6 @@ let routes = {
+       path: '/settings/edit/:settingsKey',
+       element: <Settings />,
+     },
+-    {
+-      path: '/payment/mode',
+-      element: <PaymentMode />,
+-    },
+-    {
+-      path: '/taxes',
+-      element: <Taxes />,
+-    },
+ 
+     {
+       path: '/profile',

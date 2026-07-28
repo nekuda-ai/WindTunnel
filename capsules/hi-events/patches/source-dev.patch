@@ -1,0 +1,209 @@
+diff --git a/Dockerfile.all-in-one b/Dockerfile.all-in-one
+index 45b18a5..c3d4dcf 100644
+--- a/Dockerfile.all-in-one
++++ b/Dockerfile.all-in-one
+@@ -1,8 +1,10 @@
+-FROM node:22-alpine AS node-frontend
++ARG WEBMCP_NODE_BUILDER=node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3
++ARG WEBMCP_PHP_RUNTIME=serversideup/php:8.3-fpm-alpine-v3.4.5@sha256:f9b8c621cf0cbcd2769fab78c24db0afea04d8b043a64474458d08ec736d29fc
++FROM ${WEBMCP_NODE_BUILDER} AS node-frontend
+
+ WORKDIR /app/frontend
+
+-RUN apk add --no-cache yarn
++RUN corepack enable && corepack prepare yarn@1.22.22 --activate
+
+ # Increase network timeout for slow ARM emulation builds
+ RUN yarn config set network-timeout 600000
+@@ -15,7 +17,7 @@ COPY ./VERSION /app/VERSION
+ RUN yarn install --network-timeout 600000 --frozen-lockfile && yarn build
+
+ # Use stable multi-arch serversideup/php image
+-FROM serversideup/php:8.3-fpm-alpine
++FROM ${WEBMCP_PHP_RUNTIME}
+
+ ENV PHP_OPCACHE_ENABLE=1
+
+@@ -27,7 +29,14 @@ RUN install-php-extensions intl
+ RUN apk add --no-cache nodejs yarn nginx supervisor dos2unix
++# The all-in-one image switches to root for its build and does not switch back.
++# Keep FPM workers on the base image's unprivileged application identity.
++RUN sed -i -e 's/^;user = www-data/user = www-data/' -e 's/^;group = www-data/group = www-data/' /usr/local/etc/php-fpm.d/docker-php-serversideup-pool.conf
+
+ COPY --from=node-frontend /app/frontend /app/frontend
+
++# The pinned build stage is Debian/glibc while the runtime is Alpine/musl.
++# Re-resolve runtime dependencies so native optional packages match Alpine.
++RUN rm -rf /app/frontend/node_modules && yarn --cwd /app/frontend install --network-timeout 600000 --frozen-lockfile
++
+ COPY ./backend /app/backend
+ COPY ./VERSION /app/backend/VERSION
+ RUN mkdir -p /app/backend/bootstrap/cache \
+diff --git a/docker/all-in-one/scripts/startup.sh b/docker/all-in-one/scripts/startup.sh
+index 3ab2caa..1fe62c4 100644
+--- a/docker/all-in-one/scripts/startup.sh
++++ b/docker/all-in-one/scripts/startup.sh
+@@ -13,9 +13,10 @@ php artisan cache:clear
+ php artisan config:clear
+ php artisan route:clear
+ php artisan view:clear
+-php artisan storage:link
+
+-chown -R www-data:www-data /app/backend
++# Source directories are evaluator bind mounts. Only mutate the dedicated
++# writable runtime volumes, never the author's checkout.
++chown -R www-data:www-data /app/backend/storage /app/backend/bootstrap/cache
+ chmod -R 775 /app/backend/storage /app/backend/bootstrap/cache
+
+ exec /usr/bin/supervisord -c /etc/supervisord.conf
+diff --git a/docker/all-in-one/nginx/nginx.conf b/docker/all-in-one/nginx/nginx.conf
+index 054003d..07f352c 100644
+--- a/docker/all-in-one/nginx/nginx.conf
++++ b/docker/all-in-one/nginx/nginx.conf
+@@ -43,6 +43,14 @@ http {
+            fastcgi_param PHP_VALUE "error_log=/dev/stderr";
+        }
+ 
++       # Vite serves optimized dependencies from a hidden .vite directory.
++       # This explicit prefix must win over the generic hidden-file denial.
++       location ^~ /node_modules/.vite/ {
++           proxy_pass http://localhost:5678;
++           proxy_http_version 1.1;
++           proxy_set_header Host $host;
++       }
++
+        location / {
+            proxy_pass http://localhost:5678;
+            proxy_http_version 1.1;
+@@ -50,6 +58,13 @@ http {
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
++       location /__webmcp_hmr {
++           proxy_pass http://localhost:24678;
++           proxy_http_version 1.1;
++           proxy_set_header Upgrade $http_upgrade;
++           proxy_set_header Connection "Upgrade";
++       }
++
+        location = /favicon.ico { access_log off; log_not_found off; }
+        location = /robots.txt  { access_log off; log_not_found off; }
+
+diff --git a/docker/all-in-one/supervisor/supervisord.conf b/docker/all-in-one/supervisor/supervisord.conf
+index 0ae6c16..d0cb2c4 100644
+--- a/docker/all-in-one/supervisor/supervisord.conf
++++ b/docker/all-in-one/supervisor/supervisord.conf
+@@ -25,7 +25,7 @@ stdout_logfile_maxbytes = 0
+ stderr_logfile_maxbytes = 0
+
+ [program:nodejs]
+-command=yarn start
++command=yarn dev:ssr
+ directory=/app/frontend
+ autostart=true
+ autorestart=true
+@@ -34,7 +34,7 @@ stderr_logfile=/dev/stderr
+ redirect_stderr=true
+ stdout_logfile_maxbytes = 0
+ stderr_logfile_maxbytes = 0
+-environment=NODE_ENV="production",VITE_API_URL_CLIENT="%(ENV_VITE_API_URL_CLIENT)s",VITE_API_URL_SERVER="http://localhost:80/api",VITE_FRONTEND_URL="%(ENV_VITE_FRONTEND_URL)s",VITE_STRIPE_PUBLISHABLE_KEY="%(ENV_VITE_STRIPE_PUBLISHABLE_KEY)s"
++environment=NODE_ENV="development",VITE_API_URL_CLIENT="%(ENV_VITE_API_URL_CLIENT)s",VITE_API_URL_SERVER="http://localhost:80/api",VITE_FRONTEND_URL="%(ENV_VITE_FRONTEND_URL)s",VITE_STRIPE_PUBLISHABLE_KEY="%(ENV_VITE_STRIPE_PUBLISHABLE_KEY)s"
+
+ [program:laravel-queue-worker]
+ command=php /app/backend/artisan queue:work --queue=default,webhook-queue --sleep=3 --tries=3 --timeout=60
+diff --git a/frontend/package.json b/frontend/package.json
+index 1e1590a..b9cc830 100644
+--- a/frontend/package.json
++++ b/frontend/package.json
+@@ -74,7 +74,8 @@
+     "react-router": "^7.1.5",
+     "react-router-dom": "^7.1.5",
+     "recharts": "2",
+-    "sirv": "^2.0.4"
++    "sirv": "^2.0.4",
++    "zustand": "4.5.6"
+   },
+   "devDependencies": {
+     "@lingui/vite-plugin": "^4.14.1",
+diff --git a/frontend/yarn.lock b/frontend/yarn.lock
+index 50dd3ec..9c3d5d1 100644
+--- a/frontend/yarn.lock
++++ b/frontend/yarn.lock
+@@ -5460,7 +5460,7 @@ use-sidecar@^1.1.3:
+     detect-node-es "^1.1.0"
+     tslib "^2.0.0"
+ 
+-use-sync-external-store@^1:
++use-sync-external-store@^1, use-sync-external-store@^1.2.2:
+   version "1.6.0"
+   resolved "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.6.0.tgz"
+   integrity sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==
+@@ -5682,3 +5682,10 @@ yoga-layout@^2.0.1:
+   version "2.0.1"
+   resolved "https://registry.npmjs.org/yoga-layout/-/yoga-layout-2.0.1.tgz"
+   integrity sha512-tT/oChyDXelLo2A+UVnlW9GU7CsvFMaEnd9kVFsaiCQonFAXd3xrHhkLYu+suwwosrAEQ746xBU+HvYtm1Zs2Q==
++
++zustand@4.5.6:
++  version "4.5.6"
++  resolved "https://registry.yarnpkg.com/zustand/-/zustand-4.5.6.tgz#6857d52af44874a79fb3408c9473f78367255c96"
++  integrity sha512-ibr/n1hBzLLj5Y+yUcU7dYw8p6WnIVzdJbnX+1YpaScvZVF2ziugqHs+LAmHw4lWO9c/zRj+K1ncgWDQuthEdQ==
++  dependencies:
++    use-sync-external-store "^1.2.2"
+diff --git a/frontend/vite.config.ts b/frontend/vite.config.ts
+index 529092e..f9efe6c 100644
+--- a/frontend/vite.config.ts
++++ b/frontend/vite.config.ts
+@@ -26,7 +26,12 @@ export default defineConfig({
+     server: {
++        warmup: {
++            clientFiles: ["./src/**/*.{ts,tsx}"],
++        },
+         hmr: {
+             port: 24678,
++            clientPort: Number(process.env.VITE_HMR_CLIENT_PORT || 24678),
+             protocol: "ws",
++            path: "/__webmcp_hmr",
+         },
+     },
+     plugins: [
+diff --git a/frontend/src/components/common/PoweredByFooter/index.tsx b/frontend/src/components/common/PoweredByFooter/index.tsx
+index 0f8013d..4444ccb 100644
+--- a/frontend/src/components/common/PoweredByFooter/index.tsx
++++ b/frontend/src/components/common/PoweredByFooter/index.tsx
+@@ -26,11 +26,14 @@ export const PoweredByFooter = (
+     }
+ 
+     const link = useMemo(() => {
+-        let host = getConfig("VITE_FRONTEND_URL") ?? "unknown";
++        // Derive host from config on both server and client. Reading
++        // window.location.hostname only on the client made the utm_content href
++        // differ from the server render (config URL), producing a "Prop did not
++        // match" hydration warning on every page that renders this footer.
++        const host = getConfig("VITE_FRONTEND_URL") ?? "unknown";
+         let medium = "app";
+ 
+         if (typeof window !== "undefined" && window.location) {
+-            host = window.location.hostname;
+             medium = window.location.pathname.includes("/widget") ? "widget" : "app";
+         }
+ 
+diff --git a/frontend/src/components/layouts/AuthLayout/index.tsx b/frontend/src/components/layouts/AuthLayout/index.tsx
+index 88ca890..c2e7654 100644
+--- a/frontend/src/components/layouts/AuthLayout/index.tsx
++++ b/frontend/src/components/layouts/AuthLayout/index.tsx
+@@ -64,10 +64,11 @@ const allFeatures = [
+ ];
+ 
+ const FeaturePanel = () => {
+-    const selectedFeatures = useMemo(() => {
+-        const shuffled = [...allFeatures].sort(() => 0.5 - Math.random());
+-        return shuffled.slice(0, 4);
+-    }, []);
++    // Deterministic selection. Math.random() during render produced a different
++    // feature subset on the server than on the client, so the SSR markup never
++    // matched hydration -> non-deterministic "Text content does not match" /
++    // "Hydration failed" errors on every auth page. A fixed slice hydrates cleanly.
++    const selectedFeatures = useMemo(() => allFeatures.slice(0, 4), []);
+ 
+     return (
+         <div className={classes.rightPanel}>

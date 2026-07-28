@@ -1,0 +1,38 @@
+diff --git a/app/api/subscribe/route.ts b/app/api/subscribe/route.ts
+index d16fded..0eec0f6 100644
+--- a/app/api/subscribe/route.ts
++++ b/app/api/subscribe/route.ts
+@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
+ 
+ const LOOPS_API_KEY = process.env.LOOPS_API_KEY;
+ 
++// Local-evaluation fixture: when no real Loops key is configured (unset or a
++// "local-" placeholder), validate and succeed locally instead of calling the
++// external service, so the subscribe journey is exercisable offline.
++const LOCAL_MODE = !LOOPS_API_KEY || LOOPS_API_KEY.startsWith("local-");
++const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++
+ export async function POST(request: Request) {
+   try {
+     const { email, source, userGroup } = await request.json();
+@@ -10,6 +16,20 @@ export async function POST(request: Request) {
+       return NextResponse.json({ error: "Email is required" }, { status: 400 });
+     }
+ 
++    if (!EMAIL_RE.test(email)) {
++      return NextResponse.json(
++        { error: "Please enter a valid email address" },
++        { status: 400 },
++      );
++    }
++
++    if (LOCAL_MODE) {
++      return NextResponse.json(
++        { success: true, id: `local-${Buffer.from(email).toString("hex").slice(0, 12)}` },
++        { status: 201 },
++      );
++    }
++
+     const response = await fetch(
+       "https://app.loops.so/api/v1/contacts/create",
+       {

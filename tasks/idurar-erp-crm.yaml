@@ -1,0 +1,79 @@
+# idurar-erp-crm — authenticated CRM CRUD (no public pages beyond /login).
+# Seeded (fixtures/idurar-erp-crm/seed.mjs): client "Acme Evaluation"
+# (billing@acme.example.test), invoice 1/2026 (draft, unpaid, total 250,
+# one line item "WebMCP Evaluation Service" ×2 @ 125), zero payments.
+# Admin: admin@admin.com / admin123 at /login. Quote/tax/payment-mode modules
+# are removed by the compatibility patch — never reference them.
+# Every prompt carries the credentials since nothing works signed out.
+tasks:
+  - id: id-1
+    auth: true
+    tier: act-short
+    prompt: Log in at /login as admin@admin.com with password admin123, then report which client invoice 1 is billed to.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [acme] }
+
+  - id: id-2
+    auth: true
+    tier: act-short
+    prompt: Log in at /login as admin@admin.com with password admin123, then report the total amount of invoice 1/2026.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: ["250"] }
+
+  - id: id-3
+    auth: true
+    tier: act-short
+    prompt: Log in at /login as admin@admin.com with password admin123, then report the name of the line item on invoice 1.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [webmcp evaluation service] }
+
+  - id: id-4
+    auth: true
+    tier: act-short
+    prompt: Log in at /login as admin@admin.com with password admin123, then report the payment status of invoice 1.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [unpaid] }
+
+  - id: id-5
+    auth: true
+    tier: act-short
+    prompt: Log in at /login as admin@admin.com with password admin123, search the customers for "acme", and report that client's email address.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [billing@acme.example.test] }
+
+  - id: id-8
+    auth: true
+    tier: act-short
+    prompt: Log in at /login as admin@admin.com with password admin123, open this month's financial summary, and report the total invoiced amount.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: ["250"] }
+
+  - id: id-6
+    auth: true
+    tier: act-long
+    prompt: Log in at /login as admin@admin.com with password admin123, then create a new draft invoice for the client Acme Evaluation with a single line item "Quarterly Retainer", quantity 1, price 400.
+    # Probe-verified: the invoices probe returns every invoice's line items;
+    # the new item's {name, price} pair only exists if the invoice was created.
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate:
+      probe: invoices
+      args: { number: 2 }
+      assert:
+        # name/price live inside items[] in the oracle's normalized invoice —
+        # co-locating them with number in one flat object is unsatisfiable.
+        contains: { number: 2, items: { name: Quarterly Retainer, price: 400 } }
+
+  - id: id-7
+    auth: true
+    tier: act-long
+    prompt: Log in at /login as admin@admin.com with password admin123, then record a payment of 100 against invoice 1/2026 with reference EVAL-100.
+    # Probe-verified: credit 100 of 250 flips the server-computed
+    # paymentStatus on invoice 1 from unpaid to partially. IDURAR's
+    # /api/invoice/create ignores a client-supplied number and auto-assigns 1,
+    # so the task and probe must reference 1/2026 (1001 was unwinnable).
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate:
+      probe: invoices
+      args: { number: 1 }
+      assert:
+        contains: { number: 1, paymentStatus: partially }

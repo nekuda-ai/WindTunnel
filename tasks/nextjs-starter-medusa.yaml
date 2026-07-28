@@ -1,0 +1,77 @@
+# nextjs-starter-medusa — anonymous storefront: browse → cart → checkout with
+# the manual test payment provider (no real charge). Seeded catalog: exactly 4
+# products — Medusa T-Shirt, Medusa Sweatshirt, Medusa Sweatpants, Medusa
+# Shorts (capsule acceptance pins the handles). Store lives under /gb.
+# The oracle's page probe curls with its own cookie jar, so it cannot see the
+# agent's cookie-scoped cart — cart tasks assert the database cart count.
+# VERIFY-LIVE markers below were confirmed against a booted capsule before
+# this file ships (variant options and cart-row behavior come from the
+# backend seed, not this repo).
+tasks:
+  - id: md-1
+    tier: answer
+    prompt: How many products does this store sell? Report the count and every product's name.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [t-shirt, sweatshirt, sweatpants, shorts] }
+
+  - id: md-2
+    tier: answer
+    prompt: What is the store's shipping policy? How long does delivery take?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [3-5 business days] }
+
+  - id: md-3
+    tier: answer
+    prompt: What is the store's returns policy?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [no questions asked] }
+
+  - id: md-9
+    tier: answer
+    prompt: Does the store sell a Medusa Jacket? Answer with the single word AVAILABLE or MISSING.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, matches: "\\bmissing\\b", not_contains: ["not missing", "available or missing"] }
+
+  - id: md-4
+    tier: act-short
+    prompt: What sizes does the Medusa Sweatshirt come in? List them all.
+    # VERIFY-LIVE: sizes come from the backend seed (expected S/M/L/XL).
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [xl] }
+
+  - id: md-6
+    tier: act-short
+    prompt: Check the shopping cart and report what it currently holds. If it holds nothing, answer with the single word EMPTY.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, contains: [empty] }
+
+  - id: md-5
+    tier: act-short
+    prompt: Add one Medusa T-Shirt, size M, color Black, to the shopping cart.
+    # VERIFY-LIVE: the storefront creates its cart row lazily on first add,
+    # so carts goes 0 -> 1 only if the agent really added the item.
+    # ponytail: cart count, not contents — the DB probe doesn't expose line
+    # items and the page probe can't see the agent's cookie-scoped cart.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate:
+      probe: database
+      assert:
+        contains: { carts: 1 }
+
+  - id: md-7
+    tier: act-long
+    prompt: Add two pairs of Medusa Sweatpants in size M and one pair of Medusa Shorts in size S to the cart, then report the cart's total item count.
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate: { type: answer, matches: "(cart|items?)[^.]{0,40}\\b(3|three)\\b|\\b(3|three)\\b[^.]{0,40}(cart|items?)" }
+
+  - id: md-8
+    tier: transaction
+    prompt: Buy one Medusa T-Shirt, size L, color Black — add it to the cart and complete guest checkout as Jane Tester, jane.tester@example.test, 1 High Street, London, N1 9GU, United Kingdom, phone +44 20 7946 0000, using the store's test payment method. Report the order confirmation.
+    # The golden WebMCP tools hand off at begin_checkout by design — finishing
+    # checkout takes page-level interaction. That reach limit is part of what
+    # this task measures. WebMCP arms are expected to fail this by design.
+    max_steps: { webmcp: 15, cu: 40, structured: 32 }
+    predicate:
+      probe: database
+      assert:
+        contains: { orders: 1 }

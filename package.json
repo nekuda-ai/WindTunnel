@@ -1,0 +1,17 @@
+{
+  "name": "windtunnel",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "A WebMCP benchmark — measures WebMCP against screenshot and DOM/a11y browser-agent interfaces on real self-hosted sites",
+  "type": "module",
+  "scripts": {
+    "bench": "node harness/cli.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@browserbasehq/stagehand": "3.6.0",
+    "js-yaml": "^4.1.0",
+    "playwright": "^1.54.1"
+  }
+}

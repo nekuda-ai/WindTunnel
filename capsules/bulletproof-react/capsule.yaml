@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "bulletproof-react",
+  "source": {
+    "repository": "https://github.com/alan2207/bulletproof-react.git",
+    "revision": "9506629ed003a561c6627735480cce4994244bb4"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-dev",
+    "variant": "apps/react-vite",
+    "packageManager": "yarn@1.22.22",
+    "resetStrategy": "browser-context",
+    "applicationPort": 3000,
+    "healthPath": "/",
+    "images": [
+      {
+        "name": "node",
+        "reference": "node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+      }
+    ],
+    "application": {
+      "image": "node",
+      "sourceTarget": "/workspace",
+      "workingDirectory": "/workspace/apps/react-vite",
+      "command": ["./node_modules/.bin/vite", "--host", "0.0.0.0", "--port", "3000"],
+      "environment": {
+        "HOME": "/tmp/home"
+      }
+    },
+    "healthChecks": [
+      {
+        "path": "/",
+        "contains": "id=\"root\""
+      },
+      {
+        "path": "/src/main.tsx",
+        "contains": "createRoot"
+      }
+    ]
+  },
+  "acceptance": {
+    "publicPath": "/auth/login",
+    "paths": ["/", "/auth/login", "/auth/register", "/app/discussions"],
+    "liveness": {
+      "file": "apps/react-vite/src/main.tsx",
+      "language": "typescript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "reset_boundary",
+      "arguments": {},
+      "assert": ".strategy == \"browser-context\" and (.persistentServerState | not)",
+      "resetAssert": ".strategy == \"browser-context\" and (.persistentServerState | not)"
+    }
+  },
+  "actors": [
+    {
+      "id": "member",
+      "description": "Local MSW administrator member@webmcp-eval.com / WebmcpEval123!; verifier setup registers it in a fresh browser context.",
+      "setup": "actors/member.js",
+      "path": "/app/discussions",
+      "expect": "Discussions"
+    }
+  ]
+}

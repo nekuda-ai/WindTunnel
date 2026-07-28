@@ -1,0 +1,91 @@
+# WindTunnel site registry. Container recipes and WebMCP tool implementations
+# are vendored in-repo under capsules/ and fixtures/ (WindTunnel is standalone);
+# this file selects and classifies the sites for benchmark runs.
+#
+# resource_class drives subset selection so nobody must boot all 8 capsules:
+#   light  — single process or static-ish, no external DB       (<1 GB RAM)
+#   medium — app + one database service                          (1-3 GB RAM)
+#   heavy  — multi-service stack (queue/cache/multiple backends) (3+ GB RAM)
+# Classes are provisional estimates — verify against the vendored capsule
+# manifests (capsules/<site>/capsule.yaml) and adjust before v1.0 freeze.
+
+sites:
+  - id: tailwind-nextjs-blog
+    upstream: timlrx/tailwind-nextjs-starter-blog
+    category: content-control
+    resource_class: light
+    services: [node]
+    role: negative control (read-only content) — correct answer is answer-only
+
+  - id: bulletproof-react
+    upstream: alan2207/bulletproof-react
+    category: app-control
+    resource_class: light
+    services: [node]          # MSW-mocked API, client-side auth
+    role: negative control (client-auth / mock API)
+
+  - id: directory-9d8
+    upstream: 9d8dev/directory
+    category: directory-reservations
+    resource_class: light
+    services: [node]
+    role: directory/filter journeys
+
+  - id: nextjs-starter-medusa
+    upstream: medusajs/nextjs-starter-medusa
+    category: ecom
+    resource_class: medium
+    services: [node-storefront, node-backend, postgres]
+    role: ecom flagship — full retrieval -> cart -> checkout arc
+
+  - id: easyappointments
+    upstream: alextselegidis/easyappointments
+    category: services-appointments
+    resource_class: medium
+    services: [php-apache, mysql]
+    role: PHP MPA + OpenAPI; public booking + authenticated admin
+
+  - id: learnhouse
+    upstream: learnhouse/learnhouse
+    category: courses-education
+    resource_class: medium
+    services: [fastapi, node-frontend, postgres]
+    role: courses; public catalog + authenticated author
+
+  - id: idurar-erp-crm
+    upstream: idurar/idurar-erp-crm
+    category: b2b-quote-leadgen
+    resource_class: heavy
+    services: [node-backend, react-frontend, mongodb]
+    role: B2B CRUD behind auth
+
+  - id: hi-events
+    upstream: HiEventsDev/Hi.Events
+    category: events-rsvp
+    resource_class: heavy
+    services: [laravel, react-frontend, postgres, redis]
+    role: events; public event/checkout + authenticated organizer
+
+# Named subsets for --sites (run part of the corpus on a small machine).
+# CI needs only `lite`; a laptop handles `lite`+`core`; `full` wants a 16 GB+
+# machine with substantial free disk for the multi-service stacks.
+profiles:
+  lite:                       # ~3 node processes, no databases
+    - tailwind-nextjs-blog
+    - bulletproof-react
+    - directory-9d8
+  core:                       # lite + the ecom flagship (1 postgres)
+    - tailwind-nextjs-blog
+    - bulletproof-react
+    - directory-9d8
+    - nextjs-starter-medusa
+  categories:                 # one site per category + one control; omits the redundant app control
+    - nextjs-starter-medusa
+    - easyappointments
+    - directory-9d8
+    - hi-events
+    - learnhouse
+    - idurar-erp-crm
+    - tailwind-nextjs-blog
+  full:                       # all eight
+    - "*"

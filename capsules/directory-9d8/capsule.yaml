@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "directory-9d8",
+  "source": {
+    "repository": "https://github.com/9d8dev/directory.git",
+    "revision": "d140b0c8089040643cfce8b6ac508998cb5ee36e"
+  },
+  "runtime": {
+    "strategy": "docker-compose-source-dev",
+    "packageManager": "pnpm@9.15.9",
+    "resetStrategy": "volume-snapshot",
+    "applicationPort": 3000,
+    "healthPath": "/",
+    "images": [
+      {
+        "name": "node",
+        "reference": "node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+      }
+    ],
+    "application": {
+      "image": "node",
+      "sourceTarget": "/workspace",
+      "workingDirectory": "/workspace",
+      "command": ["corepack", "pnpm@9.15.9", "run", "dev", "--port", "3000"],
+      "environment": {
+        "HOME": "/tmp/home",
+        "NEXT_TELEMETRY_DISABLED": "1",
+        "TURSO_DATABASE_URL": "file:/state/local.db",
+        "TURSO_AUTH_TOKEN": "local-evaluator-token",
+        "ADMIN_PASSWORD": "local-evaluator-password",
+        "JWT_SECRET": "local-evaluator-jwt-secret",
+        "ANTHROPIC_API_KEY": "local-not-used",
+        "EXASEARCH_API_KEY": "local-not-used",
+        "LOOPS_API_KEY": "local-not-used"
+      },
+      "baseUrlEnvironment": ["NEXT_PUBLIC_SITE_URL"],
+      "privateMounts": [
+        {
+          "source": "application-state",
+          "target": "/state"
+        },
+        {
+          "source": "evaluator",
+          "target": "/evaluator",
+          "readOnly": true
+        }
+      ]
+    },
+    "healthChecks": [
+      {
+        "path": "/",
+        "contains": "Get the latest resources sent to your inbox weekly"
+      }
+    ]
+  },
+  "acceptance": {
+    "publicPath": "/",
+    "paths": ["/", "/?category=development", "/github"],
+    "liveness": {
+      "file": "components/category-filter.tsx",
+      "language": "typescript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "catalog",
+      "arguments": {},
+      "assert": ".categoryCount == 4 and .bookmarkCount == 6",
+      "mutation": {
+        "probe": "delete_bookmark",
+        "arguments": {"slug": "github"},
+        "assert": ".categoryCount == 4 and .bookmarkCount == 5"
+      },
+      "resetAssert": ".categoryCount == 4 and .bookmarkCount == 6"
+    }
+  },
+  "actors": []
+}

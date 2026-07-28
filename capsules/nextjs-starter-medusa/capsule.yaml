@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "nextjs-starter-medusa",
+  "source": {
+    "repository": "https://github.com/medusajs/nextjs-starter-medusa.git",
+    "revision": "9818886f06e493cb2249733d114d339aa216ef00"
+  },
+  "supportingSources": [
+    {
+      "role": "evaluator-private-backend",
+      "repository": "https://github.com/medusajs/medusa-starter-default.git",
+      "revision": "8a45ee35eebcb7f13623be0837c7f74f92012626"
+    }
+  ],
+  "runtime": {
+    "strategy": "docker-compose-source-dev-private-backend",
+    "packageManager": "yarn@4.12.0",
+    "resetStrategy": "database-dump",
+    "browserStateReset": "fresh-browser-context",
+    "applicationPort": 8000,
+    "healthPath": "/gb/store",
+    "composeOverlay": "compose.overlay.yaml",
+    "applicationService": "app",
+    "requiredServices": ["app", "backend", "db"],
+    "healthChecks": [
+      {
+        "path": "/gb/store",
+        "contains": "All products"
+      }
+    ],
+    "images": [
+      {
+        "name": "node",
+        "reference": "node:22-bookworm-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+      },
+      {
+        "name": "postgres",
+        "reference": "postgres:16-alpine@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777"
+      }
+    ]
+  },
+  "fixtures": {
+    "catalog": "Medusa starter seed: Europe/GBP storefront with four published products",
+    "publishableKey": "normalized to a deterministic evaluator key after seed, stored evaluator-private, and preserved by the reset dump"
+  },
+  "acceptance": {
+    "publicPath": "/gb/products/t-shirt",
+    "paths": ["/gb/store", "/gb/products/t-shirt", "/gb/cart"],
+    "liveness": {
+      "file": "src/modules/products/components/product-actions/index.tsx",
+      "language": "typescript",
+      "marker": "window.__WEBMCP_CAPSULE_LIVENESS__"
+    },
+    "observation": {
+      "probe": "catalog",
+      "arguments": {},
+      "assert": ".count == 4 and ([.products[].handle] | sort) == [\"shorts\",\"sweatpants\",\"sweatshirt\",\"t-shirt\"]",
+      "mutation": {
+        "probe": "soft_delete_product",
+        "arguments": {"handle": "shorts"},
+        "assert": ".products == 3"
+      },
+      "resetAssert": ".count == 4 and ([.products[].handle] | sort) == [\"shorts\",\"sweatpants\",\"sweatshirt\",\"t-shirt\"]"
+    }
+  },
+  "actors": [
+    {
+      "id": "shopper",
+      "description": "Anonymous storefront shopper. The Medusa storefront 307-redirects the first request to set the _medusa_cache_id region cookie; the verifier browser follows it and renders the seeded catalog. Asserts the product detail page shows the seeded product (the /gb/store listing resolves its region/pricing client-side, so product truth is asserted on the product page and the catalog observation probe).",
+      "setup": "actors/shopper.js",
+      "path": "/gb/products/t-shirt",
+      "expect": "T-Shirt"
+    }
+  ]
+}

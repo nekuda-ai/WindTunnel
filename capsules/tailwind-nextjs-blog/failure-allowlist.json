@@ -1,0 +1,6 @@
+{
+  "console": [],
+  "network": [
+    "^GET https?://[^/]+/favicon\\.ico 404$"
+  ]
+}

@@ -1,0 +1,698 @@
+diff --git a/app/api/directory/route.ts b/app/api/directory/route.ts
+new file mode 100644
+index 0000000..71f37d0
+--- /dev/null
++++ b/app/api/directory/route.ts
+@@ -0,0 +1,45 @@
++import { NextResponse } from "next/server";
++import { getAllBookmarks, getAllCategories } from "@/lib/data";
++import { directory } from "@/directory.config";
++
++// Public read-only snapshot of the directory, consumed by the WebMCP tools
++// (components/webmcp-tools.tsx). Same data the homepage renders: every
++// bookmark joined with its category, plus the category list.
++export async function GET() {
++  try {
++    const [bookmarks, categories] = await Promise.all([
++      getAllBookmarks(),
++      getAllCategories(),
++    ]);
++
++    return NextResponse.json({
++      site: { name: directory.name, description: directory.description },
++      categories: categories.map((category) => ({
++        id: category.id,
++        name: category.name,
++        slug: category.slug,
++        description: category.description,
++      })),
++      bookmarks: bookmarks.map((bookmark) => ({
++        id: bookmark.id,
++        slug: bookmark.slug,
++        title: bookmark.title,
++        description: bookmark.description,
++        url: bookmark.url,
++        overview: bookmark.overview,
++        tags: bookmark.tags,
++        notes: bookmark.notes,
++        isFavorite: bookmark.isFavorite,
++        category: bookmark.category
++          ? { id: bookmark.category.id, name: bookmark.category.name }
++          : null,
++      })),
++    });
++  } catch (error) {
++    console.error("Error fetching directory data:", error);
++    return NextResponse.json(
++      { error: "Failed to fetch directory data" },
++      { status: 500 },
++    );
++  }
++}
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 302cf8e..3d7a6ed 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
+ import { ThemeToggle } from "@/components/theme-toggle";
+ import { Container } from "@/components/craft";
+ import { EmailForm } from "@/components/email-form";
++import { WebMCPTools } from "@/components/webmcp-tools";
+ 
+ import { directory } from "@/directory.config";
+ 
+@@ -53,6 +54,7 @@ export default function RootLayout({
+           <Header />
+           {children}
+           <Footer />
++          <WebMCPTools />
+         </ThemeProvider>
+         <Analytics />
+       </body>
+diff --git a/components/email-form.tsx b/components/email-form.tsx
+index 558effa..e50be82 100644
+--- a/components/email-form.tsx
++++ b/components/email-form.tsx
+@@ -1,12 +1,6 @@
+ "use client";
+ 
+-import { directory } from "@/directory.config";
+-
+-// ! MAKE SURE TO CHANGE THE SOURCE AND USER GROUP
+-const source = directory.baseUrl;
+-const userGroup = directory.name;
+-
+-import { useState } from "react";
++import { useSyncExternalStore } from "react";
+ import { zodResolver } from "@hookform/resolvers/zod";
+ import { useForm } from "react-hook-form";
+ import { cn } from "@/lib/utils";
+@@ -24,6 +18,13 @@ import {
+   FormMessage,
+ } from "@/components/ui/form";
+ 
++import {
++  getNewsletterState,
++  getServerNewsletterState,
++  submitNewsletter,
++  subscribeToNewsletter,
++} from "@/lib/newsletter";
++
+ const formSchema = z.object({
+   email: z.string().email({
+     message: "Please enter a valid email address.",
+@@ -31,8 +32,17 @@ const formSchema = z.object({
+ });
+ 
+ export function EmailForm() {
+-  const [isSubmitted, setIsSubmitted] = useState(false);
+-  const [isLoading, setIsLoading] = useState(false);
++  // Subscription state is shared (lib/newsletter.ts) so the WebMCP
++  // subscribe_newsletter tool and every mounted form stay in sync — an agent
++  // subscription flips this form to its confirmed state, and vice versa.
++  const newsletter = useSyncExternalStore(
++    subscribeToNewsletter,
++    getNewsletterState,
++    getServerNewsletterState,
++  );
++  const isLoading = newsletter.status === "loading";
++  const isSubmitted = newsletter.status === "subscribed";
++
+   const form = useForm<z.infer<typeof formSchema>>({
+     resolver: zodResolver(formSchema),
+     defaultValues: {
+@@ -41,35 +51,12 @@ export function EmailForm() {
+   });
+ 
+   async function onSubmit(values: z.infer<typeof formSchema>) {
+-    setIsLoading(true);
+-    try {
+-      const response = await fetch("/api/subscribe", {
+-        method: "POST",
+-        headers: {
+-          "Content-Type": "application/json",
+-        },
+-        body: JSON.stringify({
+-          email: values.email,
+-          source: source,
+-          userGroup: userGroup,
+-        }),
+-      });
+-
+-      if (!response.ok) {
+-        throw new Error("Failed to subscribe");
+-      }
+-
+-      const data = await response.json();
+-      console.log("Submitted email:", values.email, "Contact ID:", data.id);
+-      setIsSubmitted(true);
+-    } catch (error) {
+-      console.error("Error submitting email:", error);
++    const result = await submitNewsletter(values.email);
++    if (!result.success) {
+       form.setError("email", {
+         type: "manual",
+-        message: "Failed to subscribe. Please try again.",
++        message: result.error || "Failed to subscribe. Please try again.",
+       });
+-    } finally {
+-      setIsLoading(false);
+     }
+   }
+ 
+diff --git a/components/webmcp-tools.tsx b/components/webmcp-tools.tsx
+new file mode 100644
+index 0000000..ce10dd0
+--- /dev/null
++++ b/components/webmcp-tools.tsx
+@@ -0,0 +1,435 @@
++"use client";
++
++import { useEffect, useRef } from "react";
++import { usePathname, useRouter } from "next/navigation";
++import { submitNewsletter } from "@/lib/newsletter";
++
++// WebMCP tools (https://github.com/webmachinelearning/webmcp) for the
++// directory. Mounted once in the root layout. search_bookmarks and
++// subscribe_newsletter are registered once and survive App Router client-side
++// navigation; get_bookmark re-registers per route so a bookmark detail page can
++// bake in the viewed bookmark (see the pathname effect below). No-ops when the
++// browser exposes no model context API. Data comes from /api/directory (the
++// drizzle-backed snapshot the homepage renders); keyword matching mirrors the
++// homepage search in app/page.tsx.
++
++interface DirectoryCategory {
++  id: string;
++  name: string;
++  slug: string;
++  description: string | null;
++}
++
++interface DirectoryBookmark {
++  id: number;
++  slug: string;
++  title: string;
++  description: string | null;
++  url: string;
++  overview: string | null;
++  tags: string | null;
++  notes: string | null;
++  isFavorite: boolean;
++  category: { id: string; name: string } | null;
++}
++
++interface DirectoryData {
++  site: { name: string; description: string };
++  categories: DirectoryCategory[];
++  bookmarks: DirectoryBookmark[];
++}
++
++type Router = ReturnType<typeof useRouter>;
++
++// Session cache of the directory snapshot (the bookmark set is static per run),
++// shared by both read tools and the per-route get_bookmark registration so
++// navigating between pages doesn't refetch. Cleared on failure so it retries.
++let directoryCache: Promise<DirectoryData> | null = null;
++function fetchDirectory(): Promise<DirectoryData> {
++  if (!directoryCache) {
++    directoryCache = fetch("/api/directory")
++      .then((response) => {
++        if (!response.ok) throw new Error("Failed to load directory data");
++        return response.json() as Promise<DirectoryData>;
++      })
++      .catch((error) => {
++        directoryCache = null;
++        throw error;
++      });
++  }
++  return directoryCache;
++}
++
++function getModelContext() {
++  if (typeof document === "undefined") return null;
++  return (
++    (document as any).modelContext ??
++    (navigator as any).modelContext ??
++    null
++  );
++}
++
++// registerTool returns a promise that rejects with an AbortError when the signal
++// aborts — which we do intentionally to unregister on route change / unmount.
++// Swallow that expected rejection so it isn't an unhandled promise error, but
++// surface any genuine registration failure.
++function safeRegisterTool(
++  modelContext: any,
++  definition: unknown,
++  signal: AbortSignal,
++) {
++  const result = modelContext.registerTool(definition, { signal });
++  if (result && typeof result.then === "function") {
++    (result as Promise<unknown>).catch((error: unknown) => {
++      if (signal.aborted) return;
++      console.error("WebMCP registerTool failed:", error);
++    });
++  }
++}
++
++// Same fields the homepage search filter matches, plus tags.
++function matchesQuery(bookmark: DirectoryBookmark, term: string): boolean {
++  const query = term.toLowerCase();
++  return [
++    bookmark.title,
++    bookmark.description,
++    bookmark.category?.name,
++    bookmark.notes,
++    bookmark.overview,
++    bookmark.tags,
++  ].some((field) => field?.toLowerCase().includes(query));
++}
++
++function toResult(payload: unknown) {
++  return { content: [{ type: "text", text: JSON.stringify(payload) }] };
++}
++
++function summarize(bookmark: DirectoryBookmark) {
++  return {
++    slug: bookmark.slug,
++    title: bookmark.title,
++    description: bookmark.description,
++    category: bookmark.category?.name ?? null,
++    url: bookmark.url,
++    page: `/${bookmark.slug}`,
++  };
++}
++
++// Shared get_bookmark body: resolve the target bookmark (explicit slug, else the
++// bookmark whose detail page is on screen), navigate so user and agent see the
++// same page, and return the full detail. Used by both the generic and the
++// contextual (baked-in) registrations.
++async function getBookmarkResult(
++  slug: string | undefined,
++  router: Router,
++  currentPathname: string,
++) {
++  const data = await fetchDirectory();
++  const currentSlug = currentPathname.split("/")[1] ?? "";
++  const wanted = (slug?.trim() || currentSlug || "").toLowerCase();
++
++  const bookmark = data.bookmarks.find((b) => b.slug.toLowerCase() === wanted);
++  if (!bookmark) {
++    return toResult({
++      error: slug
++        ? `No bookmark with slug "${slug}".`
++        : `Missing "slug". Pass one from search_bookmarks — or call this on a bookmark page, where the viewed bookmark is used automatically.`,
++      availableSlugs: data.bookmarks.map((b) => b.slug),
++    });
++  }
++
++  const page = `/${bookmark.slug}`;
++  if (currentPathname !== page) router.push(page);
++
++  const category = bookmark.category
++    ? data.categories.find((c) => c.id === bookmark.category!.id)
++    : undefined;
++
++  return toResult({
++    bookmark: {
++      slug: bookmark.slug,
++      title: bookmark.title,
++      description: bookmark.description,
++      overview: bookmark.overview,
++      url: bookmark.url,
++      tags: bookmark.tags,
++      notes: bookmark.notes,
++      isFavorite: bookmark.isFavorite,
++      category: category
++        ? { name: category.name, description: category.description }
++        : null,
++      page,
++    },
++  });
++}
++
++export function WebMCPTools() {
++  const router = useRouter();
++  const pathname = usePathname();
++  const routerRef = useRef(router);
++  const pathnameRef = useRef(pathname);
++
++  useEffect(() => {
++    routerRef.current = router;
++    pathnameRef.current = pathname;
++  }, [router, pathname]);
++
++  // search_bookmarks + subscribe_newsletter: available everywhere. Registered
++  // once from the root layout so they survive App Router client-side navigation
++  // (aborted only on unmount).
++  useEffect(() => {
++    const modelContext = getModelContext();
++    if (!modelContext?.registerTool) return;
++    const controller = new AbortController();
++
++    safeRegisterTool(
++      modelContext,
++      {
++        name: "search_bookmarks",
++        description:
++          "Search this site's directory of curated bookmarks by keyword and/or filter it by category; call with no arguments to list every bookmark and the available categories. Keywords match each bookmark's title, description, overview, notes and tags, so use it to answer questions about what resources the directory covers or recommends. The page updates to show the same filtered listing the visitor sees. Read-only; returns matching bookmarks with title, slug, description, category and destination URL.",
++        inputSchema: {
++          type: "object",
++          properties: {
++            query: {
++              type: "string",
++              description:
++                "Keywords to match against bookmark titles, descriptions, overviews, notes and tags. Omit to list all bookmarks.",
++            },
++            category: {
++              type: "string",
++              description:
++                'Category name or slug to filter by (e.g. "Design"). Omit to search every category.',
++            },
++          },
++        },
++        // untrustedContentHint: bookmark descriptions/overviews/og fields derive
++        // from scraped or AI-summarized third-party sites.
++        annotations: { readOnlyHint: true, untrustedContentHint: true },
++        async execute(args: { query?: string; category?: string } = {}) {
++          const query = args?.query?.trim();
++          const categoryInput = args?.category?.trim();
++          const data = await fetchDirectory();
++
++          let category: DirectoryCategory | undefined;
++          if (categoryInput) {
++            const wanted = categoryInput.toLowerCase();
++            category = data.categories.find(
++              (c) =>
++                c.id.toLowerCase() === wanted ||
++                c.slug.toLowerCase() === wanted ||
++                c.name.toLowerCase() === wanted,
++            );
++            if (!category) {
++              return toResult({
++                error: `Unknown category "${categoryInput}".`,
++                availableCategories: data.categories.map((c) => c.name),
++              });
++            }
++          }
++
++          const results = data.bookmarks.filter(
++            (bookmark) =>
++              (!category || bookmark.category?.id === category.id) &&
++              (!query || matchesQuery(bookmark, query)),
++          );
++
++          // Show the visitor the same filtered listing (the site's own
++          // ?search= / ?category= view on the homepage).
++          const params = new URLSearchParams();
++          if (query) params.set("search", query);
++          if (category) params.set("category", category.id);
++          const queryString = params.toString();
++          routerRef.current.push(queryString ? `/?${queryString}` : "/");
++
++          return toResult({
++            site: data.site,
++            query: query || null,
++            category: category?.name ?? null,
++            total: results.length,
++            results: results.map(summarize),
++            availableCategories: data.categories.map((c) => ({
++              name: c.name,
++              description: c.description,
++            })),
++            ...(results.length === 0
++              ? { message: "No bookmarks match these criteria." }
++              : {}),
++          });
++        },
++      },
++      controller.signal,
++    );
++
++    safeRegisterTool(
++      modelContext,
++      {
++        name: "subscribe_newsletter",
++        description:
++          "Subscribe an email address to this site's weekly resources newsletter. This performs the subscription — a state-changing action, the same as submitting the newsletter form on the page — and the on-page newsletter form updates to its subscribed (\"Thank you for subscribing\") state. Pass the visitor's email address. Returns the subscription confirmation, or the site's own error message honestly if the subscription fails (e.g. an invalid or already-subscribed email, or the email service being unavailable).",
++        inputSchema: {
++          type: "object",
++          properties: {
++            email: {
++              type: "string",
++              description: "The email address to subscribe to the newsletter.",
++            },
++          },
++          required: ["email"],
++        },
++        // State-changing: no readOnlyHint; the consequence is stated in the
++        // description (the WebMCP annotation set has no destructive hint).
++        async execute(args: { email?: string } = {}) {
++          const email = args?.email?.trim();
++          if (!email) {
++            return toResult({
++              success: false,
++              error: "An email address is required to subscribe.",
++            });
++          }
++
++          // Rides the site's own /api/subscribe -> Loops route (via the shared
++          // newsletter store, which also flips every mounted form). Never fakes
++          // success: the API's real outcome is surfaced.
++          const result = await submitNewsletter(email);
++          if (!result.success) {
++            return toResult({
++              success: false,
++              email,
++              error: result.error ?? "Failed to subscribe.",
++              ...(result.status ? { status: result.status } : {}),
++            });
++          }
++
++          return toResult({
++            success: true,
++            email,
++            ...(result.id ? { id: result.id } : {}),
++            message:
++              "Subscribed to the newsletter. The on-page form now shows the confirmed state.",
++          });
++        },
++      },
++      controller.signal,
++    );
++
++    return () => controller.abort();
++  }, []);
++
++  // get_bookmark: contextual registration. On a bookmark detail page the viewed
++  // bookmark is baked into the registration (no slug argument, description names
++  // it); everywhere else a generic slug-required variant. Re-registers on every
++  // route change and aborts the prior registration, so the agent never sees a
++  // stale contract (e.g. a baked-in bookmark after navigating away).
++  //
++  // registerTool tears the previous registration down asynchronously when its
++  // signal aborts, and the same tool name cannot be registered twice. So every
++  // (un)registration is serialized through a promise chain: the previous
++  // registration is aborted and fully awaited before the next one is created,
++  // which prevents a "Duplicate tool name" race that would otherwise leave a
++  // stale registration in place.
++  const registrationChain = useRef<Promise<void>>(Promise.resolve());
++  const currentRegistration = useRef<{
++    controller: AbortController;
++    promise: unknown;
++  } | null>(null);
++
++  useEffect(() => {
++    const modelContext = getModelContext();
++    if (!modelContext?.registerTool) return;
++    const controller = new AbortController();
++
++    const genericDefinition = {
++      name: "get_bookmark",
++      description:
++        "Get the full details of one bookmark in this directory — description, overview, category, tags and the destination website URL — and bring that bookmark's page on screen so the visitor sees it. Identify the bookmark by the slug returned from search_bookmarks. Read-only.",
++      inputSchema: {
++        type: "object",
++        properties: {
++          slug: {
++            type: "string",
++            description:
++              'Bookmark slug from search_bookmarks results (e.g. "figma").',
++          },
++        },
++        required: ["slug"],
++      },
++      // untrustedContentHint: bookmark descriptions/overviews/og fields derive
++      // from scraped or AI-summarized third-party sites.
++      annotations: { readOnlyHint: true, untrustedContentHint: true },
++      async execute(args: { slug?: string } = {}) {
++        return getBookmarkResult(
++          args?.slug,
++          routerRef.current,
++          pathnameRef.current,
++        );
++      },
++    };
++
++    const contextualDefinition = (bookmark: DirectoryBookmark) => ({
++      name: "get_bookmark",
++      description: `Get the full details of "${bookmark.title}" — the bookmark whose page the visitor is currently viewing — including its description, overview, category, tags and destination website URL. This page already shows "${bookmark.title}", so call it with no arguments to get that bookmark. Read-only.`,
++      inputSchema: { type: "object", properties: {} },
++      // untrustedContentHint: bookmark descriptions/overviews/og fields derive
++      // from scraped or AI-summarized third-party sites.
++      annotations: { readOnlyHint: true, untrustedContentHint: true },
++      async execute() {
++        return getBookmarkResult(
++          bookmark.slug,
++          routerRef.current,
++          pathnameRef.current,
++        );
++      },
++    });
++
++    registrationChain.current = registrationChain.current
++      .then(async () => {
++        // Tear down the previous get_bookmark registration and wait for the
++        // harness to settle it before registering the next variant.
++        const previous = currentRegistration.current;
++        if (previous) {
++          previous.controller.abort();
++          await Promise.resolve(previous.promise).catch(() => {});
++          currentRegistration.current = null;
++        }
++        // Superseded by a newer route before our turn — leave the slot empty so
++        // the newer effect registers the current page's variant.
++        if (controller.signal.aborted) return;
++
++        // Resolve the viewed bookmark for the contextual variant, if this is a
++        // bookmark detail page (/<slug>).
++        const slug = pathname.split("/")[1] ?? "";
++        let bookmark: DirectoryBookmark | null = null;
++        if (slug) {
++          try {
++            const data = await fetchDirectory();
++            bookmark =
++              data.bookmarks.find(
++                (b) => b.slug.toLowerCase() === slug.toLowerCase(),
++              ) ?? null;
++          } catch {
++            bookmark = null; // /api/directory unavailable — fall back to generic.
++          }
++        }
++        if (controller.signal.aborted) return;
++
++        const promise = modelContext.registerTool(
++          bookmark ? contextualDefinition(bookmark) : genericDefinition,
++          { signal: controller.signal },
++        );
++        if (promise && typeof promise.then === "function") {
++          (promise as Promise<unknown>).catch((error: unknown) => {
++            if (controller.signal.aborted) return;
++            console.error("WebMCP registerTool failed:", error);
++          });
++        }
++        currentRegistration.current = { controller, promise };
++      })
++      // Never let one step's failure break serialization for later routes.
++      .catch(() => {});
++
++    return () => controller.abort();
++  }, [pathname]);
++
++  return null;
++}
+diff --git a/lib/newsletter.ts b/lib/newsletter.ts
+new file mode 100644
+index 0000000..94af916
+--- /dev/null
++++ b/lib/newsletter.ts
+@@ -0,0 +1,89 @@
++import { directory } from "@/directory.config";
++
++// Shared newsletter subscription state + submit logic. The homepage hero form,
++// the header dialog form, and the WebMCP subscribe_newsletter tool all go
++// through here, so a subscription started by the agent is reflected in every
++// mounted form (and vice versa): one source of truth, one /api/subscribe path.
++
++export type NewsletterStatus = "idle" | "loading" | "subscribed" | "error";
++
++export interface NewsletterState {
++  status: NewsletterStatus;
++  email: string | null;
++  message: string | null;
++}
++
++export interface SubscribeResult {
++  success: boolean;
++  id?: string;
++  status?: number;
++  error?: string;
++}
++
++// Same source/userGroup the original form sent to Loops.
++const source = directory.baseUrl;
++const userGroup = directory.name;
++
++let state: NewsletterState = { status: "idle", email: null, message: null };
++const listeners = new Set<() => void>();
++
++function setState(next: NewsletterState) {
++  state = next;
++  listeners.forEach((listener) => listener());
++}
++
++export function getNewsletterState(): NewsletterState {
++  return state;
++}
++
++// Stable snapshot for SSR / first hydration (form renders idle on the server).
++const serverState: NewsletterState = {
++  status: "idle",
++  email: null,
++  message: null,
++};
++export function getServerNewsletterState(): NewsletterState {
++  return serverState;
++}
++
++export function subscribeToNewsletter(listener: () => void): () => void {
++  listeners.add(listener);
++  return () => {
++    listeners.delete(listener);
++  };
++}
++
++// POST to the site's own /api/subscribe route (-> Loops). Returns the honest
++// result and never fabricates success when the API errors; state updates so
++// every mounted EmailForm reflects the outcome.
++export async function submitNewsletter(email: string): Promise<SubscribeResult> {
++  setState({ status: "loading", email, message: null });
++  try {
++    const response = await fetch("/api/subscribe", {
++      method: "POST",
++      headers: { "Content-Type": "application/json" },
++      body: JSON.stringify({ email, source, userGroup }),
++    });
++
++    const data = await response.json().catch(() => ({}) as Record<string, unknown>);
++
++    if (!response.ok) {
++      const message =
++        (typeof data?.error === "string" && data.error) ||
++        "Failed to subscribe. Please try again.";
++      setState({ status: "error", email, message });
++      return { success: false, status: response.status, error: message };
++    }
++
++    setState({ status: "subscribed", email, message: null });
++    return {
++      success: true,
++      status: response.status,
++      id: typeof data?.id === "string" ? data.id : undefined,
++    };
++  } catch {
++    const message = "Failed to subscribe. Please try again.";
++    setState({ status: "error", email, message });
++    return { success: false, error: message };
++  }
++}

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION=v5.3.1
+CACHE_ROOT=${XDG_CACHE_HOME:-"/tmp/webmcp-kit-cache-${UID}"}
+BIN="$CACHE_ROOT/docker-compose-$VERSION"
+
+case "$(uname -s)-$(uname -m)" in
+  Linux-aarch64|Linux-arm64)
+    ASSET=docker-compose-linux-aarch64
+    SHA256=aa611e811d0ea25897839c404bfb5bf93ce706dc51c500a4457890f5d0606a86
+    ;;
+  Linux-x86_64|Linux-amd64)
+    ASSET=docker-compose-linux-x86_64
+    SHA256=f9ebc6ebdb19d769b793c245a736caaeb198c62587f13b25c660c13b4987f959
+    ;;
+  *)
+    echo "unsupported Docker Compose platform: $(uname -s)-$(uname -m)" >&2
+    exit 2
+    ;;
+esac
+
+verify() {
+  [ -x "$BIN" ] && printf '%s  %s\n' "$SHA256" "$BIN" | sha256sum -c - >/dev/null 2>&1
+}
+
+if ! verify; then
+  mkdir -p "$CACHE_ROOT"
+  tmp=$(mktemp "$CACHE_ROOT/.compose.XXXXXX")
+  trap 'rm -f "$tmp"' EXIT
+  curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 \
+    "https://github.com/docker/compose/releases/download/$VERSION/$ASSET" \
+    --output "$tmp"
+  printf '%s  %s\n' "$SHA256" "$tmp" | sha256sum -c - >/dev/null
+  chmod 0755 "$tmp"
+  mv "$tmp" "$BIN"
+  trap - EXIT
+fi
+
+exec "$BIN" "$@"

@@ -1,0 +1,37 @@
+[
+ {
+  "file": "bulletproof-react.reference.patch",
+  "literal": "bulletproof",
+  "reason": "public page title is the task's intended rendered answer"
+ },
+ {
+  "file": "hi-events.reference.patch",
+  "literal": "attendees",
+  "reason": "generic order-status field"
+ },
+ {
+  "file": "hi-events.reference.patch",
+  "literal": "complete",
+  "reason": "generic checkout state"
+ },
+ {
+  "file": "hi-events.reference.patch",
+  "literal": "completed",
+  "reason": "generic order state"
+ },
+ {
+  "file": "hi-events.reference.patch",
+  "literal": "confirmed",
+  "reason": "generic checkout state"
+ },
+ {
+  "file": "learnhouse.reference.patch",
+  "literal": "complete",
+  "reason": "generic progress state"
+ },
+ {
+  "file": "learnhouse.reference.patch",
+  "literal": "completed",
+  "reason": "generic progress state"
+ }
+]

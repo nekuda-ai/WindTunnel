@@ -1,0 +1,45 @@
+tasks:
+  - id: cal-1
+    site: directory-9d8
+    tier: answer
+    prompt: What category is Figma in on this site?
+    max_steps: { webmcp: 8, cu: 20 }
+    predicate:
+      type: answer
+      contains: [design]
+
+  - id: cal-2
+    site: directory-9d8
+    tier: answer
+    prompt: How many bookmarks does this directory list, and which categories exist?
+    max_steps: { webmcp: 8, cu: 20 }
+    predicate:
+      type: answer
+      contains: ["6", development]
+
+  - id: cal-3
+    site: directory-9d8
+    tier: answer
+    prompt: What is the destination URL of the React bookmark?
+    max_steps: { webmcp: 8, cu: 20 }
+    predicate:
+      type: answer
+      contains: [react.dev]
+
+  - id: cal-4
+    site: directory-9d8
+    tier: act-short
+    prompt: Open the GitHub bookmark's page and tell me its overview text.
+    max_steps: { webmcp: 10, cu: 25 }
+    predicate:
+      type: answer
+      contains: [developers shape the future]
+
+  - id: cal-5
+    site: directory-9d8
+    tier: act-short
+    prompt: Subscribe calibration-flight@example.com to the newsletter and confirm it worked.
+    max_steps: { webmcp: 10, cu: 25 }
+    predicate:
+      type: answer
+      contains: [calibration-flight@example.com, subscribed]

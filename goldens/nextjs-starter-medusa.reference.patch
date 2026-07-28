@@ -1,0 +1,1181 @@
+diff --git a/src/app/[countryCode]/(main)/layout.tsx b/src/app/[countryCode]/(main)/layout.tsx
+index 5635222..1e87847 100644
+--- a/src/app/[countryCode]/(main)/layout.tsx
++++ b/src/app/[countryCode]/(main)/layout.tsx
+@@ -3,6 +3,7 @@ import { Metadata } from "next"
+ import { listCartOptions, retrieveCart } from "@lib/data/cart"
+ import { retrieveCustomer } from "@lib/data/customer"
+ import { getBaseURL } from "@lib/util/env"
++import { WebMcpCartState } from "@lib/webmcp/publishers"
+ import { StoreCartShippingOption } from "@medusajs/types"
+ import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
+ import Footer from "@modules/layout/templates/footer"
+@@ -26,6 +27,7 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
+ 
+   return (
+     <>
++      <WebMcpCartState cart={cart} />
+       <Nav />
+       {customer && cart && (
+         <CartMismatchBanner customer={customer} cart={cart} />
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 6db3994..15ba655 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -1,4 +1,5 @@
+ import { getBaseURL } from "@lib/util/env"
++import WebMcpProvider from "@lib/webmcp/provider"
+ import { Metadata } from "next"
+ import "styles/globals.css"
+ 
+@@ -10,6 +11,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
+   return (
+     <html lang="en" data-mode="light">
+       <body>
++        <WebMcpProvider />
+         <main className="relative">{props.children}</main>
+       </body>
+     </html>
+diff --git a/src/lib/webmcp/actions.ts b/src/lib/webmcp/actions.ts
+new file mode 100644
+index 0000000..43b78d1
+--- /dev/null
++++ b/src/lib/webmcp/actions.ts
+@@ -0,0 +1,22 @@
++"use server"
++
++import { listCategories } from "@lib/data/categories"
++
++/**
++ * Server-action wrapper so WebMCP tools (client side) can reach the
++ * category list through the storefront's existing data path
++ * (lib/data/categories has no "use server" directive of its own).
++ */
++export async function listStoreCategories(): Promise<
++  { id: string; name: string; handle: string; description: string | null }[]
++> {
++  const categories = await listCategories({
++    fields: "id,name,handle,description",
++  })
++  return (categories ?? []).map((c) => ({
++    id: c.id,
++    name: c.name,
++    handle: c.handle,
++    description: c.description ?? null,
++  }))
++}
+diff --git a/src/lib/webmcp/page-state.ts b/src/lib/webmcp/page-state.ts
+new file mode 100644
+index 0000000..544bd71
+--- /dev/null
++++ b/src/lib/webmcp/page-state.ts
+@@ -0,0 +1,45 @@
++import { HttpTypes } from "@medusajs/types"
++
++/**
++ * Page state the WebMCP provider registers tools against. Publishers
++ * (rendered by the pages/layouts that already own the data) push into this
++ * store; the provider re-registers the affected tool group on change.
++ * Tool `execute` never reads stale data from here except the deliberately
++ * baked-in PDP product — cart reads always go through the server actions.
++ */
++export type ProductSnapshot = {
++  product: HttpTypes.StoreProduct
++  countryCode: string
++} | null
++
++export type CartSnapshot = {
++  id: string
++  itemCount: number
++} | null
++
++type PageState = { product: ProductSnapshot; cart: CartSnapshot }
++
++let state: PageState = { product: null, cart: null }
++const listeners = new Set<() => void>()
++
++function emit() {
++  listeners.forEach((l) => l())
++}
++
++export const pageState = {
++  get: (): PageState => state,
++  setProduct(product: ProductSnapshot) {
++    state = { ...state, product }
++    emit()
++  },
++  setCart(cart: CartSnapshot) {
++    state = { ...state, cart }
++    emit()
++  },
++  subscribe(listener: () => void) {
++    listeners.add(listener)
++    return () => {
++      listeners.delete(listener)
++    }
++  },
++}
+diff --git a/src/lib/webmcp/provider.tsx b/src/lib/webmcp/provider.tsx
+new file mode 100644
+index 0000000..7c8134f
+--- /dev/null
++++ b/src/lib/webmcp/provider.tsx
+@@ -0,0 +1,117 @@
++"use client"
++
++import { usePathname, useRouter } from "next/navigation"
++import { useEffect, useRef, useSyncExternalStore } from "react"
++import { pageState } from "./page-state"
++import {
++  buildAlwaysTools,
++  buildCartTools,
++  buildProductTools,
++  Navigator,
++} from "./tools"
++import { getModelContext, ModelContext, WebMcpTool } from "./types"
++
++/**
++ * Single owner of every document.modelContext registration (WebMCP).
++ * Mounted once in the root layout; tool sets react to page state:
++ *
++ * - group A (ask_site, search_products, view_cart): every page, always.
++ * - group B (get_product, add_to_cart): re-registered when the product
++ *   context changes — a product page bakes the viewed product in (no
++ *   product param); everywhere else the generic registrations require an
++ *   explicit handle/variant_id. add_to_cart is not offered inside checkout.
++ * - group C (update_cart, begin_checkout): registered only while the cart
++ *   has items and the user is not already in checkout — a checkout tool
++ *   with an empty cart has no valid target, so it unregisters.
++ *
++ * Cart/product state arrives via publishers rendered by the layouts/pages
++ * that already fetch that data, so registrations track the store's own
++ * revalidation flow (a manual add-to-cart click updates tools too).
++ */
++export default function WebMcpProvider() {
++  const pathname = usePathname()
++  const router = useRouter()
++  const routerRef = useRef(router)
++  routerRef.current = router
++  const navRef = useRef<Navigator>({
++    push: (path) => routerRef.current.push(path),
++  })
++
++  const state = useSyncExternalStore(
++    pageState.subscribe,
++    pageState.get,
++    pageState.get
++  )
++  const isCheckout = /^\/[^/]+\/checkout(\/|$|\?)/.test(pathname)
++  const productSnapshot = state.product
++  const hasCartItems = (state.cart?.itemCount ?? 0) > 0
++
++  // Group A — once per document lifetime
++  useEffect(() => {
++    const ctx = getModelContext()
++    if (!ctx?.registerTool) return
++    const controller = new AbortController()
++    registerAll(ctx, buildAlwaysTools(navRef.current), controller.signal)
++    return () => controller.abort()
++  }, [])
++
++  // Group B — product context
++  useEffect(() => {
++    const ctx = getModelContext()
++    if (!ctx?.registerTool) return
++    const controller = new AbortController()
++    registerAll(
++      ctx,
++      buildProductTools(productSnapshot, isCheckout, navRef.current),
++      controller.signal
++    )
++    return () => controller.abort()
++  }, [productSnapshot, isCheckout])
++
++  // Group C — cart-conditioned
++  useEffect(() => {
++    const ctx = getModelContext()
++    if (!ctx?.registerTool || !hasCartItems || isCheckout) return
++    const controller = new AbortController()
++    registerAll(ctx, buildCartTools(navRef.current), controller.signal)
++    return () => controller.abort()
++  }, [hasCartItems, isCheckout])
++
++  return null
++}
++
++function registerAll(
++  ctx: ModelContext,
++  tools: WebMcpTool[],
++  signal: AbortSignal
++) {
++  for (const tool of tools) {
++    try {
++      // registerTool can return a thenable that rejects when this signal aborts
++      // during an unregister/register race (a productSnapshot change re-registers
++      // the product-context group on the PDP). Swallow only that abort-caused
++      // rejection; surface any other registration error.
++      void Promise.resolve(ctx.registerTool(tool, { signal })).catch((e) => {
++        if (signal.aborted) return
++        console.warn("[webmcp] tool registration rejected:", tool.name, e)
++      })
++    } catch {
++      // Duplicate-name during an unregister/register race: retry once after
++      // the abort has settled.
++      queueMicrotask(() => {
++        if (signal.aborted) return
++        try {
++          void Promise.resolve(ctx.registerTool(tool, { signal })).catch(
++            (e) => {
++              if (!signal.aborted) {
++                console.warn("[webmcp] could not register tool:", tool.name, e)
++              }
++            }
++          )
++        } catch (e) {
++          console.warn("[webmcp] could not register tool:", tool.name, e)
++        }
++      })
++    }
++  }
++}
+diff --git a/src/lib/webmcp/publishers.tsx b/src/lib/webmcp/publishers.tsx
+new file mode 100644
+index 0000000..d9c4bb3
+--- /dev/null
++++ b/src/lib/webmcp/publishers.tsx
+@@ -0,0 +1,40 @@
++"use client"
++
++import { HttpTypes } from "@medusajs/types"
++import { useEffect } from "react"
++import { pageState } from "./page-state"
++
++/**
++ * Rendered by the product page template: bakes the viewed product into the
++ * WebMCP product-context registrations while the page is shown.
++ */
++export function WebMcpProductContext({
++  product,
++  countryCode,
++}: {
++  product: HttpTypes.StoreProduct
++  countryCode: string
++}) {
++  useEffect(() => {
++    pageState.setProduct({ product, countryCode })
++    return () => pageState.setProduct(null)
++  }, [product, countryCode])
++  return null
++}
++
++/**
++ * Rendered by the (main) layout with the cart it already fetches. Server
++ * actions revalidate the cart tag, the layout re-renders, and this pushes
++ * the fresh cart state — so cart-conditioned tools (begin_checkout,
++ * update_cart) register/unregister with the store's own data flow.
++ */
++export function WebMcpCartState({ cart }: { cart: HttpTypes.StoreCart | null }) {
++  const id = cart?.id ?? null
++  const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0
++
++  useEffect(() => {
++    pageState.setCart(id ? { id, itemCount } : null)
++    return () => pageState.setCart(null)
++  }, [id, itemCount])
++  return null
++}
+diff --git a/src/lib/webmcp/site-content.ts b/src/lib/webmcp/site-content.ts
+new file mode 100644
+index 0000000..7849b20
+--- /dev/null
++++ b/src/lib/webmcp/site-content.ts
+@@ -0,0 +1,108 @@
++/**
++ * ask_site content bundle + keyword retrieval.
++ *
++ * Static sections mirror the store's committed policy copy verbatim
++ * (ShippingInfoTab in src/modules/products/components/product-tabs — the
++ * "Shipping & Returns" accordion shown on every product page). Catalog
++ * sections (products, categories) are built live from the same server
++ * actions the pages use, so ask_site never invents content.
++ */
++
++export type ContentSection = {
++  title: string
++  text: string
++  keywords: string[]
++  /** storefront path where the user can see this content; {cc} = country code */
++  source: string
++}
++
++export const POLICY_SECTIONS: ContentSection[] = [
++  {
++    title: "Shipping & delivery",
++    text: "Fast delivery: Your package will arrive in 3-5 business days at your pick up location or in the comfort of your home.",
++    keywords: [
++      "shipping",
++      "ship",
++      "delivery",
++      "deliver",
++      "arrive",
++      "days",
++      "package",
++      "home",
++      "pickup",
++      "time",
++      "long",
++    ],
++    source: "/{cc}/products/t-shirt (Shipping & Returns tab, shown on every product page)",
++  },
++  {
++    title: "Exchanges",
++    text: "Simple exchanges: Is the fit not quite right? No worries - we'll exchange your product for a new one.",
++    keywords: ["exchange", "exchanges", "fit", "swap", "size", "wrong"],
++    source: "/{cc}/products/t-shirt (Shipping & Returns tab, shown on every product page)",
++  },
++  {
++    title: "Returns & refunds",
++    text: "Easy returns: Just return your product and we'll refund your money. No questions asked - we'll do our best to make sure your return is hassle-free.",
++    keywords: ["return", "returns", "refund", "refunds", "money", "back", "policy"],
++    source: "/{cc}/products/t-shirt (Shipping & Returns tab, shown on every product page)",
++  },
++]
++
++/** Shopper vocabulary -> catalog vocabulary (apparel domain). */
++const SYNONYMS: Record<string, string[]> = {
++  hoodie: ["sweatshirt"],
++  hoodies: ["sweatshirt"],
++  jumper: ["sweatshirt"],
++  pullover: ["sweatshirt"],
++  tee: ["t-shirt", "shirt"],
++  tees: ["t-shirt", "shirt"],
++  tshirt: ["t-shirt", "shirt"],
++  tshirts: ["t-shirt", "shirt"],
++  joggers: ["sweatpants", "pants"],
++  trousers: ["sweatpants", "pants"],
++  apparel: ["shirt", "sweatshirt", "sweatpants", "shorts"],
++  clothes: ["shirt", "sweatshirt", "sweatpants", "shorts"],
++  clothing: ["shirt", "sweatshirt", "sweatpants", "shorts"],
++}
++
++const STOP_WORDS = new Set([
++  "the", "a", "an", "is", "are", "do", "does", "did", "you", "your", "i", "my",
++  "me", "we", "our", "it", "its", "of", "in", "on", "to", "for", "and", "or",
++  "with", "at", "by", "from", "about", "what", "which", "who", "how", "can",
++  "could", "would", "will", "there", "this", "that", "these", "any", "some",
++  "much", "many", "please", "tell", "want", "get", "have", "has", "had",
++  "if", "when", "where", "they", "them", "was", "were", "be", "been",
++])
++
++export function tokenize(input: string): string[] {
++  const raw = (input || "")
++    .toLowerCase()
++    .replace(/t[\s-]shirts?/g, "t-shirt tshirt")
++    .split(/[^a-z0-9-]+/)
++    .filter((t) => t.length > 1 && !STOP_WORDS.has(t))
++  const expanded = new Set<string>()
++  for (const t of raw) {
++    expanded.add(t)
++    if (t.endsWith("s")) expanded.add(t.slice(0, -1))
++    for (const syn of SYNONYMS[t] ?? []) expanded.add(syn)
++  }
++  return Array.from(expanded)
++}
++
++/** Token-overlap score: title hits weigh 3, keyword hits 2, body hits 1. */
++export function scoreSection(
++  tokens: string[],
++  section: { title: string; text: string; keywords?: string[] }
++): number {
++  const title = section.title.toLowerCase()
++  const text = section.text.toLowerCase()
++  const keywords = section.keywords ?? []
++  let score = 0
++  for (const t of tokens) {
++    if (title.includes(t)) score += 3
++    else if (keywords.includes(t)) score += 2
++    else if (text.includes(t)) score += 1
++  }
++  return score
++}
+diff --git a/src/lib/webmcp/tools.ts b/src/lib/webmcp/tools.ts
+new file mode 100644
+index 0000000..9aee65f
+--- /dev/null
++++ b/src/lib/webmcp/tools.ts
+@@ -0,0 +1,718 @@
++import { HttpTypes } from "@medusajs/types"
++import {
++  addToCart,
++  deleteLineItem,
++  retrieveCart,
++  updateLineItem,
++} from "@lib/data/cart"
++import { listProducts } from "@lib/data/products"
++import { convertToLocale } from "@lib/util/money"
++import { listStoreCategories } from "./actions"
++import {
++  ContentSection,
++  POLICY_SECTIONS,
++  scoreSection,
++  tokenize,
++} from "./site-content"
++import { ProductSnapshot } from "./page-state"
++import { WebMcpContent, WebMcpTool } from "./types"
++
++/** Client-side page navigation the tools use for their ui_effect. */
++export type Navigator = { push: (path: string) => void }
++
++const ok = (payload: unknown): WebMcpContent => ({
++  content: [{ type: "text", text: JSON.stringify(payload) }],
++})
++
++const fail = (message: string, extra?: Record<string, unknown>) =>
++  ok({ error: message, ...extra })
++
++/** Country code from the current URL (region-prefixed routes: /gb/...). */
++const cc = () =>
++  (typeof location !== "undefined" && location.pathname.split("/")[1]) || "gb"
++
++const fmt = (amount: number, currency: string | null | undefined) =>
++  convertToLocale({ amount, currency_code: currency || "eur" })
++
++/**
++ * Navigate after the tool response has been delivered — an immediate route
++ * change can re-register tool groups (and abort this registration) before
++ * the in-flight result reaches the agent.
++ */
++const navigateSoon = (nav: Navigator, path: string) =>
++  setTimeout(() => nav.push(path), 150)
++
++// ---------------------------------------------------------------------------
++// Catalog helpers
++// ---------------------------------------------------------------------------
++
++function variantSummary(v: HttpTypes.StoreProductVariant) {
++  const price = v.calculated_price
++  return {
++    variant_id: v.id,
++    title: v.title,
++    price:
++      price?.calculated_amount != null
++        ? fmt(price.calculated_amount, price.currency_code)
++        : null,
++    in_stock: v.manage_inventory
++      ? v.allow_backorder || (v.inventory_quantity ?? 0) > 0
++      : true,
++  }
++}
++
++function optionMap(p: HttpTypes.StoreProduct) {
++  const map: Record<string, string[]> = {}
++  for (const o of p.options ?? []) {
++    map[o.title] = (o.values ?? []).map((v) => v.value)
++  }
++  return map
++}
++
++function productCard(p: HttpTypes.StoreProduct) {
++  const prices = (p.variants ?? [])
++    .map((v) => v.calculated_price?.calculated_amount)
++    .filter((a): a is number => a != null)
++  const currency = p.variants?.[0]?.calculated_price?.currency_code
++  return {
++    id: p.id,
++    title: p.title,
++    handle: p.handle,
++    path: `/${cc()}/products/${p.handle}`,
++    price_from: prices.length ? fmt(Math.min(...prices), currency) : null,
++    description: p.description
++      ? p.description.slice(0, 180) + (p.description.length > 180 ? "…" : "")
++      : null,
++    options: optionMap(p),
++    variants: (p.variants ?? []).map(variantSummary),
++  }
++}
++
++function productDetail(p: HttpTypes.StoreProduct) {
++  return {
++    ...productCard(p),
++    description: p.description ?? null,
++    material: p.material ?? null,
++    origin_country: p.origin_country ?? null,
++    weight_g: p.weight ?? null,
++    collection: p.collection?.title ?? null,
++    variants: (p.variants ?? []).map((v) => ({
++      ...variantSummary(v),
++      options: Object.fromEntries(
++        (v.options ?? []).map((o) => [o.option?.title ?? "option", o.value])
++      ),
++    })),
++  }
++}
++
++async function fetchCatalog(limit = 100) {
++  const { response } = await listProducts({
++    countryCode: cc(),
++    queryParams: {
++      limit,
++      // keep the storefront's default price/inventory fields, add categories
++      fields:
++        "*variants.calculated_price,+variants.inventory_quantity,+metadata,+tags,*categories",
++    } as any,
++  })
++  return response.products
++}
++
++/** Resolve a variant on a product from a variant_id or option choices. */
++function resolveVariant(
++  product: HttpTypes.StoreProduct,
++  args: Record<string, unknown>
++): HttpTypes.StoreProductVariant | { error: WebMcpContent } {
++  const variants = product.variants ?? []
++  if (typeof args.variant_id === "string" && args.variant_id) {
++    const v = variants.find((v) => v.id === args.variant_id)
++    return (
++      v ?? {
++        error: fail(`No variant ${args.variant_id} on ${product.title}.`, {
++          valid_variants: variants.map((v) => ({
++            variant_id: v.id,
++            title: v.title,
++          })),
++        }),
++      }
++    )
++  }
++  const options = product.options ?? []
++  const wanted: Record<string, string> = {}
++  for (const o of options) {
++    const raw = args[o.title.toLowerCase()]
++    if (typeof raw === "string" && raw)
++      wanted[o.title.toLowerCase()] = raw.toLowerCase()
++  }
++  if (!Object.keys(wanted).length && variants.length === 1) return variants[0]
++  const match = variants.find(
++    (v) =>
++      Object.entries(wanted).length === (v.options ?? []).length &&
++      (v.options ?? []).every(
++        (vo) =>
++          wanted[(vo.option?.title ?? "").toLowerCase()] ===
++          vo.value.toLowerCase()
++      )
++  )
++  return (
++    match ?? {
++      error: fail(
++        `No ${product.title} variant matches the requested options. Choose from the valid options.`,
++        { valid_options: optionMap(product) }
++      ),
++    }
++  )
++}
++
++// ---------------------------------------------------------------------------
++// Cart helpers
++// ---------------------------------------------------------------------------
++
++function summarizeCart(cart: HttpTypes.StoreCart | null) {
++  if (!cart || !cart.items?.length) {
++    return { item_count: 0, items: [], note: "The cart is empty." }
++  }
++  const cur = cart.currency_code
++  return {
++    item_count: cart.items.reduce((s, i) => s + i.quantity, 0),
++    items: cart.items.map((i) => ({
++      line_id: i.id,
++      product: i.product_title,
++      variant: i.variant_title,
++      quantity: i.quantity,
++      unit_price: fmt(i.unit_price ?? 0, cur),
++      line_total: fmt(i.total ?? 0, cur),
++    })),
++    subtotal: fmt(cart.subtotal ?? 0, cur),
++    total: fmt(cart.total ?? 0, cur),
++    currency: cur?.toUpperCase(),
++    cart_path: `/${cc()}/cart`,
++  }
++}
++
++/** Mirrors getCheckoutStep in modules/cart/templates/summary.tsx. */
++function checkoutStep(cart: HttpTypes.StoreCart) {
++  if (!cart.shipping_address?.address_1 || !cart.email) return "address"
++  if (cart.shipping_methods?.length === 0) return "delivery"
++  return "payment"
++}
++
++// ---------------------------------------------------------------------------
++// Group A — registered on every page, for the whole session
++// ---------------------------------------------------------------------------
++
++export function buildAlwaysTools(nav: Navigator): WebMcpTool[] {
++  return [
++    {
++      name: "ask_site",
++      description:
++        "Answer questions about Medusa Store from the site's own content: shipping times, returns and exchange policy, product categories, and product details (descriptions, materials, sizes, prices). Read-only. Returns matching content sections with source page paths — compose the answer from them. Not for cart or order state (use view_cart for the cart).",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {
++          query: {
++            type: "string",
++            description:
++              "Natural-language question about the store, its policies, or its products",
++          },
++        },
++        required: ["query"],
++      },
++      annotations: { readOnlyHint: true },
++      async execute(args: { query: string }) {
++        try {
++          const tokens = tokenize(args.query)
++          const [products, categories] = await Promise.all([
++            fetchCatalog(),
++            listStoreCategories().catch(() => []),
++          ])
++          const sections: ContentSection[] = [
++            ...POLICY_SECTIONS,
++            {
++              title: "What Medusa Store sells",
++              text: `Medusa Store sells apparel: ${products
++                .map((p) => p.title)
++                .join(
++                  ", "
++                )}. Categories: ${categories.map((c) => c.name).join(", ")}.`,
++              keywords: [
++                "products",
++                "catalog",
++                "store",
++                "sell",
++                "shop",
++                "apparel",
++                "categories",
++                "category",
++              ],
++              source: "/{cc}/store",
++            },
++            ...products.map((p) => {
++              const card = productCard(p)
++              const anyStock = card.variants.some((v) => v.in_stock)
++              return {
++                title: p.title,
++                text: [
++                  p.description,
++                  p.material ? `Material: ${p.material}.` : null,
++                  card.price_from ? `Price: from ${card.price_from}.` : null,
++                  card.variants.length
++                    ? `Availability: ${anyStock ? "in stock" : "out of stock"}.`
++                    : null,
++                  `Options: ${Object.entries(optionMap(p))
++                    .map(([k, v]) => `${k}: ${v.join("/")}`)
++                    .join("; ")}.`,
++                ]
++                  .filter(Boolean)
++                  .join(" "),
++                keywords: [
++                  "product",
++                  "detail",
++                  "material",
++                  "price",
++                  "cost",
++                  "stock",
++                  "availability",
++                  ...p.handle.split("-"),
++                ],
++                source: `/{cc}/products/${p.handle}`,
++              }
++            }),
++            ...categories.map((c) => ({
++              title: `Category: ${c.name}`,
++              text: `${c.name} category. ${c.description ?? ""} Products: ${products
++                .filter((p) =>
++                  (p as any).categories?.some?.((pc: any) => pc.id === c.id)
++                )
++                .map((p) => p.title)
++                .join(", ")}`,
++              keywords: ["category", "categories", c.handle],
++              source: `/{cc}/categories/${c.handle}`,
++            })),
++          ]
++          const scored = sections
++            .map((s) => ({ s, score: scoreSection(tokens, s) }))
++            .filter((x) => x.score > 0)
++            .sort((a, b) => b.score - a.score)
++            .slice(0, 4)
++          if (!scored.length) {
++            return ok({
++              query: args.query,
++              results: [],
++              note: "No site content matches this question. Available topics: shipping & delivery, returns, exchanges, the product catalog (t-shirts, sweatshirts, sweatpants, shorts), categories.",
++            })
++          }
++          return ok({
++            query: args.query,
++            results: scored.map(({ s }) => ({
++              title: s.title,
++              content: s.text,
++              source: s.source.replace("{cc}", cc()),
++            })),
++          })
++        } catch (e: any) {
++          return fail(e?.message ?? "ask_site failed")
++        }
++      },
++    },
++    {
++      name: "search_products",
++      description:
++        "Search the Medusa Store catalog (apparel: t-shirts, sweatshirts, sweatpants, shorts). Query by keyword and/or filter by category handle. Read-only (no cart or catalog changes) but shows the results in the page: a category filter opens that category's results page, a keyword search opens the store listing. Returns matching products with price, available option values (sizes/colors), and per-variant variant_id + stock — everything needed to choose a variant for add_to_cart.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {
++          query: {
++            type: "string",
++            description: "Keywords, e.g. 'hoodie' or 'black jacket'",
++          },
++          category: {
++            type: "string",
++            description:
++              "Category handle to filter by (see ask_site for the category list)",
++          },
++          max_results: { type: "integer", minimum: 1, maximum: 20, default: 8 },
++        },
++      },
++      annotations: { readOnlyHint: true },
++      async execute(args: {
++        query?: string
++        category?: string
++        max_results?: number
++      }) {
++        try {
++          const limit = args.max_results ?? 8
++          let categoryId: string | undefined
++          let categoryHandle: string | undefined
++          if (args.category) {
++            const categories = await listStoreCategories().catch(() => [])
++            const match = categories.find(
++              (c) =>
++                c.handle === args.category!.toLowerCase() ||
++                c.name.toLowerCase() === args.category!.toLowerCase()
++            )
++            if (!match) {
++              return fail(`Unknown category '${args.category}'.`, {
++                valid_categories: categories.map((c) => ({
++                  name: c.name,
++                  handle: c.handle,
++                })),
++              })
++            }
++            categoryId = match.id
++            categoryHandle = match.handle
++          }
++          const queryParams: Record<string, unknown> = { limit: 100 }
++          if (categoryId) queryParams.category_id = [categoryId]
++          if (args.query) queryParams.q = args.query
++          let { response } = await listProducts({
++            countryCode: cc(),
++            queryParams: queryParams as any,
++          })
++          let products = response.products
++          // The engine's `q` is a literal match on title/description; fall back
++          // to token+synonym scoring so shopper vocabulary ("hoodie") still
++          // finds the catalog's naming ("sweatshirt").
++          if (!products.length && args.query) {
++            const tokens = tokenize(args.query)
++            const catalogParams: Record<string, unknown> = { limit: 100 }
++            if (categoryId) catalogParams.category_id = [categoryId]
++            const all = await listProducts({
++              countryCode: cc(),
++              queryParams: catalogParams as any,
++            })
++            products = all.response.products
++              .map((p) => ({
++                p,
++                score: scoreSection(tokens, {
++                  title: p.title,
++                  text: `${p.description ?? ""} ${Object.entries(optionMap(p))
++                    .map(([k, v]) => `${k} ${v.join(" ")}`)
++                    .join(" ")}`,
++                  keywords: p.handle.split("-"),
++                }),
++              }))
++              .filter((x) => x.score > 0)
++              .sort((a, b) => b.score - a.score)
++              .map((x) => x.p)
++          }
++          products = products.slice(0, limit)
++          if (!products.length) {
++            return ok({
++              count: 0,
++              products: [],
++              note: "No products match. The catalog is small: Medusa T-Shirt, Medusa Sweatshirt, Medusa Sweatpants, Medusa Shorts.",
++            })
++          }
++          // Show the user what the agent found: a category filter navigates to
++          // that category's results page; a keyword search has no dedicated
++          // q-results route in this repo, so it lands on the full store listing
++          // (the precise matches are in the returned data either way).
++          const viewing = categoryHandle
++            ? `/${cc()}/categories/${categoryHandle}`
++            : `/${cc()}/store`
++          navigateSoon(nav, viewing)
++          return ok({
++            count: products.length,
++            products: products.map(productCard),
++            viewing,
++          })
++        } catch (e: any) {
++          return fail(e?.message ?? "search_products failed")
++        }
++      },
++    },
++    {
++      name: "view_cart",
++      description:
++        "Read the current shopping cart: items (product, variant, quantity, unit price, line total) and cart totals. Read-only; reports an empty cart honestly.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {},
++      },
++      annotations: { readOnlyHint: true },
++      async execute() {
++        try {
++          return ok({ cart: summarizeCart(await retrieveCart()) })
++        } catch (e: any) {
++          return fail(e?.message ?? "view_cart failed")
++        }
++      },
++    },
++  ]
++}
++
++// ---------------------------------------------------------------------------
++// Group B — product-context tools (PDP bakes the viewed product in)
++// ---------------------------------------------------------------------------
++
++export function buildProductTools(
++  snapshot: ProductSnapshot,
++  isCheckout: boolean,
++  nav: Navigator
++): WebMcpTool[] {
++  if (snapshot) {
++    const { product, countryCode } = snapshot
++    const options = optionMap(product)
++    const optionProps: Record<string, unknown> = {}
++    for (const [title, values] of Object.entries(options)) {
++      optionProps[title.toLowerCase()] = {
++        type: "string",
++        enum: values,
++        description: `${title} to add`,
++      }
++    }
++    const needsOptions = (product.variants?.length ?? 0) > 1
++    const productTools: WebMcpTool[] = [
++      {
++        name: "get_product",
++        description: `Get full details for ${product.title}, the product currently shown on this page: variants with prices and stock, option values, description, material. Read-only, no navigation.`,
++        inputSchema: {
++          type: "object",
++          additionalProperties: false,
++          properties: {},
++        },
++        annotations: { readOnlyHint: true },
++        async execute() {
++          return ok({ product: productDetail(product) })
++        },
++      },
++    ]
++    // add_to_cart is a purchase action, not a checkout-flow tool: even when the
++    // viewed-product snapshot is still retained during a PDP -> checkout
++    // transition, checkout must not expose it (the store routes cart edits back
++    // through the cart, mirroring group C).
++    if (!isCheckout) {
++      productTools.push({
++        name: "add_to_cart",
++        description: `Add ${product.title} — the product on this page — to the shopping cart. ${
++          needsOptions
++            ? `Specify the user's choice of ${Object.entries(options)
++                .map(([k, v]) => `${k.toLowerCase()} (${v.join(", ")})`)
++                .join(" and ")}.`
++            : "It has a single variant; only quantity is needed."
++        } State-changing: the cart icon and dropdown update immediately. Returns what was added plus the updated cart contents and totals.`,
++        inputSchema: {
++          type: "object",
++          additionalProperties: false,
++          properties: {
++            ...optionProps,
++            quantity: { type: "integer", minimum: 1, default: 1 },
++          },
++          required: needsOptions ? Object.keys(optionProps) : [],
++        },
++        annotations: { readOnlyHint: false },
++        async execute(args: Record<string, unknown>) {
++          try {
++            const variant = resolveVariant(product, args)
++            if ("error" in variant) return variant.error
++            const quantity = args.quantity ?? 1
++            if (
++              typeof quantity !== "number" ||
++              !Number.isInteger(quantity) ||
++              quantity <= 0
++            ) {
++              return fail("quantity must be a positive whole number", {
++                received: args.quantity,
++              })
++            }
++            await addToCart({ variantId: variant.id, quantity, countryCode })
++            return ok({
++              added: {
++                product: product.title,
++                variant: variant.title,
++                quantity,
++              },
++              cart: summarizeCart(await retrieveCart()),
++            })
++          } catch (e: any) {
++            return fail(e?.message ?? "add_to_cart failed")
++          }
++        },
++      })
++    }
++    return productTools
++  }
++
++  const tools: WebMcpTool[] = [
++    {
++      name: "get_product",
++      description:
++        "Get full details for one product by handle (e.g. 't-shirt') or id (prod_...): variants with prices and stock, option values, description, material. Navigates the page to that product so the user sees it. Use search_products first if the handle is unknown.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {
++          product: {
++            type: "string",
++            description: "Product handle or product id",
++          },
++        },
++        required: ["product"],
++      },
++      annotations: { readOnlyHint: true },
++      async execute(args: { product: string }) {
++        try {
++          const key = (args.product || "").trim()
++          const queryParams = key.startsWith("prod_")
++            ? { id: [key], limit: 1 }
++            : { handle: key.toLowerCase(), limit: 1 }
++          const { response } = await listProducts({
++            countryCode: cc(),
++            queryParams: queryParams as any,
++          })
++          const product = response.products[0]
++          if (!product) {
++            return fail(
++              `No product '${key}'. Use search_products to find the right handle.`
++            )
++          }
++          navigateSoon(nav, `/${cc()}/products/${product.handle}`)
++          return ok({
++            product: productDetail(product),
++            navigating_to: `/${cc()}/products/${product.handle}`,
++          })
++        } catch (e: any) {
++          return fail(e?.message ?? "get_product failed")
++        }
++      },
++    },
++  ]
++  if (!isCheckout) {
++    tools.push({
++      name: "add_to_cart",
++      description:
++        "Add a product variant to the shopping cart by variant_id (take variant ids from search_products or get_product results). State-changing: the cart icon updates immediately. Returns what was added plus the updated cart contents and totals.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {
++          variant_id: {
++            type: "string",
++            description: "Variant id (variant_...)",
++          },
++          quantity: { type: "integer", minimum: 1, default: 1 },
++        },
++        required: ["variant_id"],
++      },
++      annotations: { readOnlyHint: false },
++      async execute(args: { variant_id: string; quantity?: number }) {
++        try {
++          const quantity = args.quantity ?? 1
++          if (!Number.isInteger(quantity) || quantity <= 0) {
++            return fail("quantity must be a positive whole number", {
++              received: args.quantity,
++            })
++          }
++          await addToCart({
++            variantId: args.variant_id,
++            quantity,
++            countryCode: cc(),
++          })
++          return ok({
++            added: { variant_id: args.variant_id, quantity },
++            cart: summarizeCart(await retrieveCart()),
++          })
++        } catch (e: any) {
++          return fail(e?.message ?? "add_to_cart failed", {
++            hint: "variant_id must come from search_products or get_product results.",
++          })
++        }
++      },
++    })
++  }
++  return tools
++}
++
++// ---------------------------------------------------------------------------
++// Group C — cart-conditioned tools (registered only while the cart has items
++// and the user is not already inside checkout)
++// ---------------------------------------------------------------------------
++
++export function buildCartTools(nav: Navigator): WebMcpTool[] {
++  return [
++    {
++      name: "update_cart",
++      description:
++        "Edit the shopping cart: set a line item's quantity (action 'set_quantity' + quantity) or remove it (action 'remove'). line_id comes from view_cart or add_to_cart results. State-changing: the cart UI updates immediately. Returns the updated cart.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {
++          action: { type: "string", enum: ["set_quantity", "remove"] },
++          line_id: { type: "string", description: "Cart line item id" },
++          quantity: {
++            type: "integer",
++            minimum: 1,
++            description: "Required for set_quantity",
++          },
++        },
++        required: ["action", "line_id"],
++      },
++      annotations: { readOnlyHint: false },
++      async execute(args: {
++        action: string
++        line_id: string
++        quantity?: number
++      }) {
++        try {
++          if (args.action === "remove") {
++            await deleteLineItem(args.line_id)
++          } else if (args.action === "set_quantity") {
++            if (!args.quantity || args.quantity < 1) {
++              return fail(
++                "set_quantity requires quantity >= 1 (use action 'remove' to delete the line)."
++              )
++            }
++            await updateLineItem({
++              lineId: args.line_id,
++              quantity: args.quantity,
++            })
++          } else {
++            return fail(
++              `Unknown action '${args.action}'. Use 'set_quantity' or 'remove'.`
++            )
++          }
++          return ok({ cart: summarizeCart(await retrieveCart()) })
++        } catch (e: any) {
++          return fail(e?.message ?? "update_cart failed", {
++            hint: "line_id must come from view_cart or add_to_cart results.",
++          })
++        }
++      },
++    },
++    {
++      name: "begin_checkout",
++      description:
++        "Start checkout for the current cart: navigates the page to the checkout flow with all cart items and totals preserved (the Medusa cart is the checkout session). No order is placed and no payment is taken by this tool — the user completes address, delivery and payment in the page. Returns the cart summary being checked out.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {},
++      },
++      annotations: { readOnlyHint: false },
++      async execute() {
++        try {
++          const cart = await retrieveCart()
++          if (!cart?.items?.length) {
++            return fail(
++              "The cart is empty — add items before starting checkout."
++            )
++          }
++          const path = `/${cc()}/checkout?step=${checkoutStep(cart)}`
++          navigateSoon(nav, path)
++          return ok({
++            checkout_path: path,
++            note: "Checkout opened with the cart preserved. The user completes address, delivery and payment steps in the page UI.",
++            cart: summarizeCart(cart),
++          })
++        } catch (e: any) {
++          return fail(e?.message ?? "begin_checkout failed")
++        }
++      },
++    },
++  ]
++}
+diff --git a/src/lib/webmcp/types.ts b/src/lib/webmcp/types.ts
+new file mode 100644
+index 0000000..d9899f2
+--- /dev/null
++++ b/src/lib/webmcp/types.ts
+@@ -0,0 +1,31 @@
++/**
++ * Minimal typings for the WebMCP draft API (webmachinelearning/webmcp).
++ * Feature-detected at runtime; the storefront no-ops when absent.
++ */
++export type WebMcpContent = { content: { type: "text"; text: string }[] }
++
++export interface WebMcpTool {
++  name: string
++  description: string
++  inputSchema: Record<string, unknown>
++  annotations?: { readOnlyHint?: boolean }
++  execute: (args: any) => Promise<WebMcpContent>
++}
++
++export interface ModelContext {
++  registerTool(tool: WebMcpTool, options?: { signal?: AbortSignal }): unknown
++}
++
++declare global {
++  interface Document {
++    modelContext?: ModelContext
++  }
++  interface Navigator {
++    modelContext?: ModelContext
++  }
++}
++
++export function getModelContext(): ModelContext | undefined {
++  if (typeof document === "undefined") return undefined
++  return document.modelContext ?? navigator.modelContext
++}
+diff --git a/src/modules/products/templates/index.tsx b/src/modules/products/templates/index.tsx
+index dd07163..9ef3a1c 100644
+--- a/src/modules/products/templates/index.tsx
++++ b/src/modules/products/templates/index.tsx
+@@ -6,6 +6,7 @@ import ProductOnboardingCta from "@modules/products/components/product-onboardin
+ import ProductTabs from "@modules/products/components/product-tabs"
+ import RelatedProducts from "@modules/products/components/related-products"
+ import ProductInfo from "@modules/products/templates/product-info"
++import { WebMcpProductContext } from "@lib/webmcp/publishers"
+ import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
+ import { notFound } from "next/navigation"
+ import { HttpTypes } from "@medusajs/types"
+@@ -31,6 +32,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
+ 
+   return (
+     <>
++      <WebMcpProductContext product={product} countryCode={countryCode} />
+       <div
+         className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
+         data-testid="product-container"

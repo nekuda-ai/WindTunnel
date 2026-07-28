@@ -1,0 +1,1558 @@
+diff --git a/frontend/src/components/layouts/Checkout/index.tsx b/frontend/src/components/layouts/Checkout/index.tsx
+index 6599b4e3..527d3184 100644
+--- a/frontend/src/components/layouts/Checkout/index.tsx
++++ b/frontend/src/components/layouts/Checkout/index.tsx
+@@ -24,6 +24,7 @@ import {useOrganizerTrackingPixels} from "../../../hooks/useOrganizerTrackingPix
+ import {trackPixelEvent, hasActivePixels} from "../../../utilites/trackingPixels";
+ import {CookieConsentBanner} from "../../common/CookieConsentBanner";
+ import {useGetEventPublic} from "../../../queries/useGetEventPublic.ts";
++import {useCheckoutWebMCP} from "../../../webmcp/hooks.ts";
+ 
+ const DEFAULT_ACCENT = '#8b5cf6';
+ 
+@@ -32,6 +33,8 @@ const Checkout = () => {
+     const {data: order} = useGetOrderPublic(eventId, orderShortId, ['event']);
+     const event = order?.event;
+     const {data: publicEvent} = useGetEventPublic(eventId, !!eventId);
++
++    useCheckoutWebMCP(order, publicEvent, eventId);
+     const navigate = useNavigate();
+     const location = useLocation();
+     const orderIsCompleted = order?.status === 'COMPLETED';
+diff --git a/frontend/src/components/layouts/Event/index.tsx b/frontend/src/components/layouts/Event/index.tsx
+index 95fef67e..aecd606f 100644
+--- a/frontend/src/components/layouts/Event/index.tsx
++++ b/frontend/src/components/layouts/Event/index.tsx
+@@ -48,11 +48,14 @@ import {useGetMe} from "../../../queries/useGetMe.ts";
+ import {useResendEmailConfirmation} from "../../../mutations/useResendEmailConfirmation.ts";
+ import {useState} from "react";
+ import {eventHomepageUrl} from "../../../utilites/urlHelper.ts";
++import {useOrganizerSalesWebMCP} from "../../../webmcp/hooks.ts";
+ 
+ const EventLayout = () => {
+     const location = useLocation();
+     const {eventId} = useParams();
+ 
++    useOrganizerSalesWebMCP(eventId);
++
+     const [opened, {open, close}] = useDisclosure(false);
+     const [celebrationOpened, {open: openCelebration, close: closeCelebration}] = useDisclosure(false);
+ 
+diff --git a/frontend/src/components/layouts/OrganizerLayout/index.tsx b/frontend/src/components/layouts/OrganizerLayout/index.tsx
+index ca4d585a..e4fa7f33 100644
+--- a/frontend/src/components/layouts/OrganizerLayout/index.tsx
++++ b/frontend/src/components/layouts/OrganizerLayout/index.tsx
+@@ -41,10 +41,13 @@ import { confirmationDialog } from "../../../utilites/confirmationDialog.tsx";
+ import { showError, showSuccess } from "../../../utilites/notifications.tsx";
+ import { useResendEmailConfirmation } from "../../../mutations/useResendEmailConfirmation.ts";
+ import { useGetMe } from "../../../queries/useGetMe.ts";
++import { useOrganizerSalesWebMCP } from "../../../webmcp/hooks.ts";
+ 
+ const OrganizerLayout = () => {
+     const { organizerId } = useParams();
+     const location = useLocation();
++
++    useOrganizerSalesWebMCP();
+     const { data: organizer } = useGetOrganizer(organizerId);
+     const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+     const [showCreateOrganizerModal, setShowCreateOrganizerModal] = useState(false);
+diff --git a/frontend/src/components/layouts/PublicEvent/index.tsx b/frontend/src/components/layouts/PublicEvent/index.tsx
+index f0de0377..19789c12 100644
+--- a/frontend/src/components/layouts/PublicEvent/index.tsx
++++ b/frontend/src/components/layouts/PublicEvent/index.tsx
+@@ -1,6 +1,7 @@
+ import {useLoaderData} from "react-router";
+ import EventHomepage from "../EventHomepage";
+ import {Event} from "../../../types";
++import {usePublicEventWebMCP} from "../../../webmcp/hooks.ts";
+ 
+ export const PublicEvent = () => {
+     const loaderData = useLoaderData();
+@@ -11,6 +12,8 @@ export const PublicEvent = () => {
+         promoCode?: string;
+     };
+ 
++    usePublicEventWebMCP(event);
++
+     return (
+         <EventHomepage
+             event={event}
+diff --git a/frontend/src/components/layouts/PublicOrganizer/index.tsx b/frontend/src/components/layouts/PublicOrganizer/index.tsx
+index bf9cc8f1..08423906 100644
+--- a/frontend/src/components/layouts/PublicOrganizer/index.tsx
++++ b/frontend/src/components/layouts/PublicOrganizer/index.tsx
+@@ -2,6 +2,7 @@ import OrganizerHomepage from "../OrganizerHomepage";
+ import {useLoaderData} from "react-router";
+ import {Organizer} from "../../../types.ts";
+ import {OrganizerNotFound} from "./OrganizerNotFound";
++import {usePublicOrganizerWebMCP} from "../../../webmcp/hooks.ts";
+ 
+ export const PublicOrganizer = () => {
+     const loaderData = useLoaderData() as {
+@@ -10,6 +11,8 @@ export const PublicOrganizer = () => {
+         isPastEvents: boolean;
+     };
+ 
++    usePublicOrganizerWebMCP(loaderData?.organizer);
++
+     if (!loaderData?.organizer) {
+         return <OrganizerNotFound />;
+     }
+diff --git a/frontend/src/components/routes/auth/Login/index.tsx b/frontend/src/components/routes/auth/Login/index.tsx
+index 43a25f13..e64995ca 100644
+--- a/frontend/src/components/routes/auth/Login/index.tsx
++++ b/frontend/src/components/routes/auth/Login/index.tsx
+@@ -13,8 +13,13 @@ import {ChooseAccountModal} from "../../../modals/ChooseAccountModal";
+ import {useSendTicketLookupEmail} from "../../../../mutations/useSendTicketLookupEmail.ts";
+ import {showError} from "../../../../utilites/notifications.tsx";
+ import {IconTicket, IconChevronDown} from "@tabler/icons-react";
++import {useAuthWebMCP} from "../../../../webmcp/hooks.ts";
+ 
+ const Login = () => {
++    // Signed out, sign_in is the only WebMCP tool on offer — without it an agent
++    // that may only call tools cannot reach the manage side at all.
++    useAuthWebMCP();
++
+     const location = useLocation();
+     const form = useForm({
+         initialValues: {
+diff --git a/frontend/src/components/routes/events/Dashboard/index.tsx b/frontend/src/components/routes/events/Dashboard/index.tsx
+index 81816675..8b5ffd7a 100644
+--- a/frontend/src/components/routes/events/Dashboard/index.tsx
++++ b/frontend/src/components/routes/events/Dashboard/index.tsx
+@@ -27,6 +27,7 @@ import {EventsDashboardStatusButtons} from "../../../common/EventsDashboardStatu
+ import {NoEventsBlankSlate} from "../../../common/NoEventsBlankSlate";
+ import {useState} from "react";
+ import {getConfig} from "../../../../utilites/config.ts";
++import {useOrganizerSalesWebMCP} from "../../../../webmcp/hooks.ts";
+ 
+ const DashboardSkeleton = () => {
+     return (
+@@ -41,6 +42,8 @@ const DashboardSkeleton = () => {
+ export function Dashboard() {
+     const {eventsState} = useParams();
+     const navigate = useNavigate();
++
++    useOrganizerSalesWebMCP();
+     const [searchParams, setSearchParams] = useFilterQueryParamSync();
+     const [createModalOpen, {open: openCreateModal, close: closeCreateModal}] = useDisclosure(false);
+     const [createOrganizerModalOpen, {
+diff --git a/frontend/src/webmcp/content.ts b/frontend/src/webmcp/content.ts
+new file mode 100644
+index 00000000..6d151c7b
+--- /dev/null
++++ b/frontend/src/webmcp/content.ts
+@@ -0,0 +1,350 @@
++/**
++ * ask_site retrieval over the site's own content (no AI infra): builds text
++ * sections from the event/organizer data the page already serves, keyword-
++ * scores them against the query, and returns matching sections + source URLs.
++ * The calling agent composes the final answer from the returned sections.
++ */
++import {Event, Organizer, Product} from "../types.ts";
++import {organizerPublicClient} from "../api/organizer.client.ts";
++import {eventsClientPublic} from "../api/event.client.ts";
++import {eventHomepagePath, organizerHomepagePath} from "../utilites/urlHelper.ts";
++
++export interface ContentSection {
++    section: string;
++    text: string;
++    source_url: string;
++}
++
++export const htmlToText = (html?: string | null): string => {
++    if (!html) {
++        return "";
++    }
++    if (typeof DOMParser === "undefined") {
++        return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
++    }
++    const doc = new DOMParser().parseFromString(html, "text/html");
++    return (doc.body.textContent || "").replace(/\s+/g, " ").trim();
++};
++
++const formatEventDate = (event: Event): string => {
++    if (!event.start_date) {
++        return "date TBA";
++    }
++    const format = (value: string) =>
++        new Intl.DateTimeFormat("en-US", {
++            dateStyle: "full",
++            timeStyle: "short",
++            timeZone: event.timezone || undefined,
++        }).format(new Date(value));
++    const start = format(event.start_date);
++    const end = event.end_date ? format(event.end_date) : null;
++    return end ? `${start} until ${end} (${event.timezone})` : `${start} (${event.timezone})`;
++};
++
++export const eventProducts = (event?: Event | null): Product[] =>
++    (event?.product_categories ?? []).flatMap((category) => category.products ?? []);
++
++export const formatVenue = (event?: Event | null): string => {
++    const location = event?.settings?.location_details;
++    if (event?.settings?.is_online_event) {
++        return "Online event";
++    }
++    if (!location?.address_line_1 && !location?.venue_name) {
++        return "";
++    }
++    return [
++        location.venue_name,
++        location.address_line_1,
++        location.address_line_2,
++        location.city,
++        location.state_or_region,
++        location.zip_or_postal_code,
++        location.country,
++    ]
++        .filter(Boolean)
++        .join(", ");
++};
++
++export const formatTicketLine = (product: Product, currency?: string): string => {
++    const price = Number(product.prices?.[0]?.price ?? 0);
++    const priceLabel = price === 0 ? "Free" : `${price.toFixed(2)} ${currency || ""}`.trim();
++    const availability = product.is_sold_out
++        ? "SOLD OUT"
++        : product.is_available
++            ? `${product.quantity_available === 999999999 ? "unlimited" : product.quantity_available} remaining`
++            : "not currently on sale";
++    const description = htmlToText(product.description);
++    return `${product.title} — ${priceLabel} (${availability}, max ${product.max_per_order || 25} per order)${description ? `: ${description}` : ""}`;
++};
++
++/** Split description HTML on <h2> headings so schedule/FAQ score separately. */
++const descriptionSections = (event: Event, sourceUrl: string): ContentSection[] => {
++    if (!event.description) {
++        return [];
++    }
++    if (typeof DOMParser === "undefined") {
++        return [{section: "About this event", text: htmlToText(event.description), source_url: sourceUrl}];
++    }
++    const doc = new DOMParser().parseFromString(event.description, "text/html");
++    const sections: ContentSection[] = [];
++    let heading = "About this event";
++    let buffer: string[] = [];
++    const flush = () => {
++        const text = buffer.join(" ").replace(/\s+/g, " ").trim();
++        if (text) {
++            sections.push({section: heading, text, source_url: sourceUrl});
++        }
++        buffer = [];
++    };
++    doc.body.childNodes.forEach((node) => {
++        if (node.nodeName === "H2" || node.nodeName === "H3") {
++            flush();
++            heading = node.textContent?.trim() || heading;
++        } else if (node.nodeName === "UL" || node.nodeName === "OL") {
++            const items = Array.from((node as Element).querySelectorAll("li"))
++                .map((item) => item.textContent?.trim())
++                .filter(Boolean);
++            if (items.length > 0) {
++                buffer.push(items.join(" | "));
++            }
++        } else {
++            const text = node.textContent?.trim();
++            if (text) {
++                buffer.push(text);
++            }
++        }
++    });
++    flush();
++    return sections;
++};
++
++export const buildEventSections = (event: Event): ContentSection[] => {
++    const url = eventHomepagePath(event);
++    const sections: ContentSection[] = [];
++
++    sections.push({
++        section: "Event overview",
++        text: `${event.title} — organized by ${event.organizer?.name ?? "the organizer"}. When: ${formatEventDate(event)}. Where: ${formatVenue(event) || "venue TBA"}.`,
++        source_url: url,
++    });
++
++    sections.push(...descriptionSections(event, url));
++
++    const products = eventProducts(event);
++    if (products.length > 0) {
++        sections.push({
++            section: "Tickets, prices and availability",
++            text: products.map((product) => formatTicketLine(product, event.currency)).join(" | "),
++            source_url: `${url}#tickets`,
++        });
++    }
++
++    const venue = formatVenue(event);
++    if (venue) {
++        sections.push({
++            section: "Venue and location",
++            text: `${venue}.${event.settings?.maps_url ? ` Map: ${event.settings.maps_url}` : ""}`,
++            source_url: url,
++        });
++    }
++
++    const checkoutNotes = [
++        event.settings?.pre_checkout_message ? `Before checkout: ${htmlToText(event.settings.pre_checkout_message)}` : "",
++        event.settings?.post_checkout_message ? `After ordering: ${htmlToText(event.settings.post_checkout_message)}` : "",
++        event.settings?.offline_payment_instructions ? `Offline payment: ${htmlToText(event.settings.offline_payment_instructions)}` : "",
++        event.settings?.support_email ? `Support email: ${event.settings.support_email}` : "",
++    ]
++        .filter(Boolean)
++        .join(" ");
++    if (checkoutNotes) {
++        sections.push({
++            section: "Ordering, tickets delivery and support",
++            text: checkoutNotes,
++            source_url: url,
++        });
++    }
++
++    return sections;
++};
++
++export const buildOrganizerSections = (organizer: Organizer, fallbackSupportEmail?: string | null): ContentSection[] => {
++    const url = organizerHomepagePath(organizer);
++    const contactEmail = organizer.email || fallbackSupportEmail;
++    const parts = [
++        htmlToText(organizer.description),
++        contactEmail ? `Contact: ${contactEmail}.` : "",
++        organizer.website ? `Website: ${organizer.website}.` : "",
++    ]
++        .filter(Boolean)
++        .join(" ");
++    if (!parts) {
++        return [];
++    }
++    return [{section: `About the organizer: ${organizer.name}`, text: parts, source_url: url}];
++};
++
++const MAX_INDEXED_EVENTS = 25;
++
++/** Every upcoming public event by the organizer (paginated, bounded). */
++const fetchOrganizerUpcomingEvents = async (organizer: Organizer): Promise<Event[]> => {
++    const collected: Event[] = [];
++    let page = 1;
++    for (;;) {
++        const response = await organizerPublicClient.getEvents(organizer.id, {
++            perPage: 50,
++            pageNumber: page,
++            sortBy: "start_date",
++            sortDirection: "asc",
++            additionalParams: {eventsStatus: "upcoming"},
++        });
++        collected.push(...((response?.data ?? []) as Event[]));
++        const lastPage = response?.meta?.last_page ?? page;
++        if (page >= lastPage || collected.length >= MAX_INDEXED_EVENTS) {
++            break;
++        }
++        page += 1;
++    }
++    return collected.slice(0, MAX_INDEXED_EVENTS);
++};
++
++/**
++ * Whole-site ask_site content for an organizer: a compact listing of the
++ * organizer's upcoming events PLUS the full decision content (schedule, venue,
++ * FAQ, tickets) of each one, fetched live. The organizer homepage itself carries
++ * only summaries, so this is what lets ask_site answer questions about ANY of the
++ * organizer's events regardless of which page the visitor is on. `excludeEventId`
++ * skips an event already indexed in full (the baked event on an event page).
++ */
++export const buildOrganizerEventSections = async (
++    organizer: Organizer,
++    options: {excludeEventId?: unknown} = {}
++): Promise<ContentSection[]> => {
++    let events: Event[];
++    try {
++        events = await fetchOrganizerUpcomingEvents(organizer);
++    } catch {
++        return []; // organizer page may be unpublished; ask_site stays useful
++    }
++    if (events.length === 0) {
++        return [];
++    }
++    const sections: ContentSection[] = [
++        {
++            section: `Upcoming events by ${organizer.name}`,
++            text: events
++                .map((event) => `${event.title} on ${formatEventDate(event)} — ${eventHomepagePath(event)}`)
++                .join(" | "),
++            source_url: organizerHomepagePath(organizer),
++        },
++    ];
++    const toIndex = events.filter((event) => String(event.id) !== String(options.excludeEventId));
++    const details = await Promise.all(
++        toIndex.map((event) =>
++            eventsClientPublic
++                .findByID(event.id, null)
++                .then((response) => response.data)
++                .catch(() => null)
++        )
++    );
++    details.forEach((event) => {
++        if (event) {
++            sections.push(...buildEventSections(event));
++        }
++    });
++    return sections;
++};
++
++const STOP_WORDS = new Set([
++    "the", "a", "an", "is", "are", "was", "were", "do", "does", "did", "can", "i", "you", "we",
++    "what", "whats", "when", "where", "who", "how", "why", "which", "there", "it", "its", "my",
++    "of", "for", "to", "in", "on", "at", "and", "or", "be", "will", "with", "about", "this", "that",
++    // domain noise: every visitor question mentions "the event"
++    "event", "events",
++]);
++
++// Everyday phrasings -> the vocabulary the sections actually use.
++const SYNONYMS: Record<string, string[]> = {
++    speaker: ["schedule", "talks"],
++    speakers: ["schedule", "talks"],
++    speaking: ["schedule", "talks"],
++    talk: ["schedule"],
++    talks: ["schedule"],
++    agenda: ["schedule"],
++    lineup: ["schedule"],
++    program: ["schedule"],
++    price: ["tickets"],
++    prices: ["tickets"],
++    cost: ["tickets", "price"],
++    costs: ["tickets", "price"],
++    much: ["tickets", "price"],
++    located: ["venue", "location"],
++    address: ["venue", "location"],
++    directions: ["venue", "location", "map"],
++    start: ["overview", "doors"],
++    starts: ["overview", "doors"],
++    time: ["overview", "schedule"],
++    contact: ["support", "email"],
++    email: ["support", "contact"],
++    reach: ["support", "contact"],
++    coming: ["upcoming"],
++    soon: ["upcoming"],
++    other: ["upcoming"],
++};
++
++const tokenize = (value: string): string[] => {
++    const tokens = value
++        .toLowerCase()
++        .replace(/[^a-z0-9\s]/g, " ")
++        .split(/\s+/)
++        .filter((token) => token.length > 1 && !STOP_WORDS.has(token));
++    const expanded = new Set(tokens);
++    tokens.forEach((token) => (SYNONYMS[token] ?? []).forEach((alias) => expanded.add(alias)));
++    return Array.from(expanded);
++};
++
++/**
++ * Lightweight keyword retrieval with IDF-style term weighting: words that
++ * appear in (almost) every section — "event", the event title words — barely
++ * count, so a question about content the site doesn't have returns [] instead
++ * of generic sections. Returns [] when nothing genuinely matches.
++ */
++export const searchSections = (sections: ContentSection[], query: string, limit = 4): ContentSection[] => {
++    const terms = tokenize(query);
++    if (terms.length === 0 || sections.length === 0) {
++        return [];
++    }
++
++    const haystacks = sections.map((section) => ({
++        full: `${section.section} ${section.text}`.toLowerCase(),
++        heading: section.section.toLowerCase(),
++    }));
++    const weightOf = (term: string): number => {
++        const df = haystacks.filter((h) => h.full.includes(term)).length;
++        return (sections.length - df + 0.5) / sections.length; // ~0 when ubiquitous, ~1 when rare
++    };
++    const weights = new Map(terms.map((term) => [term, weightOf(term)]));
++
++    const scored = sections
++        .map((section, index) => {
++            const {full, heading} = haystacks[index];
++            let score = 0;
++            terms.forEach((term) => {
++                const weight = weights.get(term) ?? 0;
++                if (full.includes(term)) {
++                    score += weight;
++                }
++                if (heading.includes(term)) {
++                    score += 2 * weight;
++                }
++                // light stemming: match "recordings" against "recording" etc.
++                if (term.length > 4 && full.includes(term.slice(0, term.length - 1))) {
++                    score += 0.5 * weight;
++                }
++            });
++            return {section, score};
++        })
++        .filter((entry) => entry.score >= 0.5)
++        .sort((a, b) => b.score - a.score);
++
++    return scored.slice(0, limit).map((entry) => entry.section);
++};
+diff --git a/frontend/src/webmcp/core.ts b/frontend/src/webmcp/core.ts
+new file mode 100644
+index 00000000..202c1737
+--- /dev/null
++++ b/frontend/src/webmcp/core.ts
+@@ -0,0 +1,116 @@
++/**
++ * WebMCP core: feature detection + a React hook that registers page-scoped
++ * tools against the browser's model context (document.modelContext, draft
++ * WebMCP spec) and unregisters them via AbortSignal on unmount/route change.
++ *
++ * No-ops when the browser has no model context. Registration is per page
++ * document: each route registers only the tools that are valid for its own
++ * page state (see hooks.ts).
++ */
++import {DependencyList, useEffect} from "react";
++
++export interface WebMCPContentBlock {
++    type: "text";
++    text: string;
++}
++
++export interface WebMCPResult {
++    content: WebMCPContentBlock[];
++}
++
++export interface WebMCPToolDefinition {
++    name: string;
++    description: string;
++    inputSchema: Record<string, unknown>;
++    annotations?: {
++        readOnlyHint?: boolean;
++
++        untrustedContentHint?: boolean;
++    };
++
++    execute(args: Record<string, any>): Promise<WebMCPResult>;
++}
++
++interface ModelContext {
++    registerTool(tool: WebMCPToolDefinition, options?: { signal?: AbortSignal }): unknown;
++}
++
++export const getModelContext = (): ModelContext | undefined => {
++    if (typeof document === "undefined") {
++        return undefined; // SSR
++    }
++
++    return ((document as any).modelContext ?? (navigator as any).modelContext) as ModelContext | undefined;
++};
++
++/** True when a browser agent is attached (a model context is present). Lets a
++ * page keep availability-gated registrations live (polling) only when an agent
++ * could actually be watching. */
++export const hasModelContext = (): boolean => !!getModelContext();
++
++/** JSON payload -> MCP text content block. */
++export const toolResult = (payload: unknown): WebMCPResult => ({
++    content: [{type: "text", text: JSON.stringify(payload)}],
++});
++
++const toErrorPayload = (error: any) => {
++    const responseData = error?.response?.data;
++    return {
++        ok: false,
++        error: responseData?.message || error?.message || "Something went wrong executing this tool.",
++        ...(responseData?.errors ? {validation_errors: responseData.errors} : {}),
++    };
++};
++
++/**
++ * Registers the given tools for the lifetime of the calling component.
++ *
++ * - `factory` runs client-side only and may return null/[] to register nothing
++ *   (e.g. tool invalid for current page state — a sold-out event's register
++ *   tool with no waitlist must not be offered to the agent).
++ * - Cleanup aborts the controller, which unregisters every tool (verified
++ *   behavior; abort also makes StrictMode double-mounting safe).
++ * - execute() errors are caught and returned as structured {ok:false} results
++ *   so the agent gets an honest failure instead of a dead call.
++ */
++export const useWebMCPTools = (
++    factory: () => WebMCPToolDefinition[] | null | undefined,
++    deps: DependencyList
++): void => {
++    useEffect(() => {
++        const modelContext = getModelContext();
++        if (!modelContext) {
++            return;
++        }
++
++        const tools = factory() ?? [];
++        if (tools.length === 0) {
++            return;
++        }
++
++        const controller = new AbortController();
++
++        tools.forEach((tool) => {
++            const safeTool: WebMCPToolDefinition = {
++                ...tool,
++                execute: async (args) => {
++                    try {
++                        return await tool.execute(args ?? {});
++                    } catch (error: any) {
++                        return toolResult(toErrorPayload(error));
++                    }
++                },
++            };
++
++            try {
++                modelContext.registerTool(safeTool, {signal: controller.signal});
++            } catch (error) {
++                // Duplicate names throw; never take the page down over a tool.
++                console.warn(`[webmcp] failed to register tool "${tool.name}"`, error);
++            }
++        });
++
++        return () => controller.abort();
++        // eslint-disable-next-line react-hooks/exhaustive-deps
++    }, deps);
++};
+diff --git a/frontend/src/webmcp/hooks.ts b/frontend/src/webmcp/hooks.ts
+new file mode 100644
+index 00000000..abc9fab7
+--- /dev/null
++++ b/frontend/src/webmcp/hooks.ts
+@@ -0,0 +1,145 @@
++/**
++ * Route-level WebMCP registrations. Each public/organizer page registers the
++ * tool set that is valid for its own context and state; navigation (route
++ * unmount) aborts the previous page's registrations automatically.
++ */
++import {useNavigate} from "react-router";
++import {useQuery, useQueryClient} from "@tanstack/react-query";
++import {Event, Order, Organizer} from "../types.ts";
++import {useGetMe} from "../queries/useGetMe.ts";
++import {getEventPublicQuery} from "../queries/useGetEventPublic.ts";
++import {hasModelContext, useWebMCPTools} from "./core.ts";
++import {
++    buildAskSiteTool,
++    buildGetEventTool,
++    buildOrderLookupTool,
++    buildRegisterTool,
++    buildSalesSummaryTool,
++    buildSearchEventsTool,
++    buildSignInTool,
++    canRegisterForEvent,
++    registrationSignature,
++} from "./tools.ts";
++
++/**
++ * Public event page (/event/:eventId/:eventSlug): the viewed event is baked
++ * into every registration. register_for_event is only offered while the event
++ * is actionable (tickets on sale, or sold out with a joinable waitlist).
++ *
++ * The loader event is a page-load snapshot, so while an agent is attached we
++ * poll the public event and key the registration on its live availability
++ * signature: if the baked event sells out (or a waitlist opens) mid-visit, the
++ * effect re-runs and register_for_event unregisters/updates promptly.
++ */
++export const usePublicEventWebMCP = (event?: Event | null): void => {
++    const navigate = useNavigate();
++    const mcpActive = hasModelContext();
++
++    const {data: liveData} = useQuery({
++        ...getEventPublicQuery(event?.id, null, false),
++        enabled: !!event?.id && mcpActive,
++        refetchInterval: mcpActive ? 15000 : false,
++    });
++    const liveEvent = liveData ?? event ?? null;
++
++    useWebMCPTools(() => {
++        if (!liveEvent?.id) {
++            return null;
++        }
++        const tools = [
++            buildAskSiteTool({event: liveEvent}),
++            buildGetEventTool({bakedEvent: liveEvent, navigate}),
++            buildOrderLookupTool({eventContext: liveEvent, navigate}),
++        ];
++        if (liveEvent.organizer?.id) {
++            // On an event page the organizer's listing isn't visible, so search
++            // navigates to it to show the results.
++            tools.push(buildSearchEventsTool(liveEvent.organizer, {navigate, fromEventPage: true}));
++        }
++        if (canRegisterForEvent(liveEvent)) {
++            tools.push(buildRegisterTool({bakedEvent: liveEvent, navigate}));
++        }
++        return tools;
++    }, [liveEvent?.id, registrationSignature(liveEvent)]);
++};
++
++/**
++ * Public organizer page (/events/:organizerId/:slug): a listing context —
++ * event-scoped tools take an event_id, are pinned to THIS organizer (they reject
++ * events belonging to anyone else), and stay registered even when single events
++ * close (they report closed state per event).
++ */
++export const usePublicOrganizerWebMCP = (organizer?: Organizer | null): void => {
++    const navigate = useNavigate();
++
++    useWebMCPTools(() => {
++        if (!organizer?.id) {
++            return null;
++        }
++        return [
++            buildAskSiteTool({organizer}),
++            buildSearchEventsTool(organizer),
++            buildGetEventTool({navigate, organizerName: organizer.name, organizerId: organizer.id}),
++            buildRegisterTool({navigate, organizerName: organizer.name, organizerId: organizer.id}),
++        ];
++    }, [organizer?.id]);
++};
++
++/**
++ * Checkout pages (/checkout/:eventId/:orderShortId/*): the in-flight order is
++ * baked in; ask_site keeps answering event questions during checkout.
++ */
++export const useCheckoutWebMCP = (order?: Order | null, event?: Event | null, eventId?: unknown): void => {
++    useWebMCPTools(() => {
++        if (!order?.short_id) {
++            return null;
++        }
++        const tools = [buildOrderLookupTool({bakedOrder: order, eventId: eventId ?? order.event_id})];
++        if (event?.id) {
++            tools.push(buildAskSiteTool({event}));
++        }
++        return tools;
++    }, [order?.short_id, event?.id]);
++};
++
++/**
++ * Organizer manage pages: sales summary registers only while authenticated
++ * (logout unmounts/reloads, which aborts the registration) and execute rides
++ * the app's own authenticated API client — the agent never sees credentials.
++ *
++ * Pass a bakedEventId on /manage/event/:eventId pages to scope the tool to the
++ * event being managed; omit it on the events dashboard for the account-wide
++ * variant.
++ */
++export const useOrganizerSalesWebMCP = (bakedEventId?: unknown): void => {
++    const me = useGetMe();
++
++    useWebMCPTools(() => {
++        if (!me.isSuccess) {
++            return null;
++        }
++        return [buildSalesSummaryTool({bakedEventId})];
++    }, [me.isSuccess, bakedEventId]);
++};
++
++/**
++ * Login page: the one tool a signed-out agent can use.
++ *
++ * A signed-out visitor lands on the login form, and the organizer tools do not
++ * exist until there is a session — so without sign_in an agent restricted to
++ * WebMCP has nothing to call here and the whole manage side is unreachable.
++ * Registers only while signed out; once useGetMe succeeds the organizer pages
++ * own the registrations.
++ */
++export const useAuthWebMCP = (): void => {
++    const me = useGetMe();
++    const navigate = useNavigate();
++    const queryClient = useQueryClient();
++
++    useWebMCPTools(() => {
++        if (me.isSuccess) {
++            return null;
++        }
++        return [buildSignInTool({queryClient, navigate})];
++    }, [me.isSuccess]);
++};
+diff --git a/frontend/src/webmcp/tools.ts b/frontend/src/webmcp/tools.ts
+new file mode 100644
+index 00000000..7fc15ad9
+--- /dev/null
++++ b/frontend/src/webmcp/tools.ts
+@@ -0,0 +1,784 @@
++/**
++ * WebMCP tool builders. Every tool answers a real visitor/organizer ask and
++ * rides the app's existing API clients + session — so apart from sign_in, which
++ * exists precisely to establish that session, the agent never sees credentials,
++ * and state-changing tools drive the site's own checkout flow so the visible
++ * page always reflects what the tool did.
++ */
++import {NavigateFunction} from "react-router";
++import {QueryClient} from "@tanstack/react-query";
++import {Event, Order, Organizer, Product, QueryFilterOperator} from "../types.ts";
++import {authClient} from "../api/auth.client.ts";
++import {GET_ME_QUERY_KEY} from "../queries/useGetMe.ts";
++import {eventsClient, eventsClientPublic} from "../api/event.client.ts";
++import {organizerPublicClient} from "../api/organizer.client.ts";
++import {orderClientPublic} from "../api/order.client.ts";
++import {waitlistClientPublic} from "../api/waitlist.client.ts";
++import {getSessionIdentifier} from "../utilites/sessionIdentifier.ts";
++import {eventHomepagePath, organizerHomepagePath} from "../utilites/urlHelper.ts";
++import {showSuccess} from "../utilites/notifications.tsx";
++import {toolResult, WebMCPToolDefinition} from "./core.ts";
++import {
++    buildEventSections,
++    buildOrganizerEventSections,
++    buildOrganizerSections,
++    ContentSection,
++    eventProducts,
++    formatVenue,
++    htmlToText,
++    searchSections,
++} from "./content.ts";
++
++const INFINITE = 999999999;
++
++// Cap the number of listing rows search_events walks before client-side matching.
++const SEARCH_EVENTS_LIMIT = 500;
++
++/** Lowercase and collapse ALL punctuation to spaces, so "javascript?" and
++ * "AI," match the same way on both the query and the event haystack. */
++const normalizeText = (value: string): string =>
++    value.toLowerCase().replace(/[^a-z0-9\s]+/g, " ").replace(/\s+/g, " ").trim();
++
++const organizerIdOf = (event: Event): unknown => event.organizer?.id ?? event.organizer_id;
++
++const priceOf = (product: Product): number => Number(product.prices?.[0]?.price ?? 0);
++
++const ticketSummary = (product: Product, currency?: string) => ({
++    id: product.id,
++    name: product.title,
++    price: priceOf(product),
++    currency: currency || "USD",
++    is_free: priceOf(product) === 0,
++    remaining: product.is_sold_out ? 0 : product.quantity_available === INFINITE ? "unlimited" : product.quantity_available,
++    sold_out: !!product.is_sold_out,
++    on_sale: !!product.is_available,
++    max_per_order: product.max_per_order || 25,
++    min_per_order: product.min_per_order || 1,
++    waitlist_available: !!product.waitlist_enabled,
++    description: htmlToText(product.description) || undefined,
++});
++
++const eventSummary = (event: Event) => ({
++    id: event.id,
++    title: event.title,
++    status: event.status,
++    starts_at: event.start_date,
++    ends_at: event.end_date,
++    timezone: event.timezone,
++    venue: formatVenue(event) || (event.settings?.is_online_event ? "Online event" : "TBA"),
++    organizer: event.organizer?.name,
++    url: eventHomepagePath(event),
++    tickets: eventProducts(event).map((product) => ticketSummary(product, event.currency)),
++});
++
++const orderSummary = (order: Order, eventId?: unknown) => ({
++    order_reference: order.short_id,
++    status: order.status,
++    payment_status: order.payment_status,
++    buyer: order.first_name ? `${order.first_name} ${order.last_name}` : undefined,
++    email: order.email || undefined,
++    total: order.total_gross,
++    currency: order.currency,
++    items: order.order_items?.map((item) => ({name: item.item_name, quantity: item.quantity, total: (item as any).total_gross ?? item.total_before_additions})),
++    attendees: order.attendees?.map((attendee) => ({
++        name: `${attendee.first_name} ${attendee.last_name}`,
++        ticket_short_id: attendee.short_id,
++    })),
++    confirmation_page: eventId ? `/checkout/${eventId}/${order.short_id}/summary` : undefined,
++});
++
++// ---------------------------------------------------------------------------
++// ask_site — universal read-only baseline (public pages)
++// ---------------------------------------------------------------------------
++
++export const buildAskSiteTool = (context: {
++    event?: Event | null;
++    organizer?: Organizer | null;
++}): WebMCPToolDefinition => {
++    const covered = [
++        context.event ? `the event "${context.event.title}" (overview, schedule, venue and directions, ticket types and prices, FAQ and policies such as refunds/age/accessibility, ordering and ticket delivery)` : "",
++        context.organizer ? `the organizer ${context.organizer.name} (about, contact) and the full content of every one of their upcoming events (overview, schedule, venue, ticket types and prices, FAQ and policies)` : "",
++    ]
++        .filter(Boolean)
++        .join(" and ");
++
++    return {
++        name: "ask_site",
++        description: `Answer visitor questions from this site's own content. Read-only. Covers ${covered}. Returns the matching content sections plus source page URLs — compose the answer from those sections and cite the source. Returns an empty result when the site's content does not answer the question (do not guess). For live ticket availability numbers prefer get_event.`,
++        inputSchema: {
++            type: "object",
++            properties: {
++                query: {type: "string", description: "The visitor's question, e.g. 'when does it start?'"},
++            },
++            required: ["query"],
++        },
++        annotations: {readOnlyHint: true},
++        execute: async (args) => {
++            const query = String(args.query ?? "").trim();
++            if (!query) {
++                return toolResult({ok: false, error: "Provide a question in `query`."});
++            }
++            const sections: ContentSection[] = [];
++            const organizer = context.event?.organizer ?? context.organizer ?? null;
++            if (context.event) {
++                sections.push(...buildEventSections(context.event));
++            }
++            if (organizer) {
++                sections.push(...buildOrganizerSections(organizer, context.event?.settings?.support_email));
++                // Whole-site content: full decision content for every one of the
++                // organizer's events, so ask_site answers cross-event questions from
++                // any public page. The baked event (if any) is already indexed above.
++                sections.push(...(await buildOrganizerEventSections(organizer, {excludeEventId: context.event?.id})));
++            }
++            const results = searchSections(sections, query);
++            if (results.length === 0) {
++                return toolResult({
++                    ok: true,
++                    results: [],
++                    note: "No content on this site answers that question. Tell the user the site does not say, and suggest contacting the organizer.",
++                    organizer_contact: organizer?.email ?? context.event?.settings?.support_email ?? undefined,
++                });
++            }
++            return toolResult({ok: true, results});
++        },
++    };
++};
++
++// ---------------------------------------------------------------------------
++// search_events — browse the organizer's public event listing
++// ---------------------------------------------------------------------------
++
++export const buildSearchEventsTool = (
++    organizer: Organizer,
++    options: {navigate?: NavigateFunction; fromEventPage?: boolean} = {}
++): WebMCPToolDefinition => ({
++    name: "search_events",
++    description: `Search the public events listed by ${organizer.name} on this site. Read-only. Returns upcoming events by default, soonest first (set include_past=true for past events); optional keyword query matches event titles/descriptions (any keyword may match). Each result has event_id, title, start date, venue, ticket price range and page URL — pass event_id to get_event or register_for_event.${options.fromEventPage ? " Opens the organizer's events page so the listing is visible." : ""} An empty result means no listed event matches.`,
++    inputSchema: {
++        type: "object",
++        properties: {
++            query: {type: "string", description: "Optional keywords, e.g. 'javascript' or 'workshop'. Omit to list all."},
++            include_past: {type: "boolean", description: "Set true to search past events instead of upcoming ones."},
++        },
++    },
++    annotations: {readOnlyHint: true},
++    execute: async (args) => {
++        // Walk the FULL organizer-scoped listing (every page) before matching, so
++        // an event past the first page is never a false negative. Keyword-match
++        // client-side with OR semantics — the backend LIKE search treats multi-word
++        // queries as one phrase, which false-negatives on queries like "javascript AI".
++        const collected: Event[] = [];
++        let page = 1;
++        for (;;) {
++            const response = await organizerPublicClient.getEvents(organizer.id, {
++                perPage: 50,
++                pageNumber: page,
++                sortBy: "start_date",
++                sortDirection: args.include_past ? "desc" : "asc",
++                ...(args.include_past
++                    ? {
++                        filterFields: {
++                            end_date: {operator: QueryFilterOperator.LessThanOrEquals, value: "now"},
++                            status: {operator: QueryFilterOperator.NotEquals, value: "ARCHIVED"},
++                        },
++                    }
++                    : {additionalParams: {eventsStatus: "upcoming"}}),
++            });
++            collected.push(...((response?.data ?? []) as Event[]));
++            const lastPage = response?.meta?.last_page ?? page;
++            if (page >= lastPage || collected.length >= SEARCH_EVENTS_LIMIT) {
++                break;
++            }
++            page += 1;
++        }
++        let events = collected;
++        // Normalize punctuation on BOTH query and haystack so "javascript?" / "AI,"
++        // match the same as "javascript" / "ai".
++        const keywords = normalizeText(String(args.query ?? "")).split(" ").filter(Boolean);
++        if (keywords.length > 0) {
++            events = events.filter((event) => {
++                const haystack = normalizeText(`${event.title} ${htmlToText(event.description)}`);
++                return keywords.some((keyword) => haystack.includes(keyword));
++            });
++        }
++        if (events.length === 0) {
++            return toolResult({
++                ok: true,
++                events: [],
++                note: args.query
++                    ? `No ${args.include_past ? "past" : "upcoming"} events match "${args.query}".`
++                    : `${organizer.name} has no ${args.include_past ? "past" : "upcoming"} events listed.`,
++            });
++        }
++        // On an event page the organizer's listing isn't visible; navigate to it so
++        // the user sees the events the results reference (organizer page: already there).
++        if (options.fromEventPage && options.navigate) {
++            options.navigate(organizerHomepagePath(organizer));
++        }
++        return toolResult({
++            ok: true,
++            events: events.map((event) => {
++                const prices = eventProducts(event).map(priceOf);
++                return {
++                    event_id: event.id,
++                    title: event.title,
++                    starts_at: event.start_date,
++                    timezone: event.timezone,
++                    venue: formatVenue(event) || undefined,
++                    price_range: prices.length
++                        ? {min: Math.min(...prices), max: Math.max(...prices), currency: event.currency}
++                        : undefined,
++                    url: eventHomepagePath(event),
++                };
++            }),
++        });
++    },
++});
++
++// ---------------------------------------------------------------------------
++// get_event — event decision data incl. live ticket availability
++// ---------------------------------------------------------------------------
++
++export const buildGetEventTool = (
++    options: {bakedEvent?: Event; navigate: NavigateFunction; organizerName?: string; organizerId?: unknown}
++): WebMCPToolDefinition => {
++    const {bakedEvent, navigate, organizerName, organizerId} = options;
++    return {
++        name: "get_event",
++        description: bakedEvent
++            ? `Get full, live details for "${bakedEvent.title}" — the event shown on this page: date/time, venue, and CURRENT ticket availability (each ticket type with price, remaining quantity, per-order limits, sold-out state), plus a one-line gist. Read-only; call it to answer "are tickets still available / how much / when" before registering. For the full description, schedule, directions or FAQ, use ask_site. No input needed.`
++            : `Get full, live details for one of ${organizerName ?? "this organizer"}'s events by event_id (find ids with search_events): date/time, venue, and CURRENT ticket availability (price, remaining quantity, per-order limits, sold-out state per ticket type), plus a one-line gist. Read-only; for the full description/schedule/FAQ use ask_site. Navigates the page to that event so the user sees it.`,
++        inputSchema: bakedEvent
++            ? {type: "object", properties: {}}
++            : {
++                type: "object",
++                properties: {event_id: {type: "number", description: "Event id from search_events results."}},
++                required: ["event_id"],
++            },
++        annotations: {readOnlyHint: true},
++        execute: async (args) => {
++            const eventId = bakedEvent?.id ?? args.event_id;
++            if (!eventId) {
++                return toolResult({ok: false, error: "Provide event_id (see search_events)."});
++            }
++            let event: Event;
++            try {
++                event = (await eventsClientPublic.findByID(eventId, null)).data;
++            } catch (error: any) {
++                if (error?.response?.status === 404) {
++                    return toolResult({ok: false, error: `No live event with id ${eventId} exists on this site.`});
++                }
++                throw error;
++            }
++            // Organizer-scoped registration: reject events that belong to a different
++            // organizer before navigating away from this organizer's context.
++            if (!bakedEvent && organizerId != null && String(organizerIdOf(event)) !== String(organizerId)) {
++                return toolResult({
++                    ok: false,
++                    error: `Event ${eventId} is not one of ${organizerName ?? "this organizer"}'s events. Use search_events to find this organizer's events.`,
++                });
++            }
++            if (!bakedEvent || String(bakedEvent.id) !== String(event.id)) {
++                navigate(eventHomepagePath(event)); // show the user what the agent is looking at
++            }
++            return toolResult({
++                ok: true,
++                event: {
++                    ...eventSummary(event),
++                    // One-line gist only. Full description/schedule/directions/FAQ
++                    // live in ask_site; get_event returns the structured decision
++                    // data (date, venue, live ticket availability) the next step
++                    // needs, not the page's prose.
++                    summary: htmlToText(event.description).split(/(?<=[.!?])\s/)[0]?.slice(0, 160) || undefined,
++                },
++            });
++        },
++    };
++};
++
++// ---------------------------------------------------------------------------
++// register_for_event — the conversion journey (free completes, paid hands off)
++// ---------------------------------------------------------------------------
++
++interface AttendeeInput {
++    first_name?: string;
++    last_name?: string;
++    email?: string;
++}
++
++export const buildRegisterTool = (
++    options: {bakedEvent?: Event; navigate: NavigateFunction; organizerName?: string; organizerId?: unknown}
++): WebMCPToolDefinition => {
++    const {bakedEvent, navigate, organizerName, organizerId} = options;
++    const target = bakedEvent
++        ? `"${bakedEvent.title}" (the event on this page; no event_id needed)`
++        : `one of ${organizerName ?? "this organizer"}'s listed events (pass event_id from search_events)`;
++
++    const properties: Record<string, unknown> = {
++        ticket: {type: "string", description: "Ticket type to book — name (e.g. 'General Admission') or ticket id from get_event."},
++        quantity: {type: "integer", minimum: 1, description: "Number of tickets. Defaults to 1."},
++        first_name: {type: "string", description: "Buyer's first name."},
++        last_name: {type: "string", description: "Buyer's last name."},
++        email: {type: "string", description: "Buyer's email — the tickets/confirmation are sent here."},
++        attendees: {
++            type: "array",
++            description: "Optional per-attendee details when booking multiple tickets; defaults to the buyer's details for every ticket.",
++            items: {
++                type: "object",
++                properties: {
++                    first_name: {type: "string"},
++                    last_name: {type: "string"},
++                    email: {type: "string"},
++                },
++            },
++        },
++    };
++    const required = ["ticket", "first_name", "last_name", "email"];
++    if (!bakedEvent) {
++        properties.event_id = {type: "number", description: "Event id from search_events results."};
++        required.unshift("event_id");
++    }
++
++    return {
++        name: "register_for_event",
++        description: `Register the visitor for ${target} by placing a real ticket order through the site's own checkout. THIS PLACES AN ORDER — call only after the user asked to register and confirmed ticket type, quantity and their name/email. Free tickets complete immediately: the order is confirmed and the page navigates to the order confirmation. Paid tickets reserve the order with the visitor's selections and navigate to the site's payment step, where the user pays (the agent never handles payment). If the ticket type is sold out but the organizer runs a waitlist, the visitor is added to the waitlist instead (using their name/email) and notified by email if a spot opens — nothing is charged. If it is sold out with no waitlist, or the quantity is unavailable, nothing happens and the response says why. Returns the order reference or waitlist status and next step.`,
++        inputSchema: {type: "object", properties, required},
++        annotations: {readOnlyHint: false},
++        execute: async (args) => {
++            // 1. Resolve the target event with live availability.
++            const eventId = bakedEvent?.id ?? args.event_id;
++            if (!eventId) {
++                return toolResult({ok: false, error: "Provide event_id (see search_events)."});
++            }
++            let event: Event;
++            try {
++                event = (await eventsClientPublic.findByID(eventId, null)).data;
++            } catch (error: any) {
++                if (error?.response?.status === 404) {
++                    return toolResult({ok: false, error: `No live event with id ${eventId} exists on this site.`});
++                }
++                throw error;
++            }
++            // Organizer-scoped registration: refuse to order against an event that
++            // belongs to a different organizer, before any mutation or navigation.
++            if (!bakedEvent && organizerId != null && String(organizerIdOf(event)) !== String(organizerId)) {
++                return toolResult({
++                    ok: false,
++                    error: `Event ${eventId} is not one of ${organizerName ?? "this organizer"}'s events; refusing to register. Use search_events to find this organizer's events.`,
++                });
++            }
++
++            // 2. Resolve ticket type + validate quantity honestly before ordering.
++            const products = eventProducts(event);
++            const wanted = String(args.ticket ?? "").trim().toLowerCase();
++            const product = products.find(
++                (candidate) => String(candidate.id) === wanted || candidate.title.trim().toLowerCase() === wanted
++            );
++            if (!product) {
++                return toolResult({
++                    ok: false,
++                    error: `No ticket type "${args.ticket}" for this event.`,
++                    available_tickets: products.map((candidate) => ticketSummary(candidate, event.currency)),
++                });
++            }
++            const buyer = {
++                first_name: String(args.first_name ?? "").trim(),
++                last_name: String(args.last_name ?? "").trim(),
++                email: String(args.email ?? "").trim(),
++            };
++            if (product.is_sold_out) {
++                const soldOutPriceId = product.prices?.[0]?.id;
++                if (product.waitlist_enabled && soldOutPriceId) {
++                    // Sold out but the organizer runs a waitlist: join it through the
++                    // site's own public waitlist endpoint (the same call the Join
++                    // Waitlist modal makes) and surface the site's own success
++                    // notification so the user sees the action land on the page.
++                    const entry = (
++                        await waitlistClientPublic.join(Number(event.id), {
++                            product_price_id: Number(soldOutPriceId),
++                            first_name: buyer.first_name,
++                            last_name: buyer.last_name || undefined,
++                            email: buyer.email,
++                        })
++                    ).data;
++                    showSuccess(`You're on the waitlist for "${product.title}" — we'll email ${buyer.email} if a spot opens.`);
++                    return toolResult({
++                        ok: true,
++                        waitlisted: true,
++                        product: product.title,
++                        waitlist_entry: {status: entry?.status, position: entry?.position, email: buyer.email},
++                        next_step: `"${product.title}" is sold out, so ${buyer.first_name || "the visitor"} was added to the waitlist (nothing charged). Hi.Events will email ${buyer.email} with a claim link if a spot frees up; that email also carries a cancel link.`,
++                    });
++                }
++                return toolResult({
++                    ok: false,
++                    error: `"${product.title}" is sold out.`,
++                    waitlist_available: !!product.waitlist_enabled,
++                    other_tickets: products
++                        .filter((candidate) => candidate.id !== product.id && candidate.is_available && !candidate.is_sold_out)
++                        .map((candidate) => ticketSummary(candidate, event.currency)),
++                });
++            }
++            if (!product.is_available) {
++                return toolResult({ok: false, error: `"${product.title}" is not on sale right now.`});
++            }
++            const quantity = Number(args.quantity ?? 1);
++            const maxPerOrder = product.max_per_order || 25;
++            const remaining = product.quantity_available === INFINITE ? Infinity : Number(product.quantity_available ?? 0);
++            if (!Number.isInteger(quantity) || quantity < (product.min_per_order || 1)) {
++                return toolResult({ok: false, error: `Quantity must be a whole number of at least ${product.min_per_order || 1}.`});
++            }
++            if (quantity > maxPerOrder || quantity > remaining) {
++                return toolResult({
++                    ok: false,
++                    error: `Cannot order ${quantity} × "${product.title}": ${
++                        quantity > remaining ? `only ${remaining} remaining` : `maximum ${maxPerOrder} per order`
++                    }.`,
++                });
++            }
++            const priceId = product.prices?.[0]?.id;
++            if (!priceId) {
++                return toolResult({ok: false, error: `"${product.title}" cannot be ordered right now.`});
++            }
++
++            // 3. Create the order — the repo-native handoff state (selections preserved).
++            const created = (
++                await orderClientPublic.create(Number(event.id), {
++                    products: [{product_id: Number(product.id), quantities: [{price_id: Number(priceId), quantity}]}],
++                    promo_code: null,
++                    session_identifier: getSessionIdentifier(),
++                })
++            ).data;
++
++            // 4. Finalise with buyer + attendee details through the site's own
++            //    completion endpoint (same call the checkout form makes).
++            const attendeeInputs: AttendeeInput[] = Array.isArray(args.attendees) ? args.attendees : [];
++            const attendeeRows: Record<string, unknown>[] = [];
++            created.order_items?.forEach((item) => {
++                for (let seat = 0; seat < (item.quantity ?? 0); seat += 1) {
++                    const details = attendeeInputs[attendeeRows.length] ?? {};
++                    const email = String(details.email ?? buyer.email).trim();
++                    attendeeRows.push({
++                        product_id: item.product_id,
++                        product_price_id: item.product_price_id,
++                        first_name: String(details.first_name ?? buyer.first_name).trim(),
++                        last_name: String(details.last_name ?? buyer.last_name).trim(),
++                        email,
++                        email_confirmation: email,
++                        questions: [],
++                    });
++                }
++            });
++
++            const detailsPath = `/checkout/${event.id}/${created.short_id}/details`;
++            const prefillQuery = new URLSearchParams({
++                first_name: buyer.first_name,
++                last_name: buyer.last_name,
++                email: buyer.email,
++            }).toString();
++
++            let finalised: Order;
++            try {
++                finalised = (
++                    await orderClientPublic.finaliseOrder(Number(event.id), created.short_id, {
++                        order: {...buyer, email_confirmation: buyer.email, questions: []},
++                        products: attendeeRows,
++                    } as any)
++                ).data;
++            } catch (error: any) {
++                // e.g. organizer-configured required questions: the reservation
++                // exists — hand the user the site's own details form, prefilled.
++                navigate(`${detailsPath}?${prefillQuery}`);
++                return toolResult({
++                    ok: false,
++                    error: error?.response?.data?.message ||
++                        "The order was reserved but needs more details the site collects on the checkout page.",
++                    validation_errors: error?.response?.data?.errors,
++                    order_reference: created.short_id,
++                    reserved_until: created.reserved_until,
++                    next_step: "The checkout details page is now open, prefilled with the buyer's details — ask the user to complete the remaining fields.",
++                });
++            }
++
++            // 5. Show the user the result through the site's own checkout pages.
++            if (finalised.is_payment_required) {
++                navigate(`/checkout/${event.id}/${finalised.short_id}/payment`);
++                return toolResult({
++                    ok: true,
++                    order: orderSummary(finalised, event.id),
++                    reserved_until: finalised.reserved_until,
++                    next_step: "Payment page is open. The user must complete payment in the browser before the reservation expires — the agent cannot pay.",
++                });
++            }
++            navigate(`/checkout/${event.id}/${finalised.short_id}/summary`);
++            return toolResult({
++                ok: true,
++                order: orderSummary(finalised, event.id),
++                next_step: `Registration confirmed — the confirmation page is open and the tickets were emailed to ${buyer.email}.`,
++            });
++        },
++    };
++};
++
++/**
++ * Availability rule for the event-page registration: register only while the
++ * baked-in event can still be acted on — some ticket on sale, or sold out with
++ * a waitlist the visitor can join. Fully closed event => no registration.
++ */
++export const canRegisterForEvent = (event?: Event | null): boolean => {
++    if (!event) {
++        return false;
++    }
++    const products = eventProducts(event);
++    if (products.length === 0) {
++        return false;
++    }
++    const allSoldOut = products.every((product) => product.is_sold_out);
++    if (!allSoldOut) {
++        return products.some((product) => product.is_available && !product.is_sold_out);
++    }
++    return products.some((product) => product.waitlist_enabled);
++};
++
++/**
++ * Signature of the event's actionable availability. It changes whenever a
++ * ticket's on-sale / sold-out / waitlist state flips, so the event page can key
++ * its registration effect on it: a live refetch that changes availability re-runs
++ * the gating and unregisters register_for_event the moment the event fully closes
++ * (context-pack state-tracking rule — a stale registration is a broken contract).
++ */
++export const registrationSignature = (event?: Event | null): string => {
++    if (!event) {
++        return "none";
++    }
++    return eventProducts(event)
++        .map((product) => `${product.id}:${product.is_sold_out ? 1 : 0}${product.is_available ? 1 : 0}${product.waitlist_enabled ? 1 : 0}`)
++        .join("|");
++};
++
++// ---------------------------------------------------------------------------
++// get_order_status — guest order lookup (reference + email corroboration)
++// ---------------------------------------------------------------------------
++
++export const buildOrderLookupTool = (
++    options: {eventContext: Event; navigate: NavigateFunction} | {bakedOrder: Order; eventId: unknown}
++): WebMCPToolDefinition => {
++    if ("bakedOrder" in options) {
++        const {bakedOrder, eventId} = options;
++        return {
++            name: "get_order_status",
++            description: `Get the live status of the order on this page (reference ${bakedOrder.short_id}): status, payment state, tickets/attendees, totals, and what happens next. Read-only, no input needed.`,
++            inputSchema: {type: "object", properties: {}},
++            annotations: {readOnlyHint: true},
++            execute: async () => {
++                const order = (await orderClientPublic.findByShortId(Number(eventId), bakedOrder.short_id, ["event"])).data;
++                return toolResult({ok: true, order: orderSummary(order, eventId)});
++            },
++        };
++    }
++
++    const {eventContext, navigate} = options;
++    const loginPath = "/auth/login";
++    return {
++        name: "get_order_status",
++        description: `Look up an existing ticket order for "${eventContext.title}" by order code AND purchaser email — both required. The order code starts with "o_" and appears in the confirmation email's order link and in the order page URL (/checkout/…/o_…/summary). Read-only. Returns status, tickets and totals only when the email matches the order; completed orders also open the order confirmation page for the user. Use it for "where is my confirmation / did my registration go through".`,
++        inputSchema: {
++            type: "object",
++            properties: {
++                order_reference: {type: "string", description: 'Order code from the confirmation email link or order page URL, e.g. "o_AbC123…". (The short "Order Number" like O-XXXXX cannot be looked up.)'},
++                email: {type: "string", description: "Email address the order was placed with."},
++            },
++            required: ["order_reference", "email"],
++        },
++        annotations: {readOnlyHint: true},
++        execute: async (args) => {
++            const reference = String(args.order_reference ?? "").trim();
++            const email = String(args.email ?? "").trim().toLowerCase();
++            if (!reference || !email) {
++                return toolResult({ok: false, error: "Both order_reference and email are required."});
++            }
++            if (!/^o_/i.test(reference)) {
++                return toolResult({
++                    ok: false,
++                    error: `"${reference}" looks like the order number shown in the email, which cannot be looked up directly. Ask the user for the order code starting with "o_" from the confirmation email's order link (or the order page URL). If they lost the email, the site can resend a "find my tickets" link from ${loginPath} using their email address.`,
++                });
++            }
++            const notFound = toolResult({
++                ok: false,
++                error: "No order matches that reference and email for this event. Check the confirmation email for the exact reference.",
++            });
++            let order: Order;
++            try {
++                order = (await orderClientPublic.findByShortId(Number(eventContext.id), reference, ["event"])).data;
++            } catch {
++                return notFound;
++            }
++            if (!order?.email || order.email.trim().toLowerCase() !== email) {
++                return notFound; // same answer as unknown reference — no enumeration signal
++            }
++            if (order.status === "COMPLETED" || order.status === "AWAITING_OFFLINE_PAYMENT") {
++                navigate(`/checkout/${eventContext.id}/${order.short_id}/summary`);
++            }
++            return toolResult({ok: true, order: orderSummary(order, eventContext.id)});
++        },
++    };
++};
++
++// ---------------------------------------------------------------------------
++// event_sales_summary — organizer-only (registered while authenticated)
++// ---------------------------------------------------------------------------
++
++export const buildSalesSummaryTool = (options: {bakedEventId?: unknown}): WebMCPToolDefinition => {
++    const {bakedEventId} = options;
++    return {
++        name: "event_sales_summary",
++        description: bakedEventId
++            ? "Sales summary for the event you are managing on this page: tickets sold, attendees registered, orders, gross sales, refunds and page views, plus a per-ticket-type sold/remaining breakdown. Organizer-only (uses your logged-in session). Read-only, no input needed."
++            : "Sales summary across your events (organizer-only, uses your logged-in session). Omit event_id to list every event with tickets sold and gross sales; pass event_id for one event's full breakdown including per-ticket-type sold/remaining. Read-only.",
++        inputSchema: bakedEventId
++            ? {type: "object", properties: {}}
++            : {
++                type: "object",
++                properties: {event_id: {type: "number", description: "One of your event ids (omit to list all)."}},
++            },
++        annotations: {readOnlyHint: true},
++        execute: async (args) => {
++            const eventId = bakedEventId ?? args.event_id;
++            if (!eventId) {
++                const response = await eventsClient.all({perPage: 50, pageNumber: 1});
++                const events = (response?.data ?? []) as Event[];
++                return toolResult({
++                    ok: true,
++                    events: events.map((event) => ({
++                        event_id: event.id,
++                        title: event.title,
++                        status: event.status,
++                        starts_at: event.start_date,
++                        tickets_sold: event.statistics?.products_sold ?? 0,
++                        attendees_registered: event.statistics?.attendees_registered ?? 0,
++                        gross_sales: event.statistics?.sales_total_gross ?? 0,
++                        currency: event.currency,
++                    })),
++                    note: "Pass event_id to event_sales_summary for a per-ticket-type breakdown.",
++                });
++            }
++
++            const [event, stats] = await Promise.all([
++                eventsClient.findByID(eventId).then((response) => response.data),
++                eventsClient.getEventStats(eventId, "event").then((response) => response.data),
++            ]);
++            // NOTE: per-type numbers come from the authenticated event resource;
++            // GET /events/{id}/products 500s at this upstream pin (ProductFilterService bug).
++            const products = eventProducts(event);
++            return toolResult({
++                ok: true,
++                event: {event_id: event.id, title: event.title, status: event.status, starts_at: event.start_date},
++                totals: {
++                    tickets_sold: stats.total_products_sold,
++                    attendees_registered: stats.total_attendees_registered,
++                    orders: stats.total_orders,
++                    gross_sales: stats.total_gross_sales,
++                    refunded: stats.total_refunded,
++                    page_views: stats.total_views,
++                    currency: event.currency,
++                },
++                by_ticket_type: products.map((product: Product) => ({
++                    name: product.title,
++                    sold: product.quantity_sold ?? 0,
++                    remaining: product.initial_quantity_available == null
++                        ? "unlimited"
++                        : Math.max(product.initial_quantity_available - (product.quantity_sold ?? 0), 0),
++                    price: priceOf(product),
++                })),
++            });
++        },
++    };
++};
++
++/**
++ * Sign in to the organizer back office.
++ *
++ * The manage pages are the only place the organizer tools exist, and they need
++ * a session; the app's landing page for a signed-out visitor is the login form,
++ * which an agent working through WebMCP alone may not fill in. Without this
++ * tool there is nothing to call and no way through — see the corpus note on
++ * auth tools.
++ *
++ * It posts the supplied credentials to the app's own auth client (the same call
++ * the login form makes; the session is an HttpOnly cookie, so nothing is held
++ * here), refreshes the "me" query so useGetMe flips to success, then navigates
++ * to the manage dashboard — a react-router navigation, so the organizer layout
++ * mounts and registers its tools without a page load.
++ *
++ * Multi-account logins are refused rather than guessed: the API answers those
++ * with no token and a list of accounts, and picking one for the user is not
++ * this tool's call to make.
++ */
++export const buildSignInTool = (options: {
++    queryClient: QueryClient;
++    navigate: NavigateFunction;
++}): WebMCPToolDefinition => {
++    const {queryClient, navigate} = options;
++    return {
++        name: "sign_in",
++        description:
++            "Sign in to the organizer dashboard with an email and password. The organizer tools " +
++            "(event_sales_summary, which reports each event's status and sales) only exist once signed in, so " +
++            "call this first for anything staff-side, then re-list the tools. Attendee-side tools do not need it.",
++        inputSchema: {
++            type: "object",
++            properties: {
++                email: {type: "string", description: "Organizer account email."},
++                password: {type: "string", description: "Organizer account password."},
++            },
++            required: ["email", "password"],
++            additionalProperties: false,
++        },
++        execute: async (args) => {
++            const email = typeof args?.email === "string" ? args.email.trim() : "";
++            const password = typeof args?.password === "string" ? args.password : "";
++
++            if (!email || !password) {
++                return toolResult({error: "Both email and password are required to sign in."});
++            }
++
++            let response;
++
++            try {
++                response = await authClient.login({email, password});
++            } catch (error: any) {
++                // The API answers bad credentials with a 401; anything else is
++                // worth surfacing verbatim so the agent can tell "wrong
++                // password" from "the site is down".
++                const status = error?.response?.status;
++                return toolResult({
++                    error:
++                        status === 401 || status === 422
++                            ? "Sign-in failed: those credentials were rejected."
++                            : `Sign-in failed: ${error?.message ?? "the request did not complete"}.`,
++                });
++            }
++
++            if (!response?.token) {
++                const accounts = response?.accounts ?? [];
++                return toolResult({
++                    error:
++                        accounts.length > 1
++                            ? "This login belongs to several accounts, so it needs a choice this tool will not make for you — sign in through the form and pick one."
++                            : "Sign-in did not return a session.",
++                });
++            }
++
++            await queryClient.invalidateQueries({queryKey: [GET_ME_QUERY_KEY]});
++
++            navigate("/manage/events");
++
++            return toolResult({
++                signed_in_as: email,
++                note:
++                    "Signed in and moved to the manage dashboard. The organizer tools are registered now — " +
++                    "re-list the tools to use them.",
++            });
++        },
++    };
++};

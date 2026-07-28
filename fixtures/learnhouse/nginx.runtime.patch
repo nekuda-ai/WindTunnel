@@ -1,0 +1,14 @@
+diff --git a/docker/nginx.conf b/docker/nginx.conf
+index 32fd6f3..37b8aa7 100644
+--- a/docker/nginx.conf
++++ b/docker/nginx.conf
+@@ -87,7 +87,8 @@ server {
+     # Frontend 
+     location / {
+         proxy_pass http://localhost:8000;
+-        proxy_set_header Host $host;
++        proxy_set_header Host $http_host;
++        proxy_set_header X-Forwarded-Host $http_host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header X-Forwarded-Proto $scheme;

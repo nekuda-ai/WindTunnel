@@ -1,0 +1,486 @@
+# Reference WebMCP implementation for timlrx/tailwind-nextjs-starter-blog.
+# Golden: goldens/tailwind-nextjs-blog.yaml — registers the single ask_site tool.
+#
+# Applies to upstream commit b45bef66b40c63b6f57c15ee8cd090682238df4c:
+#   git clone https://github.com/timlrx/tailwind-nextjs-starter-blog.git
+#   cd tailwind-nextjs-starter-blog
+#   git checkout b45bef66b40c63b6f57c15ee8cd090682238df4c
+#   git apply /path/to/tailwind-nextjs-blog.reference.patch
+#
+# Boot (Yarn 3 is committed in-repo; nodeLinker: node-modules):
+#   node .yarn/releases/yarn-3.6.1.cjs install
+#   node .yarn/releases/yarn-3.6.1.cjs dev -p <PORT>
+#
+# public/ask-site-index.json and app/tag-data.json are contentlayer build outputs,
+# regenerated on boot, and are deliberately not part of this patch.
+diff --git a/app/layout.tsx b/app/layout.tsx
+index e6c25b5..075609d 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -8,6 +8,7 @@ import { SearchProvider, SearchConfig } from 'pliny/search'
+ import Header from '@/components/Header'
+ import SectionContainer from '@/components/SectionContainer'
+ import Footer from '@/components/Footer'
++import WebMcpAskSite from '@/components/WebMcpAskSite'
+ import siteMetadata from '@/data/siteMetadata'
+ import { ThemeProviders } from './theme-providers'
+ import { Metadata } from 'next'
+@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode })
+       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
+       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
+         <ThemeProviders>
++          <WebMcpAskSite />
+           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
+           <SectionContainer>
+             <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+diff --git a/components/WebMcpAskSite.tsx b/components/WebMcpAskSite.tsx
+new file mode 100644
+index 0000000..e33423b
+--- /dev/null
++++ b/components/WebMcpAskSite.tsx
+@@ -0,0 +1,339 @@
++'use client'
++
++import { useEffect } from 'react'
++import siteMetadata from '@/data/siteMetadata'
++
++interface IndexDoc {
++  kind: 'post' | 'author' | 'project'
++  title: string
++  date?: string
++  tags?: string[]
++  summary?: string
++  keywords?: string[]
++  path: string
++  link?: string
++  body: string
++}
++
++interface ToolResult {
++  content: { type: 'text'; text: string }[]
++}
++
++interface ModelContext {
++  registerTool(tool: {
++    name: string
++    description: string
++    inputSchema: object
++    annotations?: { readOnlyHint?: boolean }
++    execute(args: { query: string }): Promise<ToolResult>
++  }): Promise<unknown>
++}
++
++let indexPromise: Promise<IndexDoc[]> | null = null
++const loadIndex = () => {
++  indexPromise ??= fetch('/ask-site-index.json').then((r) => r.json())
++  return indexPromise
++}
++
++const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
++
++// Match at a word start so "orders" does not hit "borders", while "next" still
++// hits "nextjs" / "next-js" / "next.js".
++const hitsOf = (text: string, term: string) =>
++  (text.match(new RegExp(`\\b${escapeRe(term)}`, 'g')) ?? []).length
++
++// Corpus-specific normalization: bridge a word a real question uses to the word
++// this site actually puts on the page, so a visitor's synonym still reaches the
++// page that answers. Deliberately tiny and one-directional (variant -> canonical):
++// the canonical is *added* to the search, the original is still tried, and a
++// canonical query ("author", "photo") pulls in nothing extra — so this cannot
++// leak "author" into every post that happens to say "writing". No broad synthetic
++// keywords; each entry earns its place against real corpus text:
++//   writer -> author            : the About page says the author "writes", never "writer"
++//   picture/photograph -> photo : the Canada gallery post is written in "photo(s)"
++//   email/address/mail -> contact : the About page owns contact questions via its
++//     "contact" keyword; the only contact detail this site carries is the author's
++//     email, so these route to /about instead of a post that merely says "Emailoctopus".
++const ALIASES: Record<string, string> = {
++  writer: 'author',
++  writers: 'author',
++  picture: 'photo',
++  pictures: 'photo',
++  photograph: 'photo',
++  photographs: 'photo',
++  photography: 'photo',
++  photographer: 'photo',
++  email: 'contact',
++  emails: 'contact',
++  mail: 'contact',
++  address: 'contact',
++  addresses: 'contact',
++}
++// A query word plus its canonical alias (deduped): every surface form to try when
++// matching this word against a document.
++const expand = (term: string) =>
++  ALIASES[term] && ALIASES[term] !== term ? [term, ALIASES[term]] : [term]
++
++const FIELD_WEIGHT = { keywords: 10, title: 8, tags: 5, summary: 3 }
++const BODY_HIT_CAP = 5
++const MAX_RESULTS = 5
++const EXCERPT_WINDOW = 300
++
++// Coverage floor: a document must carry a MAJORITY of the query's meaningful
++// words, counted on DISTINCT matched words. A hit in a declared field
++// (keywords/title/tags) boosts the *ranking* via FIELD_WEIGHT below, never the
++// coverage count — so one title/tag hit can no longer fake a whole multi-word
++// query ("canada immigration" touching only "canada" is the site not carrying the
++// subject; honest-empty beats a confident excerpt about Canada). Requiring more
++// than half also rejects incidental prefix hits on a longer query ("add product
++// to shopping cart" grazing "added"/"production" but not "shopping"/"cart"): two
++// of four is not the site carrying the subject asked about.
++const minMatch = (n: number) => Math.floor(n / 2) + 1
++
++// Function words carry no retrieval signal at any corpus size. IDF alone cannot
++// be trusted to drop them here: across ~13 docs "your" sits in about half and
++// scores like a content word, which is enough to answer a question this site has
++// no content for. Stopwords are a fact about the language, IDF about the corpus.
++const STOPWORDS = new Set(
++  `a an and any anything are as at be been but by can could did do does everything
++   explain find for from get give had has have he her him his how i if in into is it
++   its know like me my need no not nothing of on or our please she should show so
++   some something tell that the their them then there these they thing things this
++   those to want was we were what when where which who whom why will with would you
++   your yours`.split(/\s+/)
++)
++
++// How much a term is worth when it is just the site's own name. A visitor asking
++// "does this blog cover tailwind css" says blog/tailwind/css to point at the
++// site; those words are in most docs and cannot rank anything. Demoted, not
++// dropped: dropping them left "cover" as the whole query and answered "this site
++// has no content matching" — on a Tailwind blog, about Tailwind.
++const SITE_WORD_WEIGHT = 0.2
++
++// The words the site names itself with, from its own title/description. A visitor
++// saying "this blog" is pointing at the site, not asking about blogs — and the
++// post titled "...Starter Blog" would otherwise bury the About page that answers.
++// These are demoted at scoring time (SITE_WORD_WEIGHT), never removed from the
++// query: they still match, still count toward coverage, just cannot rank.
++const SITE_WORDS = new Set(
++  `${siteMetadata.title} ${siteMetadata.description}`
++    .toLowerCase()
++    .split(/[^a-z0-9]+/)
++    .filter((w) => w.length > 1)
++)
++
++const tokenize = (text: string) => [
++  ...new Set(
++    text
++      .toLowerCase()
++      .split(/[^a-z0-9]+/)
++      .filter((t) => t.length > 1 && !STOPWORDS.has(t))
++  ),
++]
++
++// Strip MDX/Markdown markup so an excerpt reads as prose, not source: fenced and
++// inline code, images, JSX/HTML tags, link URLs (keep the link text), heading
++// markers and emphasis/table punctuation.
++const clean = (mdx: string) =>
++  mdx
++    .replace(/```[\s\S]*?```/g, ' ')
++    .replace(/`[^`]*`/g, ' ')
++    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
++    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
++    .replace(/<[^>]+>/g, ' ')
++    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
++    .replace(/[*_~>#|]+/g, ' ')
++    .replace(/\s+/g, ' ')
++    .trim()
++
++// Excerpt that shows the answer, not just the first keyword. Over cleaned prose,
++// slide a window to the position that packs in the most matched words, weighting
++// rarer words (higher IDF) more heavily and breaking ties toward the densest
++// passage (most matched occurrences) — so the paragraph that discusses the query
++// wins over an isolated mention (e.g. the same word buried in a contact URL).
++const excerpt = (body: string, matched: string[], weight: Map<string, number>) => {
++  const text = clean(body)
++  if (!text) return ''
++  const tail = (from: number) =>
++    text.slice(from, from + EXCERPT_WINDOW).trim() +
++    (text.length > from + EXCERPT_WINDOW ? '…' : '')
++
++  // Every position of each matched word (across its surface forms) in the text.
++  const spots = matched
++    .map((t) => {
++      const at: number[] = []
++      for (const form of expand(t)) {
++        const re = new RegExp(`\\b${escapeRe(form)}`, 'gi')
++        let m: RegExpExecArray | null
++        while ((m = re.exec(text))) at.push(m.index)
++      }
++      return { w: weight.get(t) ?? 1, at: at.sort((a, b) => a - b) }
++    })
++    .filter((s) => s.at.length)
++  if (!spots.length) return tail(0)
++
++  let best = { start: 0, cover: -1, occ: -1 }
++  for (const anchor of spots.flatMap((s) => s.at)) {
++    const start = Math.max(0, anchor - 60)
++    const end = start + EXCERPT_WINDOW
++    let cover = 0
++    let occ = 0
++    for (const { w, at } of spots) {
++      const inWin = at.filter((p) => p >= start && p < end)
++      if (inWin.length) {
++        cover += w
++        occ += inWin.length
++      }
++    }
++    // Distinct matched words first (weighted by rarity), then density; earliest
++    // window wins remaining ties (only strictly-better windows replace).
++    if (cover > best.cover || (cover === best.cover && occ > best.occ)) best = { start, cover, occ }
++  }
++
++  let s = best.start
++  let e = Math.min(text.length, best.start + EXCERPT_WINDOW)
++  if (s > 0) {
++    const sp = text.indexOf(' ', s)
++    if (sp >= 0 && sp < e) s = sp + 1
++  }
++  if (e < text.length) {
++    const sp = text.lastIndexOf(' ', e)
++    if (sp > s) e = sp
++  }
++  return (s > 0 ? '…' : '') + text.slice(s, e).trim() + (e < text.length ? '…' : '')
++}
++
++const search = (docs: IndexDoc[], query: string) => {
++  const terms = tokenize(query)
++  // A question made only of function words asks nothing this index can answer.
++  if (!terms.length) return []
++
++  const counted = docs.map((doc) => {
++    const fields = {
++      keywords: (doc.keywords ?? []).join(' ').toLowerCase(),
++      title: doc.title.toLowerCase(),
++      tags: (doc.tags ?? []).join(' ').toLowerCase(),
++      summary: (doc.summary ?? '').toLowerCase(),
++    }
++    const body = doc.body.toLowerCase()
++    // Hits per field, summed over the word's surface forms (original + alias).
++    const per = new Map(
++      terms.map((t) => {
++        const forms = expand(t)
++        const sum = (text: string) => forms.reduce((n, f) => n + hitsOf(text, f), 0)
++        return [
++          t,
++          {
++            keywords: sum(fields.keywords),
++            title: sum(fields.title),
++            tags: sum(fields.tags),
++            summary: sum(fields.summary),
++            body: sum(body),
++          },
++        ]
++      })
++    )
++    return { doc, per }
++  })
++
++  // Inverse document frequency: rare terms ("images", "author") decide the
++  // ranking; a term in every doc is noise. Site words are demoted on top of that
++  // — on this site "tailwind" is both common AND self-referential. Weighting is
++  // all that is needed: a term worth ~nothing scores ~nothing, so nothing has to
++  // be dropped from the query to keep it from dominating.
++  const idf = new Map(
++    terms.map((t) => {
++      const df = counted.filter(({ per }) => Object.values(per.get(t)!).some((n) => n > 0)).length
++      const rarity = Math.log(1 + (docs.length - df + 0.5) / (df + 0.5))
++      return [t, rarity * (SITE_WORDS.has(t) ? SITE_WORD_WEIGHT : 1)]
++    })
++  )
++
++  const need = minMatch(terms.length)
++
++  return counted
++    .map(({ doc, per }) => {
++      let score = 0
++      const matched: string[] = []
++      for (const t of terms) {
++        const c = per.get(t)!
++        const weighted =
++          (c.keywords ? FIELD_WEIGHT.keywords : 0) +
++          (c.title ? FIELD_WEIGHT.title : 0) +
++          (c.tags ? FIELD_WEIGHT.tags : 0) +
++          (c.summary ? FIELD_WEIGHT.summary : 0) +
++          Math.min(c.body, BODY_HIT_CAP)
++        if (weighted > 0) matched.push(t)
++        score += idf.get(t)! * weighted
++      }
++      return { doc, score, matched }
++    })
++    .filter((r) => r.score > 0 && r.matched.length >= need)
++    .sort((a, b) => b.score - a.score)
++    .slice(0, MAX_RESULTS)
++    .map((r) => ({ ...r, snippet: excerpt(r.doc.body, r.matched, idf) }))
++}
++
++export default function WebMcpAskSite() {
++  useEffect(() => {
++    // Spec surface is document.modelContext; Chrome's earlier origin-trial builds
++    // expose it on navigator and warn that it is deprecated. Prefer the spec.
++    const modelContext =
++      (document as unknown as { modelContext?: ModelContext }).modelContext ??
++      (navigator as unknown as { modelContext?: ModelContext }).modelContext
++    if (!modelContext?.registerTool) return
++    const registration = modelContext.registerTool({
++      name: 'ask_site',
++      description:
++        `Answer visitor questions from this site's own content. Read-only full-text search over ` +
++        `every blog post, the author's About page, and the Projects list of "${siteMetadata.title}". ` +
++        `Returns the most relevant excerpts with title, tags, date, and a site-relative link, so you can ` +
++        `ground your answer in this site's actual content and point the visitor to the source page. ` +
++        `Use it for any question about what this site covers, a specific post's content, the author, or the projects.`,
++      inputSchema: {
++        type: 'object',
++        properties: {
++          query: {
++            type: 'string',
++            description: 'Keywords or a natural-language question about the site content',
++          },
++        },
++        required: ['query'],
++      },
++      annotations: { readOnlyHint: true },
++      async execute({ query }) {
++        const docs = await loadIndex()
++        const matches = search(docs, query)
++        const payload = {
++          site: { title: siteMetadata.title, description: siteMetadata.description },
++          query,
++          results: matches.map(({ doc, snippet }) => ({
++            kind: doc.kind,
++            title: doc.title,
++            path: doc.path,
++            link: doc.link,
++            date: doc.date,
++            tags: doc.tags,
++            summary: doc.summary,
++            excerpt: snippet,
++          })),
++          note: matches.length
++            ? 'Compose the answer from these excerpts and cite the source path.'
++            : 'This site has no content matching the query — say so rather than guessing.',
++        }
++        return { content: [{ type: 'text', text: JSON.stringify(payload) }] }
++      },
++    })
++    // registerTool rejects on a name already registered, and this build offers no
++    // unregister, so the document keeps the first registration across React
++    // StrictMode's double-invoke and Fast Refresh. That duplicate is the tool
++    // already being live — the contract we wanted — not a failure to report.
++    Promise.resolve(registration).catch((error: unknown) => {
++      if ((error as DOMException)?.name !== 'InvalidStateError') {
++        console.error('ask_site: registerTool failed', error)
++      }
++    })
++  }, [])
++
++  return null
++}
+diff --git a/contentlayer.config.ts b/contentlayer.config.ts
+index c27ce7b..fdaa152 100644
+--- a/contentlayer.config.ts
++++ b/contentlayer.config.ts
+@@ -23,6 +23,7 @@ import rehypeCitation from 'rehype-citation'
+ import rehypePrismPlus from 'rehype-prism-plus'
+ import rehypePresetMinify from 'rehype-preset-minify'
+ import siteMetadata from './data/siteMetadata'
++import projectsData from './data/projectsData'
+ import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer.js'
+ import prettier from 'prettier'
+ 
+@@ -93,6 +94,82 @@ function createSearchIndex(allBlogs) {
+   }
+ }
+ 
++// Full-text index for the ask_site WebMCP tool: published posts, the About
++// author, and projects — unlike search.json, it keeps the raw body so the
++// tool can return content excerpts, not just titles.
++function createAskSiteIndex(allBlogs, allAuthors) {
++  const published = sortPosts(allBlogs).filter((post) => post.draft !== true)
++  const posts = published.map((post) => ({
++    kind: 'post',
++    title: post.title,
++    date: post.date,
++    tags: post.tags,
++    summary: post.summary,
++    path: `/${post.path}`,
++    body: post.body.raw,
++  }))
++  // A co-author has no /about page of their own; they are reachable only through
++  // the posts that list them — and only PostLayout actually renders the author
++  // (name, avatar, link), so PostSimple/PostBanner posts are not a page where the
++  // visitor can see them. Map each non-default author to the newest published
++  // PostLayout post that lists them, and cite that page as the source.
++  const rendersAuthors = (post) => !post.layout || post.layout === 'PostLayout'
++  const postForAuthor: Record<string, string> = {}
++  for (const post of published) {
++    if (!rendersAuthors(post)) continue
++    for (const authorSlug of post.authors ?? []) {
++      if (authorSlug !== 'default' && !(authorSlug in postForAuthor)) {
++        postForAuthor[authorSlug] = `/${post.path}`
++      }
++    }
++  }
++  // `keywords` name the questions a page owns but does not literally answer: the
++  // About body never says "author", so "who is the author" cannot match it on
++  // words alone. Only claim what the doc can answer — the contact keywords are
++  // earned by indexing the frontmatter contact fields below, which the page
++  // renders but the body text does not contain. Posts need no keywords: their
++  // titles and tags already say what they are.
++  const about = allAuthors
++    .filter((author) => author.slug === 'default' || postForAuthor[author.slug])
++    .map((author) => {
++      const isDefault = author.slug === 'default'
++      const contact = Object.entries({
++        email: author.email,
++        twitter: author.twitter,
++        linkedin: author.linkedin,
++        github: author.github,
++      })
++        .filter(([, v]) => v)
++        .map(([k, v]) => `${k}: ${v}`)
++      return {
++        kind: 'author',
++        title: `About ${author.name}`,
++        summary: [author.occupation, author.company].filter(Boolean).join(' at '),
++        keywords: ['about', 'author', 'wrote', 'bio', 'biography', 'profile', 'contact'],
++        // Default author -> /about; a co-author -> the post where they appear.
++        path: isDefault ? '/about' : postForAuthor[author.slug],
++        body: [author.body.raw, contact.length ? `Contact — ${contact.join(', ')}` : '']
++          .filter(Boolean)
++          .join('\n\n'),
++      }
++    })
++  // href is the project's own link (external site or an on-site post); without it
++  // "where is the search engine project" can be answered but not followed.
++  const projects = projectsData.map((project) => ({
++    kind: 'project',
++    title: project.title,
++    summary: project.description,
++    keywords: ['project', 'projects', 'portfolio', 'work'],
++    path: '/projects',
++    link: project.href,
++    body: [project.description, project.href ? `Link: ${project.href}` : '']
++      .filter(Boolean)
++      .join('\n'),
++  }))
++  writeFileSync('public/ask-site-index.json', JSON.stringify([...posts, ...about, ...projects]))
++  console.log('ask_site index generated...')
++}
++
+ export const Blog = defineDocumentType(() => ({
+   name: 'Blog',
+   filePathPattern: 'blog/**/*.mdx',
+@@ -180,8 +257,9 @@ export default makeSource({
+     ],
+   },
+   onSuccess: async (importData) => {
+-    const { allBlogs } = await importData()
++    const { allBlogs, allAuthors } = await importData()
+     createTagCount(allBlogs)
+     createSearchIndex(allBlogs)
++    createAskSiteIndex(allBlogs, allAuthors)
+   },
+ })

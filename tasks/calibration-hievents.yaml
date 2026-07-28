@@ -1,0 +1,45 @@
+# Heavy-site cost calibration — hi-events (Laravel + Postgres + Redis + React).
+# Run against the seeded event page via manual lifecycle:
+#   WT_MANUAL_BASEURL=http://localhost:3213/event/1/webmcp-community-workshop
+# Seeded facts (verified live): "WebMCP Community Workshop", starts 2035-06-15
+# 10:00 UTC, General admission FREE, 100 remaining, refund = "nothing to refund".
+# Per-interface step budgets: WebMCP ~1 call/step, screenshot/DOM agents ~3.
+tasks:
+  - id: he-1
+    site: hi-events
+    tier: answer
+    prompt: "What date and time does the WebMCP Community Workshop start?"
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: ["10:00"] }
+
+  - id: he-2
+    site: hi-events
+    tier: answer
+    prompt: "Is a ticket to this workshop free, and what is the General admission price?"
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: ["free"] }
+
+  - id: he-3
+    site: hi-events
+    tier: answer
+    prompt: "What is the refund policy for this event?"
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: ["refund"] }
+
+  - id: he-4
+    site: hi-events
+    tier: answer
+    # State-robust: max-per-order is fixed at 4 regardless of how many tickets
+    # have been sold (the earlier "remaining count" predicate was stale after
+    # registrations consumed tickets — a benchmark-design lesson: never hardcode
+    # mutable state in an answer predicate).
+    prompt: "What is the maximum number of General admission tickets I can buy in a single order?"
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, matches: "(max|maximum|limit|allowed)[^.]{0,40}\\b(4|four)\\b" }
+
+  - id: he-5
+    site: hi-events
+    tier: transaction
+    prompt: "Register Test Flight (email test-flight@example.com) for one free General admission ticket, and confirm the registration went through."
+    max_steps: { webmcp: 12, cu: 30, structured: 30 }
+    predicate: { type: answer, contains_any: ["confirmed", "registered", "order", "complete"] }

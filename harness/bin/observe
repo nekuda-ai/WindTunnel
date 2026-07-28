@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+
+usage() {
+  echo "usage: observe <site> <probe> [arguments-json] [--run-id ID]" >&2
+  exit 2
+}
+
+[ "$#" -ge 2 ] || usage
+SITE=$1
+PROBE=$2
+shift 2
+ARGUMENTS='{}'
+RUN_ID=default
+
+if [ "$#" -gt 0 ] && [ "$1" != --run-id ]; then
+  ARGUMENTS=$1
+  shift
+fi
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --run-id) [ "$#" -ge 2 ] || usage; RUN_ID=$2; shift 2 ;;
+    *) usage ;;
+  esac
+done
+
+jq -e . <<<"$ARGUMENTS" >/dev/null || { echo "arguments must be JSON" >&2; exit 2; }
+[[ "$SITE" =~ ^[a-z0-9][a-z0-9-]*$ ]] || usage
+[[ "$RUN_ID" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]] || usage
+
+CAPSULE_RUNTIME_DIR="${CAPSULE_RUNTIME_ROOT:-"/tmp/webmcp-kit-capsules-${UID}"}/$SITE/$RUN_ID"
+CAPSULE_PRIVATE_DIR="$CAPSULE_RUNTIME_DIR/private"
+STATE_FILE="$CAPSULE_PRIVATE_DIR/state.env"
+MANIFEST_FILE="$CAPSULE_PRIVATE_DIR/manifest.json"
+ORACLE="$ROOT/capsules/$SITE/oracle.sh"
+LOCK_ROOT=${CAPSULE_LOCK_ROOT:-"/tmp/webmcp-kit-capsule-locks-${UID}"}
+mkdir -p "$LOCK_ROOT"
+chmod 0700 "$LOCK_ROOT"
+exec 9>"$LOCK_ROOT/$SITE-$RUN_ID.lock"
+flock -s 9
+[ -f "$STATE_FILE" ] && [ -f "$MANIFEST_FILE" ] && [ -f "$ORACLE" ] || { echo "capsule or oracle unavailable: $SITE/$RUN_ID" >&2; exit 1; }
+
+# shellcheck source=/dev/null
+source "$STATE_FILE"
+export ROOT SITE RUN_ID CAPSULE_RUNTIME_DIR CAPSULE_PRIVATE_DIR CAPSULE_PORT CAPSULE_BASE_URL CAPSULE_MANIFEST_ID
+ORACLE_HASH="sha256:$(sha256sum "$ORACLE" | cut -d' ' -f1)"
+CONFIG_PATH=$(jq -er '.config.path' "$MANIFEST_FILE")
+ADAPTER_PATH=$(jq -er '.config.adapterPath' "$MANIFEST_FILE")
+BASELINE_PATH=$(jq -er '.protectedBaseline.path' "$MANIFEST_FILE")
+CONFIG_ACTUAL="sha256:$(sha256sum "$CONFIG_PATH" | cut -d' ' -f1)"
+ADAPTER_ACTUAL="sha256:$(sha256sum "$ADAPTER_PATH" | cut -d' ' -f1)"
+BASELINE_ACTUAL="sha256:$(sha256sum "$BASELINE_PATH" | cut -d' ' -f1)"
+CAPSULE_EXECUTION_JSON=$(jq -ce '.execution.current | select(
+  (.sequence | type == "number" and . >= 1) and
+  (.operation == "up" or .operation == "reset") and
+  (.runtimeRevision | type == "string" and length > 0) and
+  (.imageDigests | type == "object"))' "$MANIFEST_FILE") || {
+  echo "capsule has no successful current execution" >&2
+  exit 1
+}
+jq -e \
+  --arg identity "$CAPSULE_MANIFEST_ID" \
+  --arg configHash "$CONFIG_ACTUAL" \
+  --arg adapterHash "$ADAPTER_ACTUAL" \
+  --arg oracleHash "$ORACLE_HASH" \
+  --arg baselineHash "$BASELINE_ACTUAL" '
+    .identity == $identity and
+    .prepareComplete == true and .phase == "ready" and
+    (.timestamps.preparedAt | type == "string" and length > 0) and
+    .config.hash == $configHash and
+    .config.adapterHash == $adapterHash and
+    .fixtures.hashes["evaluator:oracle"] == $oracleHash and
+    .protectedBaseline.hash == $baselineHash
+  ' "$MANIFEST_FILE" >/dev/null || {
+    echo "capsule evaluator inputs or protected baseline changed after prepare" >&2
+    exit 1
+  }
+BROWSER_REGISTRY_ROOT=${CAPSULE_BROWSER_REGISTRY_ROOT:-"/tmp/webmcp-kit-browser-sessions-${UID}"}
+MANIFEST_KEY=${CAPSULE_MANIFEST_ID#sha256:}
+BROWSER_RECORD="$BROWSER_REGISTRY_ROOT/manifests/$MANIFEST_KEY.json"
+mkdir -p "$BROWSER_REGISTRY_ROOT"
+chmod 0700 "$BROWSER_REGISTRY_ROOT"
+exec 7>"$BROWSER_REGISTRY_ROOT/.lock"
+flock -s 7
+jq -e --arg manifestId "$CAPSULE_MANIFEST_ID" --argjson execution "$CAPSULE_EXECUTION_JSON" '
+  .manifestId == $manifestId and .active == true and .ready == true and .execution == $execution
+' "$BROWSER_RECORD" >/dev/null || {
+  flock -u 7
+  echo "capsule verifier registry is not ready for the current execution" >&2
+  exit 1
+}
+flock -u 7
+result=$(mktemp)
+trap 'rm -f "$result"' EXIT
+OBSERVE_TIMEOUT_SECONDS=${CAPSULE_OBSERVE_TIMEOUT_SECONDS:-60}
+[[ "$OBSERVE_TIMEOUT_SECONDS" =~ ^[1-9][0-9]*$ ]] || {
+  echo "observation timeout must be a positive integer" >&2
+  exit 2
+}
+if ! timeout --signal=TERM --kill-after=5s "${OBSERVE_TIMEOUT_SECONDS}s" bash -c '
+  set -euo pipefail
+  ROOT=$1
+  SITE=$2
+  RUN_ID=$3
+  CAPSULE_RUNTIME_DIR=$4
+  CAPSULE_PRIVATE_DIR=$5
+  STATE_FILE=$6
+  ORACLE=$7
+  PROBE=$8
+  ARGUMENTS=$9
+  # shellcheck source=/dev/null
+  source "$STATE_FILE"
+  export ROOT SITE RUN_ID CAPSULE_RUNTIME_DIR CAPSULE_PRIVATE_DIR CAPSULE_PORT CAPSULE_BASE_URL CAPSULE_MANIFEST_ID
+  # shellcheck source=/dev/null
+  source "$ORACLE"
+  declare -F observe >/dev/null || { echo "$ORACLE is missing observe()" >&2; exit 2; }
+  observe "$PROBE" "$ARGUMENTS"
+' observe-probe "$ROOT" "$SITE" "$RUN_ID" "$CAPSULE_RUNTIME_DIR" "$CAPSULE_PRIVATE_DIR" \
+  "$STATE_FILE" "$ORACLE" "$PROBE" "$ARGUMENTS" > "$result"; then
+  echo "observation failed or timed out after ${OBSERVE_TIMEOUT_SECONDS}s: $SITE/$RUN_ID $PROBE" >&2
+  exit 1
+fi
+jq -e . "$result" >/dev/null
+jq --arg site "$SITE" --arg runId "$RUN_ID" --arg probe "$PROBE" \
+  --arg manifestId "${CAPSULE_MANIFEST_ID:-}" --arg oracleHash "$ORACLE_HASH" \
+  --argjson execution "$CAPSULE_EXECUTION_JSON" --argjson arguments "$ARGUMENTS" '
+    if type == "object" then
+      . + {_capsule:{site:$site,runId:$runId,manifestId:$manifestId,execution:$execution,
+        oracleHash:$oracleHash,probe:$probe,arguments:$arguments}}
+    else
+      {value:.,_capsule:{site:$site,runId:$runId,manifestId:$manifestId,execution:$execution,
+        oracleHash:$oracleHash,probe:$probe,arguments:$arguments}}
+    end
+  ' "$result"

@@ -1,0 +1,14 @@
+node_modules/
+.venv-browseruse/
+.env
+.env.*
+# committed reports live in results/; raw per-run dumps and dry runs don't
+results/**/raw/
+results/dry-*/
+results/live.jsonl
+transcripts/
+scratchpad/
+*.log
+.DS_Store
+# capsule *definitions* live in capsules/ and ARE tracked; runtime instances
+# (clones, volumes) live outside the repo under CAPSULE_RUNTIME_ROOT (/tmp).

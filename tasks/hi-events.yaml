@@ -1,0 +1,100 @@
+# hi-events — public event page + checkout + organizer dashboard.
+# Seeded (fixtures/hi-events/seed.mjs): event "WebMCP Community Workshop"
+# (LIVE, 2035-06-15 10:00–12:00 UTC, online), one FREE ticket type "General
+# admission" (100 seats, max 4/order, no waitlist), organizer
+# organizer@webmcp-eval.test / WebmcpEval123!. The 5 calibration tasks
+# (calibration-hievents.yaml) already cover start time, price, refund policy,
+# max-per-order as a question, and single-ticket registration — nothing below
+# repeats those. Registration outcomes use the organizer orders probe.
+# Attendee tasks set start_path to the public event page: the site root is the
+# organizer login, which links nowhere public and registers only sign_in —
+# starting there made attendee tasks unwinnable for tool-only agents and a
+# URL-guessing lottery for browser agents. hev-8 (organizer) keeps the root.
+tasks:
+  - id: hev-1
+    start_path: /event/1/webmcp-community-workshop
+    tier: answer
+    prompt: Where does the WebMCP Community Workshop take place? Report the venue or location.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [online] }
+
+  - id: hev-2
+    start_path: /event/1/webmcp-community-workshop
+    tier: answer
+    prompt: According to the workshop schedule, what session starts at 11:15?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, contains: [state-conditioned] }
+
+  - id: hev-3
+    start_path: /event/1/webmcp-community-workshop
+    tier: answer
+    prompt: What is the event's age policy for young attendees?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    # The description says "under sixteen"; agents legitimately restate it as
+    # "under 16" — accept both spellings of the same correct answer.
+    predicate: { type: answer, contains_any: [sixteen, "16"] }
+
+  - id: hev-4
+    start_path: /event/1/webmcp-community-workshop
+    tier: answer
+    prompt: Are the workshop sessions recorded, and who gets access to the recordings?
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    # [\s\S] not [^.]: correct answers legitimately cross a sentence break
+    # ("Sessions are recorded. ... shared with registered attendees").
+    predicate: { type: answer, matches: "record(ed|ing)s?[\\s\\S]{0,160}attendee|attendee[\\s\\S]{0,160}record" }
+
+  - id: hev-10
+    start_path: /event/1/webmcp-community-workshop
+    tier: answer
+    prompt: Does the event page say anything about parking? Answer with the single word PRESENT or ABSENT.
+    # Nothing about parking is seeded; the golden ask_site deliberately
+    # returns empty rather than guessing.
+    max_steps: { webmcp: 6, cu: 18, structured: 18 }
+    predicate: { type: answer, matches: "\\babsent\\b", not_contains: ["not absent", "present or absent"] }
+
+  - id: hev-5
+    start_path: /event/1/webmcp-community-workshop
+    tier: act-short
+    prompt: Does this event offer live captions? Answer with the single word PRESENT or ABSENT.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, matches: "\\bpresent\\b", not_contains: ["not present", "present or absent"] }
+
+  - id: hev-6
+    start_path: /event/1/webmcp-community-workshop
+    tier: act-short
+    prompt: Try to order five General admission tickets in a single order for Pat Lee, pat.lee@example.com. If that is not possible, report the maximum allowed per order and stop.
+    # Seeded max_per_order is 4; the register tool rejects quantity 5. Passing
+    # means surfacing the limit instead of forcing the order through.
+    max_steps: { webmcp: 8, cu: 24, structured: 20 }
+    predicate: { type: answer, matches: "(max|maximum|limit|allowed)[^.]{0,40}\\b(4|four)\\b" }
+
+  - id: hev-7
+    start_path: /event/1/webmcp-community-workshop
+    tier: transaction
+    prompt: Register Jordan Baker, jordan.baker@example.com, for two General admission tickets to the WebMCP Community Workshop — the second attendee is Sam Baker. Confirm the registration completed.
+    max_steps: { webmcp: 12, cu: 35, structured: 28 }
+    # The orders probe is authoritative; confirmation text remains a human signal.
+    predicate:
+      probe: orders
+      assert:
+        contains: { orders: 1 }
+
+  - id: hev-8
+    auth: true
+    tier: act-long
+    prompt: Log in to the organizer dashboard as organizer@webmcp-eval.test with password WebmcpEval123! and report the current status of the WebMCP Community Workshop event.
+    # Seeded event status is LIVE. "live" is a common word; the prompt pins
+    # the answer to the dashboard's status field to keep the match meaningful.
+    max_steps: { webmcp: 10, cu: 30, structured: 24 }
+    predicate: { type: answer, matches: "status[^.]{0,30}\\blive\\b|\\blive\\b[^.]{0,30}status" }
+
+  - id: hev-9
+    start_path: /event/1/webmcp-community-workshop
+    tier: act-long
+    prompt: Register Riley Fox, riley.fox@example.com, for one General admission ticket, note the order reference code (it starts with "o_"), then use the event page's order lookup with that code and the same email to check the order and report its status.
+    max_steps: { webmcp: 12, cu: 35, structured: 28 }
+    # The orders probe is authoritative; the reported status remains a human signal.
+    predicate:
+      probe: orders
+      assert:
+        contains: { orders: 1 }

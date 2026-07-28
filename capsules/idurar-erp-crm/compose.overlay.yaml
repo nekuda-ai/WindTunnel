@@ -1,0 +1,78 @@
+services:
+  db:
+    image: ${CAPSULE_IMAGE_MONGO}
+    command: ["mongod", "--bind_ip_all", "--setParameter", "diagnosticDataCollectionEnabled=false"]
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "quit(db.adminCommand('ping').ok ? 0 : 2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 45
+    volumes:
+      - type: volume
+        source: database
+        target: /data/db
+  backend:
+    image: ${CAPSULE_IMAGE_NODE}
+    init: true
+    user: "${CAPSULE_UID}:${CAPSULE_GID}"
+    working_dir: /workspace/backend
+    command: ["npm", "start"]
+    env_file:
+      - ${CAPSULE_WORKSPACE}/backend/.env
+    environment:
+      HOME: /tmp/home
+      npm_config_cache: /cache/npm
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}
+        target: /workspace
+      - type: bind
+        source: ${CAPSULE_PRIVATE_DIR}/cache
+        target: /cache
+    stop_grace_period: 10s
+  frontend:
+    image: ${CAPSULE_IMAGE_NODE}
+    init: true
+    user: "${CAPSULE_UID}:${CAPSULE_GID}"
+    working_dir: /workspace/frontend
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+    environment:
+      HOME: /tmp/home
+      npm_config_cache: /cache/npm
+      VITE_DEV_REMOTE: remote
+      VITE_BACKEND_SERVER: ${CAPSULE_BASE_URL}/
+    depends_on:
+      backend:
+        condition: service_started
+    volumes:
+      - type: bind
+        source: ${CAPSULE_WORKSPACE}
+        target: /workspace
+      - type: bind
+        source: ${CAPSULE_PRIVATE_DIR}/cache
+        target: /cache
+    stop_grace_period: 10s
+  gateway:
+    image: ${CAPSULE_IMAGE_NODE}
+    init: true
+    user: "${CAPSULE_UID}:${CAPSULE_GID}"
+    working_dir: /evaluator
+    command: ["node", "/evaluator/gateway.mjs"]
+    environment:
+      PORT: "3000"
+    depends_on:
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_started
+    volumes:
+      - type: bind
+        source: ${CAPSULE_PRIVATE_DIR}/evaluator
+        target: /evaluator
+        read_only: true
+    stop_grace_period: 10s
+volumes:
+  database: {}

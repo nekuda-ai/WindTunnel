@@ -1,0 +1,1107 @@
+diff --git a/backend/src/controllers/appControllers/invoiceController/create.js b/backend/src/controllers/appControllers/invoiceController/create.js
+index f714feec..ed581d15 100644
+--- a/backend/src/controllers/appControllers/invoiceController/create.js
++++ b/backend/src/controllers/appControllers/invoiceController/create.js
+@@ -9,7 +9,9 @@ const schema = require('./schemaValidate');
+ const create = async (req, res) => {
+   let body = req.body;
+ 
+-  const { error, value } = schema.validate(body);
++  // The server owns `number`, so validate the request with a disposable value
++  // before consuming the real sequence number.
++  const { error, value } = schema.validate({ ...body, number: 0 });
+   if (error) {
+     const { details } = error;
+     return res.status(400).json({
+@@ -19,6 +21,22 @@ const create = async (req, res) => {
+     });
+   }
+ 
++  // Allocate the invoice number authoritatively, server-side, by atomically
++  // bumping the finance counter (single-document findOneAndUpdate $inc — safe on
++  // standalone Mongo without transactions). This is the sole source of the
++  // number: any client-supplied `number` is ignored, so two concurrent creates
++  // can never collide, and there is no unauthenticated fallback scan. Fail
++  // closed if the counter is missing rather than guessing a number.
++  const numberSetting = await increaseBySettingKey({ settingKey: 'last_invoice_number' });
++  if (!numberSetting) {
++    return res.status(500).json({
++      success: false,
++      result: null,
++      message: 'Invoice numbering is unavailable (finance setting last_invoice_number missing).',
++    });
++  }
++  body['number'] = numberSetting.settingValue;
++
+   const { items = [], taxRate = 0, discount = 0 } = value;
+ 
+   // default
+@@ -57,13 +75,9 @@ const create = async (req, res) => {
+       new: true,
+     }
+   ).exec();
+-  // Returning successfull response
+-
+-  increaseBySettingKey({
+-    settingKey: 'last_invoice_number',
+-  });
+ 
+-  // Returning successfull response
++  // Returning successfull response (the counter was already bumped above during
++  // allocation — do not increment again here or numbers would skip).
+   return res.status(200).json({
+     success: true,
+     result: updateResult,
+diff --git a/backend/src/controllers/appControllers/paymentController/create.js b/backend/src/controllers/appControllers/paymentController/create.js
+index a8979bb9..301d7691 100644
+--- a/backend/src/controllers/appControllers/paymentController/create.js
++++ b/backend/src/controllers/appControllers/paymentController/create.js
+@@ -2,13 +2,35 @@ const mongoose = require('mongoose');
+ 
+ const Model = mongoose.model('Payment');
+ const Invoice = mongoose.model('Invoice');
+-const custom = require('@/controllers/pdfController');
+ 
+ const { calculate } = require('@/helpers');
++const { increaseBySettingKey } = require('@/middlewares/settings');
++
++// Recompute an invoice's paymentStatus from its (already updated) credit.
++const paymentStatusStage = {
++  $set: {
++    paymentStatus: {
++      $let: {
++        vars: {
++          due: { $subtract: ['$total', { $ifNull: ['$discount', 0] }] },
++          cr: { $ifNull: ['$credit', 0] },
++        },
++        in: {
++          $cond: [
++            { $eq: ['$$due', '$$cr'] },
++            'paid',
++            { $cond: [{ $gt: ['$$cr', 0] }, 'partially', 'unpaid'] },
++          ],
++        },
++      },
++    },
++  },
++};
+ 
+ const create = async (req, res) => {
+-  // Creating a new document in the collection
+-  if (req.body.amount === 0) {
++  const amount = Number(req.body.amount);
++
++  if (!(amount > 0)) {
+     return res.status(202).json({
+       success: false,
+       result: null,
+@@ -16,64 +38,116 @@ const create = async (req, res) => {
+     });
+   }
+ 
+-  const currentInvoice = await Invoice.findOne({
+-    _id: req.body.invoice,
+-    removed: false,
+-  });
++  // Pre-generate the payment id so the invoice's balance check + credit update
++  // can be a SINGLE atomic operation that also records this payment's id.
++  const paymentId = new mongoose.Types.ObjectId();
+ 
+-  const {
+-    total: previousTotal,
+-    discount: previousDiscount,
+-    credit: previousCredit,
+-  } = currentInvoice;
+-
+-  const maxAmount = calculate.sub(calculate.sub(previousTotal, previousDiscount), previousCredit);
++  // Atomic guarded reservation: increment credit ONLY if it still fits within
++  // the outstanding balance (total - discount). The predicate lives in the
++  // filter's $expr, so on standalone Mongo (no multi-document transactions)
++  // this one findOneAndUpdate is the serialization point — two concurrent
++  // payments can never both pass, so an invoice can never be overpaid. A losing
++  // concurrent call matches nothing (result === null) and is rejected below;
++  // nothing is written on ambiguity.
++  const reservedInvoice = await Invoice.findOneAndUpdate(
++    {
++      _id: req.body.invoice,
++      removed: false,
++      $expr: {
++        $lte: [
++          { $add: [{ $ifNull: ['$credit', 0] }, amount] },
++          { $subtract: ['$total', { $ifNull: ['$discount', 0] }] },
++        ],
++      },
++    },
++    [
++      {
++        $set: {
++          credit: { $add: [{ $ifNull: ['$credit', 0] }, amount] },
++          payment: { $concatArrays: [{ $ifNull: ['$payment', []] }, [paymentId]] },
++        },
++      },
++      paymentStatusStage,
++    ],
++    { new: true, runValidators: true }
++  ).exec();
+ 
+-  if (req.body.amount > maxAmount) {
++  if (!reservedInvoice) {
++    // The invoice is gone, or the amount would exceed the live balance (e.g. a
++    // concurrent payment consumed it). Report the current ceiling; write nothing.
++    const currentInvoice = await Invoice.findOne({ _id: req.body.invoice, removed: false });
++    if (!currentInvoice) {
++      return res.status(404).json({ success: false, result: null, message: 'No document found ' });
++    }
++    const maxAmount = calculate.sub(
++      calculate.sub(currentInvoice.total, currentInvoice.discount || 0),
++      currentInvoice.credit || 0
++    );
+     return res.status(202).json({
+       success: false,
+       result: null,
+       message: `The Max Amount you can add is ${maxAmount}`,
+     });
+   }
+-  req.body['createdBy'] = req.admin._id;
+ 
+-  const result = await Model.create(req.body);
++  // Roll the reservation back if we cannot finish persisting the payment.
++  const rollback = async () => {
++    await Invoice.findOneAndUpdate(
++      { _id: req.body.invoice },
++      [
++        {
++          $set: {
++            credit: { $subtract: [{ $ifNull: ['$credit', 0] }, amount] },
++            payment: {
++              $filter: {
++                input: { $ifNull: ['$payment', []] },
++                as: 'p',
++                cond: { $ne: ['$$p', paymentId] },
++              },
++            },
++          },
++        },
++        paymentStatusStage,
++      ],
++      { new: true }
++    ).exec();
++  };
++
++  // Allocate the payment number authoritatively, server-side, by atomically
++  // bumping the finance counter (the UI form never sends a real number). Fail
++  // closed if the counter is missing.
++  const numberSetting = await increaseBySettingKey({ settingKey: 'last_payment_number' });
++  if (!numberSetting) {
++    await rollback();
++    return res.status(500).json({
++      success: false,
++      result: null,
++      message: 'Payment numbering is unavailable (finance setting last_payment_number missing).',
++    });
++  }
++
++  let result;
++  try {
++    result = await Model.create({
++      ...req.body,
++      _id: paymentId,
++      number: numberSetting.settingValue,
++      createdBy: req.admin._id,
++    });
++  } catch (e) {
++    await rollback();
++    return res.status(500).json({
++      success: false,
++      result: null,
++      message: 'Payment could not be recorded.',
++    });
++  }
+ 
+   const fileId = 'payment-' + result._id + '.pdf';
+   const updatePath = await Model.findOneAndUpdate(
+-    {
+-      _id: result._id.toString(),
+-      removed: false,
+-    },
++    { _id: result._id.toString(), removed: false },
+     { pdf: fileId },
+-    {
+-      new: true,
+-    }
+-  ).exec();
+-  // Returning successfull response
+-
+-  const { _id: paymentId, amount } = result;
+-  const { id: invoiceId, total, discount, credit } = currentInvoice;
+-
+-  let paymentStatus =
+-    calculate.sub(total, discount) === calculate.add(credit, amount)
+-      ? 'paid'
+-      : calculate.add(credit, amount) > 0
+-      ? 'partially'
+-      : 'unpaid';
+-
+-  const invoiceUpdate = await Invoice.findOneAndUpdate(
+-    { _id: req.body.invoice },
+-    {
+-      $push: { payment: paymentId.toString() },
+-      $inc: { credit: amount },
+-      $set: { paymentStatus: paymentStatus },
+-    },
+-    {
+-      new: true, // return the new result instead of the old one
+-      runValidators: true,
+-    }
++    { new: true }
+   ).exec();
+ 
+   return res.status(200).json({
+diff --git a/frontend/src/apps/IdurarOs.jsx b/frontend/src/apps/IdurarOs.jsx
+index 517aa952..440359f8 100644
+--- a/frontend/src/apps/IdurarOs.jsx
++++ b/frontend/src/apps/IdurarOs.jsx
+@@ -6,6 +6,7 @@ import { AppContextProvider } from '@/context/appContext';
+ import PageLoader from '@/components/PageLoader';
+ import AuthRouter from '@/router/AuthRouter';
+ import Localization from '@/locale/Localization';
++import WebMcp from '@/webmcp/WebMcp';
+ import { notification } from 'antd';
+ 
+ const ErpApp = lazy(() => import('./ErpApp'));
+@@ -64,10 +65,16 @@ export default function IdurarOs() {
+   if (!isLoggedIn)
+     return (
+       <Localization>
++        <WebMcp />
+         <AuthRouter />
+       </Localization>
+     );
+   else {
+-    return <DefaultApp />;
++    return (
++      <>
++        <WebMcp />
++        <DefaultApp />
++      </>
++    );
+   }
+ }
+diff --git a/frontend/src/webmcp/WebMcp.jsx b/frontend/src/webmcp/WebMcp.jsx
+new file mode 100644
+index 00000000..e569477f
+--- /dev/null
++++ b/frontend/src/webmcp/WebMcp.jsx
+@@ -0,0 +1,68 @@
++// Registers the app's WebMCP tools (document.modelContext / navigator.modelContext)
++// and keeps the registered set in sync with the auth state:
++//   - ask_site: always registered.
++//   - signed out: sign_in (the only way into the workspace for a tools-only
++//     agent) and a guidance-stage create_invoice.
++//   - signed in: the full CRM tool set.
++// Each auth state registers under its own AbortController; flipping auth aborts
++// the previous registrations (the browser drops them) and registers the new set.
++// No-ops when the browser has no modelContext.
++
++import { useEffect, useRef } from 'react';
++import { useDispatch, useSelector } from 'react-redux';
++import { useNavigate } from 'react-router-dom';
++
++import { selectAuth } from '@/redux/auth/selectors';
++import { buildBaseTools, buildAnonymousTools, buildCrmTools } from './tools';
++
++const getModelContext = () =>
++  (typeof document !== 'undefined' && document.modelContext) ||
++  (typeof navigator !== 'undefined' && navigator.modelContext) ||
++  null;
++
++function registerTools(tools, signal) {
++  const ctx = getModelContext();
++  if (!ctx || typeof ctx.registerTool !== 'function') return;
++  for (const tool of tools) {
++    try {
++      const registration = ctx.registerTool(tool, { signal });
++      // Some builds reject async (e.g. duplicate name) — never crash the app.
++      if (registration && typeof registration.catch === 'function') {
++        registration.catch((error) => {
++          if (!signal.aborted) {
++            console.warn('WebMCP registration failed:', tool.name, error);
++          }
++        });
++      }
++    } catch (error) {
++      if (!signal.aborted) {
++        console.warn('WebMCP registration failed:', tool.name, error);
++      }
++    }
++  }
++}
++
++export default function WebMcp() {
++  const { isLoggedIn } = useSelector(selectAuth);
++  const navigate = useNavigate();
++  const dispatch = useDispatch();
++  const navigateRef = useRef(navigate);
++  navigateRef.current = navigate;
++
++  useEffect(() => {
++    if (!getModelContext()) return undefined;
++    const controller = new AbortController();
++    registerTools(buildBaseTools(), controller.signal);
++    return () => controller.abort();
++  }, []);
++
++  useEffect(() => {
++    if (!getModelContext()) return undefined;
++    const controller = new AbortController();
++    const ui = { navigate: (to) => navigateRef.current(to), dispatch };
++    registerTools(isLoggedIn ? buildCrmTools(ui) : buildAnonymousTools(ui), controller.signal);
++    return () => controller.abort();
++  }, [isLoggedIn]);
++
++  return null;
++}
+diff --git a/frontend/src/webmcp/content.js b/frontend/src/webmcp/content.js
+new file mode 100644
+index 00000000..c1a42ea1
+--- /dev/null
++++ b/frontend/src/webmcp/content.js
+@@ -0,0 +1,123 @@
++// Content bundle for the ask_site WebMCP tool.
++// Sections mirror what the app itself ships (pages, README, in-app copy) so
++// answers stay grounded in this product — the calling agent composes the
++// final answer from the returned sections.
++
++const SECTIONS = [
++  {
++    title: 'What is IDURAR ERP CRM',
++    source: '/about',
++    keywords: ['idurar', 'erp', 'crm', 'product', 'open source', 'tech', 'stack', 'built', 'node', 'react', 'mongodb', 'technology'],
++    text: 'IDURAR is a free open-source ERP/CRM application for accounting, invoicing and client management, built on Node.js (Express + MongoDB) and React (Ant Design). It is self-hosted back-office software: a business team signs in to manage customers, invoices and payments. IDURAR (idurarapp.com) also offers a hosted cloud and enterprise version.',
++  },
++  {
++    title: 'Signing in and accounts',
++    source: '/login',
++    keywords: ['login', 'log in', 'sign in', 'sign up', 'signing', 'signin', 'signup', 'account', 'password', 'register', 'forgot', 'access', 'credentials'],
++    text: 'Access requires signing in at /login with an email and password. There is no self-serve signup: accounts are provisioned by the workspace administrator (a default owner admin account is created when the server is set up). A "Forgot Password" flow is available at /forgetpassword. All CRM data and tools are available only after signing in.',
++  },
++  {
++    title: 'Modules',
++    source: '/',
++    keywords: ['modules', 'features', 'navigation', 'menu', 'capabilities', 'functionality'],
++    text: 'After signing in the app offers: Dashboard (financial overview), Customers (client records), Invoices (create, send, track and download as PDF), Payments (record and track payments against invoices), and Settings (company info, currency, finance settings). The invoice list is the home screen.',
++  },
++  {
++    title: 'Invoices',
++    source: '/invoice',
++    keywords: ['invoice', 'invoicing', 'billing', 'bill', 'pdf', 'status', 'draft', 'sent', 'overdue', 'due', 'cancelled', 'refunded'],
++    text: 'An invoice belongs to one client and holds line items (name, quantity, unit price), a tax rate, an issue date and a due (expired) date. Totals are computed by the server. Workflow status is one of: draft, pending, sent, refunded, cancelled, on hold. Payment status is tracked separately as unpaid, partially or paid, and updates automatically as payments are recorded. Invoices can be downloaded as PDF and emailed to the client.',
++  },
++  {
++    title: 'Recording payments',
++    source: '/payment',
++    keywords: ['payment', 'payments', 'pay', 'paid', 'record', 'receive', 'received', 'partial', 'partially', 'balance', 'credit', 'installment', 'settle'],
++    text: 'Payments are recorded against a specific invoice. Partial payments are supported: each payment increases the invoice\'s paid amount (credit) and the payment status moves from unpaid to partially to paid. A payment larger than the invoice\'s outstanding balance is rejected. Each payment stores a date, amount, optional reference and description.',
++  },
++  {
++    title: 'Customers (clients)',
++    source: '/customer',
++    keywords: ['customer', 'client', 'contact', 'email', 'phone', 'address'],
++    text: 'The Customers module stores the client records that invoices and payments attach to: name, email, phone, country and address. Clients can be searched by name and managed (create, update, delete) from the Customers page.',
++  },
++  {
++    title: 'Dashboard and reporting',
++    source: '/',
++    keywords: ['dashboard', 'report', 'reports', 'reporting', 'summary', 'overview', 'statistics', 'stats', 'revenue', 'month', 'monthly', 'week', 'year', 'performance'],
++    text: 'The Dashboard summarizes finances for a period (week, month or year): total invoiced amount, amount still due, invoice status breakdown, payments received, and client activity.',
++  },
++  {
++    title: 'Settings',
++    source: '/settings',
++    keywords: ['settings', 'currency', 'company', 'configuration', 'configure', 'tax', 'numbering'],
++    text: 'Settings cover company information (name, address, contact), general app settings, currency display, and finance settings such as the last invoice and payment numbers used for auto-numbering.',
++  },
++  {
++    title: 'Pricing and license',
++    source: 'README',
++    keywords: ['price', 'pricing', 'cost', 'free', 'license', 'licensing', 'commercial', 'enterprise', 'cloud', 'hosted'],
++    text: 'The self-hosted app is free and open source. IDURAR offers commercial options — a hosted cloud version and enterprise customization services — via idurarapp.com.',
++  },
++];
++
++// Structural words that carry no topical signal — never let them score.
++const STOPWORDS = new Set([
++  'the', 'and', 'for', 'are', 'can', 'you', 'your', 'our', 'how', 'what', 'which',
++  'where', 'when', 'why', 'who', 'this', 'that', 'these', 'those', 'does', 'did',
++  'with', 'have', 'has', 'had', 'will', 'was', 'were', 'they', 'them', 'their',
++  'there', 'here', 'about', 'into', 'from', 'some', 'any', 'all', 'not', 'but',
++  'out', 'get', 'its', 'also', 'only', 'more', 'than', 'then', 'too', 'very',
++  'just', 'like', 'still', 'after', 'before', 'been', 'both', 'each', 'other',
++  'such', 'own', 'same', 'see', 'use', 'exist', 'exists', 'need', 'want', 'should',
++  'would', 'could', 'may', 'might',
++]);
++
++const tokenize = (s) =>
++  s
++    .toLowerCase()
++    .split(/[^a-z0-9]+/)
++    .filter((w) => w.length > 2 && !STOPWORDS.has(w));
++
++// A single-word keyword matches a query token exactly or by shared prefix
++// ("payment" ~ "payments"); phrase keywords match as substrings of the query.
++const matchesKeyword = (kw, tokens, q) => {
++  if (kw.includes(' ')) return q.includes(kw);
++  return tokens.some(
++    (t) => t === kw || (kw.length >= 4 && t.startsWith(kw)) || (t.length >= 4 && kw.startsWith(t))
++  );
++};
++
++// Scores: keyword +3 (phrase +4), title word +2, body substring +1 (tokens of
++// 4+ chars only). Sections below MIN_SCORE are noise — returning them for an
++// off-topic question would be a false positive, so the tool reports an honest
++// miss instead (validated against a query battery; see the reference PR).
++const MIN_SCORE = 3;
++
++export function searchContent(query) {
++  const q = String(query).toLowerCase();
++  const tokens = tokenize(q);
++  const scored = SECTIONS.map((section) => {
++    let score = 0;
++    for (const kw of section.keywords) {
++      if (matchesKeyword(kw, tokens, q)) score += kw.includes(' ') ? 4 : 3;
++    }
++    const titleTokens = tokenize(section.title);
++    const body = section.text.toLowerCase();
++    for (const t of tokens) {
++      if (titleTokens.some((w) => w === t || w.startsWith(t) || t.startsWith(w))) score += 2;
++      if (t.length >= 4 && body.includes(t)) score += 1;
++    }
++    return { section, score };
++  })
++    .filter((s) => s.score >= MIN_SCORE)
++    .sort((a, b) => b.score - a.score)
++    .slice(0, 3);
++
++  return scored.map(({ section }) => ({
++    title: section.title,
++    source: section.source,
++    content: section.text,
++  }));
++}
++
++export const CONTENT_TOPICS = SECTIONS.map((s) => s.title);
+diff --git a/frontend/src/webmcp/tools.js b/frontend/src/webmcp/tools.js
+new file mode 100644
+index 00000000..e75708d8
+--- /dev/null
++++ b/frontend/src/webmcp/tools.js
+@@ -0,0 +1,609 @@
++// WebMCP tool definitions for IDURAR ERP CRM.
++//
++// Tools answer what a person working their books beside a browser agent
++// actually asks: "find client X", "what's still unpaid?", "draft an invoice
++// for Acme", "record their wire payment". Every working tool's execute() rides
++// the app's own authenticated request layer (@/request — axios + the session
++// JWT), so no working tool handles credentials, and state-changing tools
++// navigate the UI to the affected record so the user sees the result.
++//
++// sign_in is the one deliberate exception: the CRM tools do not exist until the
++// workspace is authenticated, so an agent driving this site purely through
++// WebMCP has no way in. It takes the credentials the user hands it and passes
++// them straight to the app's own login action — the same path the sign-in form
++// uses — and stores nothing itself.
++//
++// Registration is auth-conditioned in WebMcp.jsx: ask_site is always on;
++// logged out, sign_in plus a guidance-stage create_invoice are exposed; the
++// full CRM set registers on login and is aborted (unregistered) on logout.
++
++import { request } from '@/request';
++import { erp } from '@/redux/erp/actions';
++import { login } from '@/redux/auth/actions';
++import { settingsAction } from '@/redux/settings/actions';
++import { searchContent, CONTENT_TOPICS } from './content';
++
++// Navigate to an invoice and refresh the read view (covers the case where the
++// page is already showing that invoice — same-URL navigation would not refetch).
++const showInvoice = ({ navigate, dispatch }, id) => {
++  navigate(`/invoice/read/${id}`);
++  dispatch(erp.read({ entity: 'invoice', id }));
++};
++
++const textResult = (payload) => ({
++  content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }],
++});
++
++const failure = (error, extra = {}) => textResult({ success: false, error, ...extra });
++
++const isObjectId = (s) => typeof s === 'string' && /^[0-9a-fA-F]{24}$/.test(s);
++
++const round2 = (n) => Math.round(n * 100) / 100;
++
++const isoDate = (value, fallback) => {
++  const d = value ? new Date(value) : fallback;
++  return Number.isNaN(d.getTime()) ? null : d;
++};
++
++const outstanding = (inv) => round2((inv.total || 0) - (inv.discount || 0) - (inv.credit || 0));
++
++const invoiceSummaryRow = (inv) => ({
++  id: inv._id,
++  number: inv.number,
++  year: inv.year,
++  client: inv.client?.name || inv.client,
++  date: inv.date,
++  due_date: inv.expiredDate,
++  total: inv.total,
++  paid: inv.credit || 0,
++  balance: outstanding(inv),
++  status: inv.status,
++  payment_status: inv.paymentStatus,
++  items: (inv.items || []).map((it) => ({
++    name: it.itemName || it.name,
++    quantity: it.quantity,
++    price: it.price,
++    total: it.total,
++  })),
++});
++
++async function resolveClient(ref) {
++  if (isObjectId(ref)) {
++    const res = await request.read({ entity: 'client', id: ref });
++    if (res?.success && res.result) return { client: res.result };
++    return { error: `No client found with id ${ref}.` };
++  }
++  const res = await request.search({ entity: 'client', options: { q: ref, fields: 'name,email' } });
++  const matches = res?.success && Array.isArray(res.result) ? res.result : [];
++  if (matches.length === 0) {
++    return { error: `No client matches "${ref}". Use find_clients to look up existing clients.` };
++  }
++  const exact = matches.find((c) => c.name?.toLowerCase() === String(ref).toLowerCase());
++  if (exact) return { client: exact };
++  if (matches.length === 1) return { client: matches[0] };
++  return {
++    error: `Multiple clients match "${ref}": ${matches
++      .map((c) => c.name)
++      .join(', ')}. Use the exact name or the client id.`,
++  };
++}
++
++// Resolve an invoice reference to exactly one invoice, or refuse. Accepts a
++// 24-char object id (preferred — always unique), a bare invoice number, or a
++// "number/year" form. Invoice numbers are NOT globally unique (they can repeat
++// across years, or be edited by hand), so a bare number that matches more than
++// one invoice is rejected with the candidates rather than silently guessing —
++// this feeds record_payment, and picking the wrong invoice would misapply a
++// payment. Parsing is strict: "2abc" is rejected, not read as 2.
++async function resolveInvoice(ref) {
++  const raw = String(ref ?? '').trim();
++  if (isObjectId(raw)) {
++    const res = await request.read({ entity: 'invoice', id: raw });
++    if (res?.success && res.result) return { invoice: res.result };
++    return { error: `No invoice found with id ${raw}.` };
++  }
++  const parsed = raw.match(/^(\d+)(?:\s*\/\s*(\d+))?$/);
++  if (!parsed) {
++    return {
++      error: `"${ref}" is not a valid invoice reference. Use an invoice id, a number (e.g. "42"), or number/year (e.g. "42/2026").`,
++    };
++  }
++  const number = parseInt(parsed[1], 10);
++  const year = parsed[2] ? parseInt(parsed[2], 10) : null;
++  const res = await request.list({
++    entity: 'invoice',
++    options: { filter: 'number', equal: number, items: 50 },
++  });
++  let matches = res?.success && Array.isArray(res.result) ? res.result : [];
++  // Re-filter client-side: the list endpoint matches broadly, so pin to the
++  // exact number (and year when given) before deciding uniqueness.
++  matches = matches.filter((inv) => inv.number === number);
++  if (year != null) matches = matches.filter((inv) => inv.year === year);
++  if (matches.length === 0) {
++    return {
++      error:
++        year != null
++          ? `No invoice #${number}/${year} found. Use list_invoices to see existing invoices.`
++          : `No invoice with number ${number} found. Use list_invoices to see existing invoices.`,
++    };
++  }
++  if (matches.length > 1) {
++    const candidates = matches
++      .map((inv) => `#${inv.number}/${inv.year} (id ${inv._id})`)
++      .join(', ');
++    return {
++      error: `Invoice number ${number} is ambiguous — it matches ${matches.length} invoices: ${candidates}. Re-run with number/year (e.g. "${number}/${matches[0].year}") or the invoice id.`,
++    };
++  }
++  return { invoice: matches[0] };
++}
++
++const askSiteTool = {
++  name: 'ask_site',
++  description:
++    'Answer questions about the IDURAR ERP CRM app itself from its own pages and docs: what the product is, its modules (dashboard, customers, invoices, payments, settings), how invoicing and payment recording work, how to sign in, licensing/pricing. Read-only; returns the most relevant content sections with their source pages so you can compose an answer. It does NOT read business records — after signing in, use find_clients / list_invoices for that.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      query: { type: 'string', description: 'The visitor question or keywords.' },
++    },
++    required: ['query'],
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ query }) {
++    const sections = searchContent(String(query ?? ''));
++    if (sections.length === 0) {
++      return textResult({
++        success: true,
++        sections: [],
++        note:
++          'No app content matches this question. Topics covered: ' +
++          CONTENT_TOPICS.join('; ') +
++          '.',
++      });
++    }
++    return textResult({ success: true, sections });
++  },
++};
++
++// Two-stage conversion entry: this registration exists only while signed out.
++const buildCreateInvoiceEntryTool = ({ navigate }) => ({
++  name: 'create_invoice',
++  description:
++    'Create a new invoice for a client in this IDURAR workspace. Signing in is required first: while signed out, calling this opens the sign-in page and returns guidance instead of creating anything. After the user signs in, this tool is replaced by the fully functional version.',
++  inputSchema: { type: 'object', properties: {} },
++  annotations: { readOnlyHint: true },
++  async execute() {
++    navigate('/login');
++    return textResult({
++      success: false,
++      error: 'Not signed in.',
++      guidance:
++        'Creating invoices requires an authenticated session. The sign-in page is now open — ask the user to sign in with their workspace account; the full create_invoice tool (plus client, invoice and payment tools) registers right after login.',
++    });
++  },
++});
++
++const buildCreateInvoiceTool = (ui) => ({
++  name: 'create_invoice',
++  description:
++    'Create a real invoice for an existing client in this workspace. Give the client name (as stored in Customers) or client id, plus line items with quantity and unit price; the server computes totals and the next invoice number is assigned automatically. This saves a new invoice record and navigates the page to it so the user sees the result. Returns the created invoice id, number, totals and payment status. Use find_clients first if unsure of the exact client name.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      client: {
++        type: 'string',
++        description: 'Client name exactly as stored in Customers, or a client id.',
++      },
++      items: {
++        type: 'array',
++        minItems: 1,
++        description: 'Invoice line items.',
++        items: {
++          type: 'object',
++          properties: {
++            name: { type: 'string', description: 'Item or service name.' },
++            description: { type: 'string' },
++            quantity: {
++              type: 'number',
++              exclusiveMinimum: 0,
++              description: 'Must be greater than 0.',
++            },
++            price: { type: 'number', minimum: 0, description: 'Unit price (0 or more).' },
++          },
++          required: ['name', 'quantity', 'price'],
++        },
++      },
++      status: {
++        type: 'string',
++        enum: ['draft', 'pending', 'sent'],
++        description: 'Workflow status. Default: draft.',
++      },
++      date: { type: 'string', description: 'Invoice date (YYYY-MM-DD). Default: today.' },
++      expired_date: {
++        type: 'string',
++        description: 'Due date (YYYY-MM-DD). Default: 30 days after the invoice date.',
++      },
++      tax_rate: {
++        type: 'number',
++        minimum: 0,
++        maximum: 100,
++        description: 'Tax rate in percent (0–100). Default: 0.',
++      },
++      notes: { type: 'string' },
++    },
++    required: ['client', 'items'],
++  },
++  annotations: { readOnlyHint: false, untrustedContentHint: true },
++  async execute({ client, items, status = 'draft', date, expired_date, tax_rate = 0, notes = '' }) {
++    const resolved = await resolveClient(client);
++    if (resolved.error) return failure(resolved.error);
++
++    if (!Array.isArray(items) || items.length === 0) {
++      return failure('At least one line item (name, quantity, price) is required.');
++    }
++    // Guard numeric inputs before sending: the server trusts these amounts for
++    // totals, so reject non-positive quantities, negative prices and out-of-range
++    // tax rates rather than persisting a nonsensical invoice.
++    for (const [i, it] of items.entries()) {
++      if (!(Number(it.quantity) > 0)) {
++        return failure(`Line item ${i + 1} ("${it.name ?? ''}") needs a quantity greater than 0.`);
++      }
++      if (!(Number(it.price) >= 0)) {
++        return failure(`Line item ${i + 1} ("${it.name ?? ''}") needs a price of 0 or more.`);
++      }
++    }
++    if (!(Number(tax_rate) >= 0 && Number(tax_rate) <= 100)) {
++      return failure('tax_rate must be between 0 and 100 (percent).');
++    }
++    const invoiceDate = isoDate(date, new Date());
++    if (!invoiceDate) return failure(`Invalid date: "${date}".`);
++    const dueDate = isoDate(expired_date, new Date(invoiceDate.getTime() + 30 * 24 * 3600 * 1000));
++    if (!dueDate) return failure(`Invalid expired_date: "${expired_date}".`);
++
++    // Number is NOT sent: the server allocates it atomically from the finance
++    // counter (see invoiceController/create.js), so concurrent creates can't
++    // collide. Derive year in UTC to match the ISO date we send — a local
++    // getFullYear() near New Year in a negative-offset zone could disagree with
++    // the stored date's year.
++    const jsonData = {
++      client: resolved.client._id,
++      year: invoiceDate.getUTCFullYear(),
++      status,
++      notes,
++      date: invoiceDate.toISOString(),
++      expiredDate: dueDate.toISOString(),
++      taxRate: tax_rate,
++      items: items.map((it) => ({
++        itemName: it.name,
++        description: it.description || '',
++        quantity: it.quantity,
++        price: it.price,
++        total: round2(it.quantity * it.price),
++      })),
++    };
++    const res = await request.create({ entity: 'invoice', jsonData });
++    if (!res?.success || !res.result) {
++      return failure(res?.message || 'Invoice creation failed.');
++    }
++    const inv = res.result;
++    // The server bumped last_invoice_number during allocation; refresh the
++    // settings store so the UI's own create form (which prefills from it)
++    // suggests the next free number instead of colliding with this one.
++    ui.dispatch(settingsAction.list({ entity: 'setting' }));
++    showInvoice(ui, inv._id);
++    return textResult({
++      success: true,
++      invoice: { ...invoiceSummaryRow(inv), client: resolved.client.name },
++      ui: 'The created invoice is now open on the page.',
++    });
++  },
++});
++
++const findClientsTool = {
++  name: 'find_clients',
++  description:
++    "Search this workspace's customer records by name or email (case-insensitive substring). Read-only. Returns up to 20 matching clients with id, name, email, phone and country — use the id or exact name with create_invoice, list_invoices or record_payment.",
++  inputSchema: {
++    type: 'object',
++    properties: {
++      query: { type: 'string', description: 'Part of the client name or email.' },
++    },
++    required: ['query'],
++  },
++  annotations: { readOnlyHint: true, untrustedContentHint: true },
++  async execute({ query }) {
++    const res = await request.search({
++      entity: 'client',
++      options: { q: String(query ?? ''), fields: 'name,email' },
++    });
++    const matches = res?.success && Array.isArray(res.result) ? res.result : [];
++    if (matches.length === 0) {
++      return textResult({
++        success: true,
++        clients: [],
++        note: `No clients match "${query}".`,
++      });
++    }
++    return textResult({
++      success: true,
++      clients: matches.map((c) => ({
++        id: c._id,
++        name: c.name,
++        email: c.email,
++        phone: c.phone,
++        country: c.country,
++      })),
++    });
++  },
++};
++
++const listInvoicesTool = {
++  name: 'list_invoices',
++  description:
++    "List this workspace's invoices, optionally filtered by payment status (by payment state), workflow status (draft, pending, sent, refunded, cancelled, on hold) and/or client name. Read-only; searches the most recent ~100 invoices. Returns per invoice: number, client, dates, total, amount paid, outstanding balance, statuses, id, and its line items (name, quantity, price). Use it to look up invoices and their line items.",
++  inputSchema: {
++    type: 'object',
++    properties: {
++      payment_status: {
++        type: 'string',
++        enum: ['unpaid', 'partially', 'paid'],
++        description: 'Only invoices with this payment status.',
++      },
++      status: {
++        type: 'string',
++        enum: ['draft', 'pending', 'sent', 'refunded', 'cancelled', 'on hold'],
++        description: 'Only invoices with this workflow status.',
++      },
++      client: { type: 'string', description: 'Only invoices for this client (name or id).' },
++      limit: { type: 'number', description: 'Max rows to return. Default 20.' },
++    },
++  },
++  annotations: { readOnlyHint: true, untrustedContentHint: true },
++  async execute({ payment_status, status, client, limit = 20 } = {}) {
++    // Ask the server for newest-first order (by creation time) so the 100-row
++    // window genuinely holds the most recent invoices. The endpoint's default
++    // sort is a non-existent `enabled` field (arbitrary order), which would let
++    // the window miss recent invoices once there are more than 100. Sort value
++    // must be a word the API accepts ('desc') — query params arrive as strings
++    // and Mongoose rejects a bare "-1".
++    const options = { items: 100, sortBy: 'created', sortValue: 'desc' };
++    let clientName = null;
++    if (client) {
++      const resolved = await resolveClient(client);
++      if (resolved.error) return failure(resolved.error);
++      clientName = resolved.client.name;
++      options.filter = 'client';
++      options.equal = resolved.client._id;
++    } else if (payment_status) {
++      options.filter = 'paymentStatus';
++      options.equal = payment_status;
++    } else if (status) {
++      options.filter = 'status';
++      options.equal = status;
++    }
++    const res = await request.list({ entity: 'invoice', options });
++    let rows = res?.success && Array.isArray(res.result) ? res.result : [];
++    if (payment_status) rows = rows.filter((r) => r.paymentStatus === payment_status);
++    if (status) rows = rows.filter((r) => r.status === status);
++    rows.sort((a, b) => new Date(b.created) - new Date(a.created));
++    rows = rows.slice(0, Math.max(1, limit));
++    if (rows.length === 0) {
++      return textResult({
++        success: true,
++        invoices: [],
++        note: 'No invoices match these filters.',
++        filters: { payment_status, status, client: clientName || client },
++      });
++    }
++    return textResult({
++      success: true,
++      count: rows.length,
++      invoices: rows.map(invoiceSummaryRow),
++    });
++  },
++};
++
++const buildRecordPaymentTool = (ui) => ({
++  name: 'record_payment',
++  description:
++    "Record a payment received against an existing invoice, by invoice number or id. This writes a real payment record and updates the invoice's paid amount and payment status (unpaid → partially → paid); an amount above the outstanding balance is rejected. Navigates the page to the updated invoice so the user sees the new status. Returns the payment id plus the invoice's updated balance and payment status.",
++  inputSchema: {
++    type: 'object',
++    properties: {
++      invoice: {
++        type: 'string',
++        description:
++          'Invoice id, number (e.g. "42"), or number/year (e.g. "42/2026"). If a bare number matches more than one invoice, the call is rejected — pass number/year or the id.',
++      },
++      amount: {
++        type: 'number',
++        exclusiveMinimum: 0,
++        description: 'Payment amount received (> 0).',
++      },
++      date: { type: 'string', description: 'Payment date (YYYY-MM-DD). Default: today.' },
++      ref: { type: 'string', description: 'Payment reference, e.g. a wire or check number.' },
++      description: { type: 'string' },
++    },
++    required: ['invoice', 'amount'],
++  },
++  annotations: { readOnlyHint: false, untrustedContentHint: true },
++  async execute({ invoice, amount, date, ref = '', description = '' }) {
++    const resolved = await resolveInvoice(invoice);
++    if (resolved.error) return failure(resolved.error);
++    const inv = resolved.invoice;
++    const balance = outstanding(inv);
++    if (!(amount > 0)) return failure('The payment amount must be greater than 0.');
++    // Fast, friendly pre-check against the balance we just read. This is
++    // advisory only: the authoritative no-overpay guard is server-side — the
++    // payment endpoint increments credit with an atomic balance predicate, so
++    // even two concurrent record_payment calls can never overpay (the loser is
++    // rejected). The number is allocated server-side too, so none is sent here.
++    if (amount > balance) {
++      return failure(
++        `Invoice #${inv.number}/${inv.year} has an outstanding balance of ${balance} — cannot record ${amount}.`,
++        { invoice: invoiceSummaryRow(inv) }
++      );
++    }
++    const paymentDate = isoDate(date, new Date());
++    if (!paymentDate) return failure(`Invalid date: "${date}".`);
++
++    const res = await request.create({
++      entity: 'payment',
++      jsonData: {
++        client: inv.client?._id || inv.client,
++        invoice: inv._id,
++        date: paymentDate.toISOString(),
++        amount,
++        ref,
++        description,
++      },
++    });
++    if (!res?.success || !res.result) {
++      return failure(res?.message || 'Payment could not be recorded.');
++    }
++    showInvoice(ui, inv._id);
++    // Re-read the invoice so we report its REAL post-payment balance/status.
++    // Retry once; if the refresh still fails, say so rather than echoing the
++    // pre-payment snapshot as if it were updated.
++    let refreshed = null;
++    for (let attempt = 0; attempt < 2 && !refreshed; attempt += 1) {
++      const updated = await request.read({ entity: 'invoice', id: inv._id });
++      if (updated?.success && updated.result) refreshed = updated.result;
++    }
++    if (!refreshed) {
++      return textResult({
++        success: true,
++        payment: { id: res.result._id, number: res.result.number, amount, ref },
++        invoice: null,
++        warning:
++          'Payment was recorded, but the updated invoice could not be reloaded — open the invoice (now on screen) to see its current balance and status.',
++        ui: 'The invoice page is now open.',
++      });
++    }
++    return textResult({
++      success: true,
++      payment: { id: res.result._id, number: res.result.number, amount, ref },
++      invoice: invoiceSummaryRow(refreshed),
++      ui: 'The updated invoice is now open on the page.',
++    });
++  },
++});
++
++const financialSummaryTool = {
++  name: 'get_financial_summary',
++  description:
++    "Read-only snapshot of this workspace's finances for a period (week, month or year; default month): total invoiced, amount still due, invoice status breakdown, payments received, and client activity — the same numbers as the dashboard. Use it for finance questions.",
++  inputSchema: {
++    type: 'object',
++    properties: {
++      period: { type: 'string', enum: ['week', 'month', 'year'], description: 'Default: month.' },
++    },
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ period = 'month' } = {}) {
++    const [inv, pay, cli] = await Promise.all([
++      request.summary({ entity: 'invoice', options: { type: period } }),
++      request.summary({ entity: 'payment', options: { type: period } }),
++      request.summary({ entity: 'client' }),
++    ]);
++    const failedSections = [
++      !inv?.success && 'invoices',
++      !pay?.success && 'payments_received',
++      !cli?.success && 'clients',
++    ].filter(Boolean);
++    return textResult({
++      success: failedSections.length === 0,
++      ...(failedSections.length
++        ? {
++            partial: true,
++            failed_sections: failedSections,
++            note: 'The failed sections are unavailable right now.',
++          }
++        : {}),
++      period,
++      invoices: inv?.success
++        ? {
++            invoiced_total: inv.result.total,
++            amount_due: inv.result.total_undue,
++            status_breakdown: inv.result.performance,
++          }
++        : null,
++      payments_received: pay?.success ? pay.result : null,
++      clients: cli?.success ? cli.result : null,
++    });
++  },
++};
++
++// Signed out, every CRM tool is unregistered, so an agent working through
++// WebMCP alone cannot reach the workspace at all — there is nothing to call and
++// no form it can fill. sign_in is the way in: it hands the caller's credentials
++// to the app's own login action (@/redux/auth/actions), which authenticates via
++// the same endpoint the sign-in form posts to and persists the session exactly
++// as a human sign-in would. The auth-state effect in WebMcp.jsx then swaps the
++// anonymous set for the full CRM set. The tool keeps no copy of the password.
++//
++// The login action reports its outcome only through store + persisted state, so
++// success is confirmed by reading back the auth state it writes.
++const readAuthState = () => {
++  try {
++    return JSON.parse(window.localStorage.getItem('auth') || '{}');
++  } catch {
++    return {};
++  }
++};
++
++const buildSignInTool = (ui) => ({
++  name: 'sign_in',
++  description:
++    'Sign in to this workspace with an email and password. Required first: while signed out the client, invoice and payment tools are not registered at all, so nothing else here will work. On success the full set (find_clients, list_invoices, create_invoice, record_payment, get_financial_summary) becomes available immediately — call list_site_tools again to see it.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      email: { type: 'string', description: 'Account email address.' },
++      password: { type: 'string', description: 'Account password.' },
++    },
++    required: ['email', 'password'],
++  },
++  async execute({ email, password } = {}) {
++    if (!email || !password) {
++      return failure('Both email and password are required to sign in.');
++    }
++    if (readAuthState().isLoggedIn === true) {
++      return textResult({
++        success: true,
++        already_signed_in: true,
++        note: 'This workspace is already signed in; the full CRM tool set is registered.',
++      });
++    }
++    try {
++      await ui.dispatch(login({ loginData: { email, password } }));
++    } catch (error) {
++      return failure(`Sign-in request failed: ${error.message}`);
++    }
++    const auth = readAuthState();
++    if (auth.isLoggedIn !== true) {
++      return failure('Sign-in failed — the workspace rejected those credentials.');
++    }
++    return textResult({
++      success: true,
++      account: { email: auth.current?.email, role: auth.current?.role },
++      ui: 'Signed in. The full CRM tool set is now registered — re-list the tools to use it.',
++    });
++  },
++});
++
++// ask_site is registered unconditionally (both auth states).
++export const buildBaseTools = () => [askSiteTool];
++
++// Signed-out: the way in, plus the guidance-stage conversion entry.
++export const buildAnonymousTools = (ui) => [buildSignInTool(ui), buildCreateInvoiceEntryTool(ui)];
++
++// Signed-in: the working CRM set (aborted on logout).
++export const buildCrmTools = (ui) => [
++  buildCreateInvoiceTool(ui),
++  findClientsTool,
++  listInvoicesTool,
++  buildRecordPaymentTool(ui),
++  financialSummaryTool,
++];
