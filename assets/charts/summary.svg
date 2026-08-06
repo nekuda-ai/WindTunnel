@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1034 566" width="1034" height="566" font-family="system-ui,-apple-system,sans-serif" font-size="13">
+<text x="18" y="33" font-size="14" font-weight="600" fill="#1f2328">WindTunnel — WebMCP vs. browser-agent interfaces</text>
+<text x="18" y="50" font-size="11.5" fill="#57606a">49 tasks × 8 sites · 7 methods × 3 attempts · reference run 2026-07-27</text>
+<line x1="18" y1="56" x2="1016" y2="56" stroke="#d0d7de" stroke-width="1"/>
+<text x="18" y="74" font-size="13.5" font-weight="600" fill="#1f2328">Success rate — attempts passed</text>
+<line x1="18" y1="82" x2="504" y2="82" stroke="#d0d7de" stroke-width="1"/>
+<text x="124" y="106" text-anchor="end" font-weight="600" fill="#1f2328">wm-claude</text>
+<rect x="134" y="94" width="264.0" height="16" rx="2" fill="#0099cc"/>
+<text x="406.0" y="107" fill="#59636e" font-variant-numeric="tabular-nums">97%</text>
+<text x="124" y="132" text-anchor="end" font-weight="600" fill="#1f2328">wm-stagehand</text>
+<rect x="134" y="120" width="264.0" height="16" rx="2" fill="#0099cc"/>
+<text x="406.0" y="133" fill="#59636e" font-variant-numeric="tabular-nums">97%</text>
+<text x="124" y="158" text-anchor="end" font-weight="600" fill="#1f2328">wm-gpt</text>
+<rect x="134" y="146" width="254.7" height="16" rx="2" fill="#0099cc"/>
+<text x="396.7" y="159" fill="#59636e" font-variant-numeric="tabular-nums">93%</text>
+<text x="124" y="184" text-anchor="end" font-weight="400" fill="#1f2328">cu-openai</text>
+<rect x="134" y="172" width="246.9" height="16" rx="2" fill="#a8b1ba"/>
+<text x="388.9" y="185" fill="#59636e" font-variant-numeric="tabular-nums">90%</text>
+<text x="124" y="210" text-anchor="end" font-weight="400" fill="#1f2328">dom-browseruse</text>
+<rect x="134" y="198" width="241.7" height="16" rx="2" fill="#a8b1ba"/>
+<text x="383.7" y="211" fill="#59636e" font-variant-numeric="tabular-nums">88%</text>
+<text x="124" y="236" text-anchor="end" font-weight="400" fill="#1f2328">a11y-stagehand</text>
+<rect x="134" y="224" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="380.0" y="237" fill="#59636e" font-variant-numeric="tabular-nums">87%</text>
+<text x="124" y="262" text-anchor="end" font-weight="400" fill="#1f2328">cu-claude</text>
+<rect x="134" y="250" width="213.8" height="16" rx="2" fill="#a8b1ba"/>
+<text x="355.8" y="263" fill="#59636e" font-variant-numeric="tabular-nums">78%</text>
+<text x="530" y="74" font-size="13.5" font-weight="600" fill="#1f2328">Median cost / task</text>
+<line x1="530" y1="82" x2="1016" y2="82" stroke="#d0d7de" stroke-width="1"/>
+<text x="636" y="106" text-anchor="end" font-weight="600" fill="#1f2328">wm-claude</text>
+<rect x="646" y="94" width="16.8" height="16" rx="2" fill="#0099cc"/>
+<text x="670.8" y="107" fill="#59636e" font-variant-numeric="tabular-nums">$0.007</text>
+<text x="636" y="132" text-anchor="end" font-weight="600" fill="#1f2328">wm-stagehand</text>
+<rect x="646" y="120" width="33.1" height="16" rx="2" fill="#0099cc"/>
+<text x="687.1" y="133" fill="#59636e" font-variant-numeric="tabular-nums">$0.014</text>
+<text x="636" y="158" text-anchor="end" font-weight="600" fill="#1f2328">wm-gpt</text>
+<rect x="646" y="146" width="35.3" height="16" rx="2" fill="#0099cc"/>
+<text x="689.3" y="159" fill="#59636e" font-variant-numeric="tabular-nums">$0.015</text>
+<text x="636" y="184" text-anchor="end" font-weight="400" fill="#1f2328">a11y-stagehand</text>
+<rect x="646" y="172" width="101.6" height="16" rx="2" fill="#a8b1ba"/>
+<text x="755.6" y="185" fill="#59636e" font-variant-numeric="tabular-nums">$0.043</text>
+<text x="636" y="210" text-anchor="end" font-weight="400" fill="#1f2328">cu-claude</text>
+<rect x="646" y="198" width="112.1" height="16" rx="2" fill="#a8b1ba"/>
+<text x="766.1" y="211" fill="#59636e" font-variant-numeric="tabular-nums">$0.047</text>
+<text x="636" y="236" text-anchor="end" font-weight="400" fill="#1f2328">cu-openai</text>
+<rect x="646" y="224" width="211.7" height="16" rx="2" fill="#a8b1ba"/>
+<text x="865.7" y="237" fill="#59636e" font-variant-numeric="tabular-nums">$0.090</text>
+<text x="636" y="262" text-anchor="end" font-weight="400" fill="#1f2328">dom-browseruse</text>
+<rect x="646" y="250" width="264.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="918.0" y="263" fill="#59636e" font-variant-numeric="tabular-nums">$0.112</text>
+<text x="18" y="322" font-size="13.5" font-weight="600" fill="#1f2328">Median tokens processed / task</text>
+<line x1="18" y1="330" x2="504" y2="330" stroke="#d0d7de" stroke-width="1"/>
+<text x="124" y="354" text-anchor="end" font-weight="600" fill="#1f2328">wm-gpt</text>
+<rect x="134" y="342" width="17.3" height="16" rx="2" fill="#0099cc"/>
+<text x="159.3" y="355" fill="#59636e" font-variant-numeric="tabular-nums">2,546</text>
+<text x="124" y="380" text-anchor="end" font-weight="600" fill="#1f2328">wm-stagehand</text>
+<rect x="134" y="368" width="24.5" height="16" rx="2" fill="#0099cc"/>
+<text x="166.5" y="381" fill="#59636e" font-variant-numeric="tabular-nums">3,603</text>
+<text x="124" y="406" text-anchor="end" font-weight="600" fill="#1f2328">wm-claude</text>
+<rect x="134" y="394" width="24.6" height="16" rx="2" fill="#0099cc"/>
+<text x="166.6" y="407" fill="#59636e" font-variant-numeric="tabular-nums">3,626</text>
+<text x="124" y="432" text-anchor="end" font-weight="400" fill="#1f2328">a11y-stagehand</text>
+<rect x="134" y="420" width="80.1" height="16" rx="2" fill="#a8b1ba"/>
+<text x="222.1" y="433" fill="#59636e" font-variant-numeric="tabular-nums">11,784</text>
+<text x="124" y="458" text-anchor="end" font-weight="400" fill="#1f2328">cu-openai</text>
+<rect x="134" y="446" width="126.8" height="16" rx="2" fill="#a8b1ba"/>
+<text x="268.8" y="459" fill="#59636e" font-variant-numeric="tabular-nums">18,659</text>
+<text x="124" y="484" text-anchor="end" font-weight="400" fill="#1f2328">dom-browseruse</text>
+<rect x="134" y="472" width="226.7" height="16" rx="2" fill="#a8b1ba"/>
+<text x="368.7" y="485" fill="#59636e" font-variant-numeric="tabular-nums">33,365</text>
+<text x="124" y="510" text-anchor="end" font-weight="400" fill="#1f2328">cu-claude</text>
+<rect x="134" y="498" width="264.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="406.0" y="511" fill="#59636e" font-variant-numeric="tabular-nums">38,856</text>
+<text x="530" y="322" font-size="13.5" font-weight="600" fill="#1f2328">Median agent time / task</text>
+<line x1="530" y1="330" x2="1016" y2="330" stroke="#d0d7de" stroke-width="1"/>
+<text x="636" y="354" text-anchor="end" font-weight="600" fill="#1f2328">wm-gpt</text>
+<rect x="646" y="342" width="40.8" height="16" rx="2" fill="#0099cc"/>
+<text x="694.8" y="355" fill="#59636e" font-variant-numeric="tabular-nums">5.8s</text>
+<text x="636" y="380" text-anchor="end" font-weight="600" fill="#1f2328">wm-claude</text>
+<rect x="646" y="368" width="50.3" height="16" rx="2" fill="#0099cc"/>
+<text x="704.3" y="381" fill="#59636e" font-variant-numeric="tabular-nums">7.2s</text>
+<text x="636" y="406" text-anchor="end" font-weight="600" fill="#1f2328">wm-stagehand</text>
+<rect x="646" y="394" width="93.3" height="16" rx="2" fill="#0099cc"/>
+<text x="747.3" y="407" fill="#59636e" font-variant-numeric="tabular-nums">13.3s</text>
+<text x="636" y="432" text-anchor="end" font-weight="400" fill="#1f2328">cu-openai</text>
+<rect x="646" y="420" width="142.6" height="16" rx="2" fill="#a8b1ba"/>
+<text x="796.6" y="433" fill="#59636e" font-variant-numeric="tabular-nums">20.4s</text>
+<text x="636" y="458" text-anchor="end" font-weight="400" fill="#1f2328">cu-claude</text>
+<rect x="646" y="446" width="217.3" height="16" rx="2" fill="#a8b1ba"/>
+<text x="871.3" y="459" fill="#59636e" font-variant-numeric="tabular-nums">31.1s</text>
+<text x="636" y="484" text-anchor="end" font-weight="400" fill="#1f2328">a11y-stagehand</text>
+<rect x="646" y="472" width="248.6" height="16" rx="2" fill="#a8b1ba"/>
+<text x="902.6" y="485" fill="#59636e" font-variant-numeric="tabular-nums">35.6s</text>
+<text x="636" y="510" text-anchor="end" font-weight="400" fill="#1f2328">dom-browseruse</text>
+<rect x="646" y="498" width="264.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="918.0" y="511" fill="#59636e" font-variant-numeric="tabular-nums">37.8s</text>
+<rect x="18" y="536" width="9" height="9" rx="2" fill="#0099cc"/>
+<text x="32" y="544" font-size="11.5" fill="#57606a">WebMCP</text>
+<rect x="92" y="536" width="9" height="9" rx="2" fill="#a8b1ba"/>
+<text x="106" y="544" font-size="11.5" fill="#57606a">browser interfaces</text>
+</svg>

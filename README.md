@@ -1,8 +1,13 @@
 <div align="center">
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
+  <img src="assets/logo.svg" width="78" height="78" alt="">
+</picture>
+
 # WindTunnel
 
-**A WebMCP benchmark.**
+**Benchmark WebMCP against the other ways a browser agent operates a website.**
 
 [Quick start](#quick-start) · [Results](results/2026-07-27-reference/) · [Methodology](docs/SPEC.md) · [Cost](#cost) · [WebMCP spec](https://github.com/webmachinelearning/webmcp)
 
@@ -78,13 +83,13 @@ Tasks solved per method (majority of 3 attempts):
 | Page structure (a11y) | a11y-stagehand | claude-sonnet-4-6 | 42/49 | 86% |
 | Screenshots | cu-claude | claude-sonnet-4-6 | 39/49 | 80% |
 
-![Success rate](assets/charts/success-rate.svg)
-![Median cost per task](assets/charts/cost-per-task.svg)
-![Median tokens processed per task](assets/charts/tokens-per-task.svg)
-![Median agent time per task](assets/charts/agent-time.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/charts/summary-dark.svg">
+  <img src="assets/charts/summary.svg" alt="Success rate, median cost, median tokens processed, and median agent time per task, by method. WebMCP methods lead on all four.">
+</picture>
 
-<sub>Charts are generated from the reference run's data by
-`node scripts/readme-charts.mjs`.</sub>
+<sub>Generated from the reference run's data by `node scripts/readme-charts.mjs`
+— one panel per theme, so it reads on a light or dark GitHub.</sub>
 
 ### How the advantage scales with journey length
 
