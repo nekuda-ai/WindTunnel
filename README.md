@@ -1,4 +1,18 @@
-# WindTunnel — A WebMCP Benchmark
+<div align="center">
+
+# WindTunnel
+
+**A WebMCP benchmark.**
+
+[Quick start](#quick-start) · [Results](results/2026-07-27-reference/) · [Methodology](docs/SPEC.md) · [Cost](#cost) · [WebMCP spec](https://github.com/webmachinelearning/webmcp)
+
+[![license](https://img.shields.io/badge/license-Apache--2.0-a9c1a0?style=flat-square&labelColor=2f3336)](LICENSE)
+[![benchmark](https://img.shields.io/badge/benchmark-49%20tasks%20%C3%97%208%20sites-a9c1a0?style=flat-square&labelColor=2f3336)](tasks/)
+[![built on](https://img.shields.io/badge/built%20on-WebMCP-a9c1a0?style=flat-square&labelColor=2f3336)](https://github.com/webmachinelearning/webmcp)
+[![tests](https://img.shields.io/github/actions/workflow/status/nekuda-ai/WindTunnel/test.yml?branch=main&style=flat-square&label=tests&color=a9c1a0&labelColor=2f3336)](https://github.com/nekuda-ai/WindTunnel/actions/workflows/test.yml)
+[![results](https://img.shields.io/badge/results-reference%20run%20%C2%B7%201%2C029%20attempts-eaa47c?style=flat-square&labelColor=2f3336)](results/2026-07-27-reference/)
+
+</div>
 
 **WindTunnel measures WebMCP against the other ways a browser agent operates a
 website** — same tasks, same real sites, scored on how often each method
