@@ -7,7 +7,7 @@
 
 # WindTunnel
 
-**Benchmark WebMCP against the other ways a browser agent operates a website.**
+**Benchmark WebMCP against other methods browser agents use to interact with websites.**
 
 [Quick start](#quick-start) · [Results](results/2026-07-27-reference/) · [Methodology](docs/SPEC.md) · [Cost](#cost) · [WebMCP spec](https://github.com/webmachinelearning/webmcp)
 
@@ -19,9 +19,9 @@
 
 </div>
 
-**WindTunnel measures WebMCP against the other ways a browser agent operates a
-website** — same tasks, same real sites, scored on how often each method
-completes the task and what it costs in time, tokens, and dollars.
+**WindTunnel compares WebMCP with other ways browser agents interact with
+websites.** It runs the same tasks on the same sites and measures success rate,
+execution time, token usage, and cost.
 
 ## Quick start
 
