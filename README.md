@@ -4,6 +4,31 @@
 website** — same tasks, same real sites, scored on how often each method
 completes the task and what it costs in time, tokens, and dollars.
 
+## Quick start
+
+Just want the results? [Open the reference
+run.](results/2026-07-27-reference/)
+
+Run the harness for free (Node 20.11+, no key, no Docker):
+
+```bash
+npm ci
+WT_FAKE_LIFECYCLE=1 npm run bench    # no LLM — scores 0/7 by design, just proves it runs
+```
+
+Run the real benchmark — needs Docker, Linux, and a key
+([setup](#running-it-yourself)):
+
+```bash
+npx playwright install chromium
+export ANTHROPIC_API_KEY=sk-ant-...
+npm run bench -- --arms wm-claude,cu-claude --budget 2
+```
+
+Runs the 7 tasks on the three lightweight sites once each, same model on two
+interfaces — WebMCP against screenshots. 14 attempts, well under $1; `--budget`
+hard-stops the run if it isn't.
+
 ## Background: Three ways to operate a website
 
 A browser agent can operate a website through three main interfaces:
@@ -185,7 +210,7 @@ The three WebMCP methods were ~9% of that bill; full breakdown:
 
 ## Running it yourself
 
-**Setup.** You need Docker, Node 20+, and an API key for the model under test:
+**Setup.** You need Docker, Node 20.11+, and an API key for the model under test:
 
 ```bash
 npm install
