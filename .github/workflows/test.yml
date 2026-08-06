@@ -1,0 +1,26 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 20.11 is the declared floor (import.meta.dirname landed there);
+        # 22 is what most contributors actually run.
+        node: ['20.11', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm test
+      # Dry run: no key, no Docker, no browser — exercises task loading,
+      # the arm loop, scoring, and report writing on every push.
+      - run: WT_FAKE_LIFECYCLE=1 npm run bench
