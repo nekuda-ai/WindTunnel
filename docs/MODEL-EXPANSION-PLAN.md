@@ -1,4 +1,4 @@
-# Model expansion plan: GPT-5.6 Luna → Sol → Claude Opus 5
+# Model expansion plan: GPT-5.6 Luna → Sol → Claude Opus 5 → Gemini
 
 Execution plan for adding new frontier models to the benchmark, ordered cheapest-first so
 each phase de-risks the next. Written for a coding agent with access to this repository.
@@ -14,11 +14,14 @@ The reference run (`results/2026-07-27-reference/`) covers two models: `claude-s
 | 1 | GPT-5.6 Luna (fast tier) | `gpt-5.6-luna` | $0.20 / $1.20 | Nearly free (~$2–4 total); validates the whole pipeline; "cheap model + WebMCP beats flagship + pixels" is the strongest version of the benchmark's thesis |
 | 2 | GPT-5.6 Sol (flagship) | `gpt-5.6-sol` | $5 / $30 | Flagship comparison vs the gpt-5.5 baseline (~$33) |
 | 3 (optional) | GPT-5.6 Terra | `gpt-5.6-terra` | $2 / $12 | OpenAI's designated replacement for the retired `computer-use-preview`; natural mid-tier (~$13) |
-| 4 | Claude Opus 5 | `claude-opus-5` | $5 / $25 | Heaviest in cost and wall-clock; run last (~$30 for 2 arms, ~$117 for all 5 Anthropic arms) |
+| 4 | Claude Opus 5 | `claude-opus-5` | $5 / $25 | Heaviest in cost and wall-clock among the config-only phases (~$30 for 2 arms, ~$117 for all 5 Anthropic arms) |
+| 5 | Gemini 3.6 Flash | `gemini-3.6-flash` | $0.75 / $3.75 (promo through 2026-12-31) | **Required — third provider.** Google's GA-recommended computer-use model. Cheap to run (~$5–8) but needs a new adapter, so it's a build-then-run phase |
 
-No new adapters are needed for any of these: all four run through existing arms via the
-`--model <arm>=<model>` override. (Gemini would need a new arm — explicitly out of scope
-here; see "Not in this plan" at the bottom.)
+Phases 1–4 need no new adapters: they run through existing arms via the
+`--model <arm>=<model>` override. Phase 5 (Gemini) requires new arm code — its
+engineering spec is in the Phase 5 section. **The Phase 5 adapter build can start at any
+time in parallel with running Phases 1–4** (it costs engineering, not API budget); only
+its benchmark flight needs to wait for the adapter to pass self-check and smoke.
 
 ## Ground rules
 
@@ -164,6 +167,86 @@ npm run bench -- --preset full --sites full \
 Estimate: ~$87 additional (~$117 for all five arms). Only run 4b if 4a's ranking makes the
 full sweep worth publishing.
 
+## Phase 5 — Gemini 3.6 Flash (required; build + run)
+
+Google is a required third provider for this benchmark. This phase has real engineering in
+it, unlike Phases 1–4. Budget roughly a day of focused agent work for the build, then a
+cheap flight (~$5–8).
+
+### 5a. Model choice
+
+Use **`gemini-3.6-flash`** via the Gemini API. Rationale: it is Google's GA-recommended
+model for computer use (browser + mobile + desktop control); the older
+`gemini-2.5-computer-use-preview-10-2025` is labeled legacy, and the newer
+`gemini-3.7-flash` is not (as of August 2026) documented as a computer-use model.
+**At implementation time, re-check Google's computer-use docs**
+(ai.google.dev/gemini-api/docs/computer-use) — if a newer Flash model has become the
+recommended CU model, use that instead and note the substitution in PROVENANCE.
+
+### 5b. Build the adapters
+
+Two new arms, so Gemini keeps the paired CU-vs-WebMCP design (a CU-only Gemini arm cannot
+support the benchmark's headline comparison):
+
+1. **`arms/cu-gemini.mjs`** — computer use through Google's Computer Use API.
+   - Match repo style: raw `fetch` to the Gemini REST endpoint, no new SDK dependency
+     (mirror the "one endpoint, not the SDK" approach in `arms/cu-openai.mjs`;
+     `package.json` deps are pinned exact on purpose).
+   - Auth via a `GEMINI_API_KEY` env var.
+   - Mirror the harness conventions in `arms/cu-claude.mjs` / `arms/cu-openai.mjs`
+     exactly: 1280×800 viewport, `ATTEMPT_MS = 300_000`, screenshot context window of 3,
+     post-action settle (`waitForTimeout(300)` + `networkidle` capped at 8 s + 2 s after
+     `goto`), 429/5xx retry with exponential backoff honoring `Retry-After`, and step
+     budget from `stepBudget(task, "cu")`.
+   - Google's computer-use actions historically use **normalized 0–1000 coordinates** —
+     verify against current docs and denormalize to the 1280×800 viewport before calling
+     Playwright.
+   - Return the standard result contract: `{ finalText, usage: { input_tokens,
+     output_tokens, cached_input_tokens }, transcript, cost (via costFor), turns,
+     setupMs, budget_exhausted, temperature, caching }`.
+2. **`arms/wm-gemini.mjs`** — WebMCP via Gemini function calling, mirroring
+   `arms/wm-gpt.mjs` (expose the page's WebMCP tools as Gemini function declarations,
+   loop until final text, WebMCP step budget of 12).
+
+Wiring, in `harness/cli.mjs` `ARMS`:
+
+```js
+"cu-gemini": { id: "cu-gemini", run: runCUGemini, model: "gemini-3.6-flash", version: CU_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true },
+"wm-gemini": { id: "wm-gemini", run: runWMGemini, model: "gemini-3.6-flash", version: "gemini-rest", key: "GEMINI_API_KEY", paid: true, webmcp: true },
+```
+
+And in `harness/lib.mjs` `PRICES` (verify the cached-read rate against
+ai.google.dev/gemini-api/docs/pricing at implementation time; note the promo pricing
+ends 2026-12-31 — $1.50/$7.50 thereafter):
+
+```js
+["gemini-3.6-flash", [0.75, 3.75, 0.075, 0]],
+```
+
+Also add both arms to `scripts/arms-selfcheck.mjs` (implement `selfCheck()`) and extend
+the registry tests in `tests/cli.test.mjs`.
+
+### 5c. Smoke, then full flight
+
+Same gate discipline as Phase 0/1:
+
+```sh
+npm run bench -- --preset smoke --sites tailwind-nextjs-blog \
+  --arms cu-gemini,wm-gemini --budget 2 --label gemini-smoke
+```
+
+**Gate 5-smoke:** API accepted, actions land where expected (coordinate denormalization
+is the likely bug), no `cost_estimated` rows, no infra failures.
+
+```sh
+npm run bench -- --preset full --sites full \
+  --arms cu-gemini,wm-gemini \
+  --n 3 --budget 15 --label gemini-full
+```
+
+**Gate 5:** report the same arm-level table as the other phases, now as a three-provider
+comparison (Anthropic / OpenAI / Google, each on CU and WebMCP).
+
 ## Budget summary
 
 | Phase | Est. API cost | Wall clock |
@@ -174,12 +257,12 @@ full sweep worth publishing.
 | 3 Terra (optional) | ~$13 | ~4–6 h |
 | 4a Opus 5 core | ~$30 | ~5–7 h |
 | 4b Opus 5 extended (optional) | ~$87 | ~12–15 h |
-| **Total (1+2+4a)** | **~$65–70** | 3 overnight runs |
+| 5 Gemini 3.6 Flash (required) | ~$5–8 | ~1 day build + ~4–6 h run |
+| **Total (1+2+4a+5)** | **~$70–80** | 4 overnight runs + 1 day of adapter work |
 
 ## Not in this plan
 
-- **Gemini** (`gemini-3.6-flash`, Google's GA computer-use model): requires a new arm —
-  adapter file, ARMS entry, SDK dependency, and ideally a paired `wm-gemini` — roughly a
-  day of engineering. Scope it as a separate task after Phase 4.
 - Changing arm defaults, viewport, step budgets, or anything that would break
   comparability with the reference run.
+- Additional Gemini tiers (Pro, Lite) or Vertex AI routing — revisit after the
+  `gemini-3.6-flash` flight lands.
