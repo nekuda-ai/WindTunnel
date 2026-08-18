@@ -41,3 +41,5 @@
 {"ts":"2026-08-18T11:21:23Z","suggestion":"cancel_appointment","step":"verify","state":"start"}
 {"ts":"2026-08-18T11:21:23Z","suggestion":"cancel_appointment","step":"verify","state":"done","outcome":"verified"}
 {"ts":"2026-08-18T11:22:51Z","run_step":"pr","state":"start"}
+{"ts":"2026-08-18T11:24:22Z","run_step":"pr","state":"done"}
+{"ts":"2026-08-18T11:24:22Z","phase":"done"}
