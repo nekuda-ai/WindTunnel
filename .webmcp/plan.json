@@ -1,0 +1,190 @@
+{
+  "site": "Riverside Wellness Studio (Easy!Appointments)",
+  "journey": "A visitor lands on the public booking page of a small appointment-based business. They want to know what the studio offers and how it works — which treatments exist, how long each takes, what it costs, when the studio is open, how far ahead they can book — and then they want to actually get on the calendar: pick a service, find a time that is genuinely free, hand over their contact details and walk away with a confirmation. Later, from the link in their confirmation email, the same person comes back to move that appointment to a better time, or to cancel it. Everything happens on the public side of the site; the studio's own staff work in a separate, password-protected back office that these tools deliberately leave alone.",
+  "suggestions": [
+    {
+      "id": "ask_site",
+      "name": "ask_site",
+      "description": "Search this appointment booking site's own published information and return the sections that match, each with its source. Covers the business name and contact details, opening hours, the services offered with their duration, price and description, the providers who deliver them, the booking rules (how far ahead you can book, how late you can still change an appointment), and the terms, privacy and cookie policies. Use this to answer any question about the business, its offering or its policies. Returns matching content sections as plain text plus a source label — it retrieves, it does not compose the answer.",
+      "why": "So a visitor can get a straight answer about opening hours, prices or policies without hunting through the page.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "What the visitor wants to know, in their own words."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "How many matching sections to return. Defaults to 5."
+        }
+      ]
+    },
+    {
+      "id": "list_services",
+      "name": "list_services",
+      "description": "List the services this business offers for online booking. Each entry gives the service id, name, description, duration in minutes, price and currency, and the providers who deliver it with their ids and timezone. Use this first to identify the service the visitor means and to get the service_id and provider_id that check_availability and book_appointment need. Optionally filter by a name fragment. Read-only — the page does not change.",
+      "why": "So the visitor can see everything that is bookable, with how long it takes and what it costs.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "name_contains",
+          "type": "string",
+          "description": "Optional word or fragment to narrow the list, e.g. 'massage'."
+        }
+      ]
+    },
+    {
+      "id": "check_availability",
+      "name": "check_availability",
+      "description": "Check which appointment start times are still free for a service on a given date, and which dates in that month are fully booked. Call this after list_services and before book_appointment so you book a slot that actually exists. It also sets the service, provider and date in the booking form on the page, so the visitor sees the same availability you do. Returns the free start times for that date in the provider's timezone, plus the unavailable dates of that month.",
+      "why": "So the visitor finds a time that is really open instead of being turned away at the last step.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "service_id",
+          "type": "integer",
+          "description": "The service to check, from list_services."
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "description": "The day to check, as YYYY-MM-DD."
+        },
+        {
+          "name": "provider_id",
+          "type": "integer | \"any-provider\"",
+          "description": "Optional. A specific provider, or any-provider to let the studio choose."
+        }
+      ]
+    },
+    {
+      "id": "book_appointment",
+      "name": "book_appointment",
+      "description": "Book an appointment for a service at a specific date and time using the visitor's contact details. This creates a real appointment in the business's schedule and sends a confirmation email, so check the slot with check_availability first. First name, last name and email are required; phone number, address, city, zip code and notes are optional. The page then moves to the booking confirmation. Returns the appointment's confirmation hash — that hash is what reschedule_appointment and cancel_appointment work from, so keep it.",
+      "why": "So the visitor actually gets on the calendar, which is the whole point of the site.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "service_id",
+          "type": "integer",
+          "description": "The service being booked."
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "description": "The appointment day, as YYYY-MM-DD."
+        },
+        {
+          "name": "time",
+          "type": "string",
+          "description": "The start time, as HH:mm, taken from check_availability."
+        },
+        {
+          "name": "first_name",
+          "type": "string",
+          "description": "Visitor's first name."
+        },
+        {
+          "name": "last_name",
+          "type": "string",
+          "description": "Visitor's last name."
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email address the confirmation is sent to."
+        },
+        {
+          "name": "provider_id",
+          "type": "integer | \"any-provider\"",
+          "description": "Optional provider choice."
+        },
+        {
+          "name": "phone_number",
+          "type": "string",
+          "description": "Optional phone number."
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "description": "Optional street address."
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "description": "Optional city."
+        },
+        {
+          "name": "zip_code",
+          "type": "string",
+          "description": "Optional postcode."
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Optional note for the provider."
+        },
+        {
+          "name": "timezone",
+          "type": "string",
+          "description": "Optional timezone for the visitor; defaults to the studio's."
+        }
+      ]
+    },
+    {
+      "id": "reschedule_appointment",
+      "name": "reschedule_appointment",
+      "description": "Move the appointment shown on this page to a different date and time, and optionally to a different service or provider. This tool is only available on an appointment's own reschedule page, where the appointment is already fixed — you never pass its id. Confirm the new slot with check_availability first. This updates the appointment in the business's schedule and emails the customer. Returns the appointment's confirmation hash and its new start time.",
+      "why": "So someone whose plans changed can move their booking themselves instead of phoning the studio.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "date",
+          "type": "string",
+          "description": "The new day, as YYYY-MM-DD."
+        },
+        {
+          "name": "time",
+          "type": "string",
+          "description": "The new start time, as HH:mm."
+        },
+        {
+          "name": "service_id",
+          "type": "integer",
+          "description": "Optional. Switch to a different service at the same time."
+        },
+        {
+          "name": "provider_id",
+          "type": "integer | \"any-provider\"",
+          "description": "Optional. Switch provider."
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Optional replacement note for the provider."
+        }
+      ]
+    },
+    {
+      "id": "cancel_appointment",
+      "name": "cancel_appointment",
+      "description": "Cancel the appointment shown on this page and remove it from the business's schedule. This cannot be undone, so it takes two calls: call it with a reason and no token to get back exactly what will be cancelled plus a short-lived confirmation_token, then call it again with that same token to actually cancel. Only available on an appointment's own reschedule page, where the appointment is already fixed. Cancelling emails the customer and the provider, and the page then shows the cancellation notice.",
+      "why": "So a booking can be called off cleanly, with the studio told why and the visitor shown what is about to go before it goes.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Why the appointment is being cancelled. The studio requires one."
+        },
+        {
+          "name": "confirmation_token",
+          "type": "string",
+          "description": "Leave empty on the first call. Pass back the token from that call to actually cancel."
+        }
+      ]
+    }
+  ]
+}
