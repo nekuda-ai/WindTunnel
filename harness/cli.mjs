@@ -11,6 +11,7 @@ import { run as runWMGPT } from "../arms/wm-gpt.mjs";
 import { run as runCUOpenAI, TOOL_VERSION as CU_OPENAI_VERSION } from "../arms/cu-openai.mjs";
 import { run as runWMStagehand, TOOL_VERSION as WM_STAGEHAND_VERSION } from "../arms/wm-stagehand.mjs";
 import { run as runWMStagehandV4, TOOL_VERSION as WM_STAGEHAND_V4_VERSION } from "../arms/wm-stagehand-v4.mjs";
+import { run as runWMStagehandV4Gemini, TOOL_VERSION as WM_STAGEHAND_V4_GEMINI_VERSION } from "../arms/wm-stagehand-v4-gemini.mjs";
 import { run as runCUGemini, TOOL_VERSION as CU_GEMINI_VERSION } from "../arms/cu-gemini.mjs";
 import { run as runWMGemini, TOOL_VERSION as WM_GEMINI_VERSION } from "../arms/wm-gemini.mjs";
 import { bootCapsule } from "./capsule.mjs";
@@ -30,6 +31,7 @@ const ARMS = {
   "wm-gpt": { id: "wm-gpt", run: runWMGPT, model: "gpt-5.5", version: "responses-api", key: "OPENAI_API_KEY", paid: true, webmcp: true },
   "wm-stagehand": { id: "wm-stagehand", run: runWMStagehand, model: "claude-sonnet-4-6", version: WM_STAGEHAND_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
   "wm-stagehand-v4": { id: "wm-stagehand-v4", run: runWMStagehandV4, model: "claude-sonnet-4-6", version: WM_STAGEHAND_V4_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
+  "wm-stagehand-v4-gemini": { id: "wm-stagehand-v4-gemini", run: runWMStagehandV4Gemini, model: "gemini-3.6-flash", version: WM_STAGEHAND_V4_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true, webmcp: true },
   "cu-gemini": { id: "cu-gemini", run: runCUGemini, model: "gemini-3.6-flash", version: CU_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true },
   "wm-gemini": { id: "wm-gemini", run: runWMGemini, model: "gemini-3.6-flash", version: WM_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true, webmcp: true },
 };

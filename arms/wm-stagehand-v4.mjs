@@ -9,7 +9,7 @@ const MAX_TURNS = 12;
 const ATTEMPT_MS = 600_000;
 const SYSTEM = `${BASE_SYSTEM} ${MECHANICS.webmcp}`;
 
-async function openStagehand() {
+export async function openStagehand() {
   const { Stagehand, localBrowser } = await import("@browserbasehq/stagehand-v4");
   const browser = await localBrowser.launch({
     headless: true,

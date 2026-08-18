@@ -17,14 +17,15 @@ test("CLI skips arms with missing keys", () => {
   assert.match(plan.notices[0], /ANTHROPIC_API_KEY/);
 });
 
-test("CLI registers both Gemini arms", () => {
+test("CLI registers Gemini arms", () => {
   const plan = planRuns(
-    parseArgs(["--sites", "directory-9d8", "--arms", "cu-gemini,wm-gemini"]),
+    parseArgs(["--sites", "directory-9d8", "--arms", "cu-gemini,wm-gemini,wm-stagehand-v4-gemini"]),
     { GEMINI_API_KEY: "x" },
   );
   assert.deepEqual(plan.runs.map(({ method }) => [method.id, method.model, Boolean(method.webmcp)]), [
     ["cu-gemini", "gemini-3.6-flash", false],
     ["wm-gemini", "gemini-3.6-flash", true],
+    ["wm-stagehand-v4-gemini", "gemini-3.6-flash", true],
   ]);
 });
 
