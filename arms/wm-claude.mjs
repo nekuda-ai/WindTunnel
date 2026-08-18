@@ -1,11 +1,11 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import Anthropic from "@anthropic-ai/sdk";
-import { BASE_SYSTEM, MECHANICS, withCacheBreakpoint } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint } from "./prompts.mjs";
 
 const MODEL = "claude-sonnet-4-6";
 const MAX_TURNS = 12;
-const ATTEMPT_MS = 300_000;
+const ATTEMPT_MS = 600_000;
 const SYSTEM = `${BASE_SYSTEM} ${MECHANICS.webmcp}`;
 const bridgedContexts = new WeakSet();
 
@@ -82,6 +82,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   await prepareWebMCPPage(page, startUrl(task, capsule));
 
   const client = new Anthropic({ maxRetries: 2 });
+  const sampling = claudeSampling(model);
   const messages = [{ role: "user", content: task.prompt }];
   const usage = { input_tokens: 0, output_tokens: 0, cached_input_tokens: 0, cache_creation_tokens: 0 };
   const transcript = [];
@@ -96,7 +97,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const deadline = performance.now() + ATTEMPT_MS;
 
   while (turns < limit) {
-    if (performance.now() >= deadline) throw new Error("attempt timeout: 300s agent budget");
+    if (performance.now() >= deadline) throw new Error("attempt timeout: 600s agent budget");
     const tools = await listLiveTools(page);
     if (!tools.length) throw new Error("no live WebMCP tools registered");
     const toolNames = tools.map(({ name }) => name).join(",");
@@ -109,7 +110,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
     const response = await client.messages.create({
       model,
       max_tokens: 4096,
-      temperature: 0,
+      ...sampling.request,
       system: [{ type: "text", text: withToday(SYSTEM), cache_control: { type: "ephemeral" } }],
       tools: anthropicTools(tools),
       tool_choice: { type: "auto", disable_parallel_tool_use: true },
@@ -121,7 +122,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
     usage.cached_input_tokens += response.usage.cache_read_input_tokens ?? 0;
     usage.cache_creation_tokens += response.usage.cache_creation_input_tokens ?? 0;
     messages.push({ role: "assistant", content: response.content });
-    transcript.push({ turn: turns, role: "assistant", content: response.content, usage: response.usage });
+    transcript.push({ turn: turns, role: "assistant", content: response.content, usage: response.usage, stop_reason: response.stop_reason });
     finalText = response.content.filter(({ type }) => type === "text").map(({ text }) => text).join("\n") || finalText;
 
     const calls = response.content.filter(({ type }) => type === "tool_use");
@@ -146,5 +147,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     await page.waitForTimeout(300);
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, budget_exhausted: turns === limit, temperature: "0", caching: "enabled" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled" };
 }

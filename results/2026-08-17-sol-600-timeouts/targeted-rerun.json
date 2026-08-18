@@ -1,0 +1,10 @@
+{
+  "source": "results/2026-08-17-sol-full/run.json",
+  "timeoutSeconds": 600,
+  "reasoningEffort": "medium",
+  "plannedAttempts": 26,
+  "completedAttempts": 26,
+  "trackedCostUsd": 7.227616,
+  "complete": true,
+  "scratch": "/var/folders/g7/0318s5kx05n8w3ys36wzd3rr0000gn/T/windtunnel-sol-600-7RCaUu"
+}

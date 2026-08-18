@@ -17,6 +17,17 @@ test("CLI skips arms with missing keys", () => {
   assert.match(plan.notices[0], /ANTHROPIC_API_KEY/);
 });
 
+test("CLI registers both Gemini arms", () => {
+  const plan = planRuns(
+    parseArgs(["--sites", "directory-9d8", "--arms", "cu-gemini,wm-gemini"]),
+    { GEMINI_API_KEY: "x" },
+  );
+  assert.deepEqual(plan.runs.map(({ method }) => [method.id, method.model, Boolean(method.webmcp)]), [
+    ["cu-gemini", "gemini-3.6-flash", false],
+    ["wm-gemini", "gemini-3.6-flash", true],
+  ]);
+});
+
 test("zero budget stops paid methods", () => {
   const plan = planRuns(parseArgs(["--sites", "lite", "--arms", "cu-claude", "--budget", "0.00"]), { ANTHROPIC_API_KEY: "x" });
   assert.equal(plan.runs.length, 0);
@@ -29,6 +40,22 @@ test("CLI validates odd repeats", () => {
 
 test("CLI accepts a task file override", () => {
   assert.equal(parseArgs(["--tasks", "tasks/calibration-directory.yaml"]).tasks, "tasks/calibration-directory.yaml");
+});
+
+test("CLI preserves repeated task ids for targeted reruns", () => {
+  assert.deepEqual(parseArgs(["--task-ids", "id-2,id-2,id-3"]).taskIds, ["id-2", "id-2", "id-3"]);
+});
+
+test("targeted reruns execute repeated task ids", async () => {
+  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "windtunnel-targeted-"));
+  const result = await runBenchmark([
+    "--sites", "directory-9d8", "--arms", "fake", "--task-ids", "directory-search,directory-search", "--n", "1",
+  ], {
+    env: { WT_FAKE_LIFECYCLE: "1" }, outputRoot, log: () => {},
+    methods: { fake: { id: "fake", paid: false, async run() { return { finalText: "done" }; } } },
+  });
+  assert.equal(result.rows.length, 2);
+  assert.ok(result.rows.every(({ task_id }) => task_id === "directory-search"));
 });
 
 test("CLI rejects unimplemented perturbations", () => {

@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 710" width="1040" height="710" font-family="system-ui,-apple-system,sans-serif" font-size="13">
+<text x="18" y="33" font-size="16" font-weight="650" fill="#1f2328">WindTunnel — leaderboard</text>
+<text x="18" y="53" font-size="11.5" fill="#57606a">Attempt success 60% · median cost 20% · median agent time 20% · cost/time log-scaled</text>
+<line x1="18" y1="64" x2="1022" y2="64" stroke="#d0d7de" stroke-width="1"/>
+<text x="42" y="84" font-size="11.5" font-weight="600" fill="#57606a">Configuration</text>
+<text x="395" y="84" text-anchor="middle" font-size="11.5" font-weight="600" fill="#57606a">Final score (0–100)</text>
+<text x="700" y="84" text-anchor="end" font-size="11.5" font-weight="600" fill="#57606a">Pass rate</text>
+<text x="835" y="84" text-anchor="end" font-size="11.5" font-weight="600" fill="#57606a">Median cost / task</text>
+<text x="1005" y="84" text-anchor="end" font-size="11.5" font-weight="600" fill="#57606a">Median agent time</text>
+<line x1="18" y1="127" x2="1022" y2="127" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="117" text-anchor="end" fill="#57606a">1</text>
+<text x="42" y="117" font-weight="600" fill="#1f2328">Sonnet 4.6 · WebMCP/Stagehand v4</text>
+<rect x="260" y="103" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="103" width="248.0" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="117" text-anchor="end" font-weight="700" fill="#1f2328">91.9</text>
+<text x="700" y="117" text-anchor="end" fill="#1f2328">98.0%</text>
+<text x="835" y="117" text-anchor="end" fill="#1f2328">$0.008</text>
+<text x="1005" y="117" text-anchor="end" fill="#1f2328">7.3s</text>
+<line x1="18" y1="165" x2="1022" y2="165" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="155" text-anchor="end" fill="#57606a">2</text>
+<text x="42" y="155" font-weight="600" fill="#1f2328">Gemini · WebMCP</text>
+<rect x="260" y="141" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="141" width="242.7" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="155" text-anchor="end" font-weight="700" fill="#1f2328">89.9</text>
+<text x="700" y="155" text-anchor="end" fill="#1f2328">96.6%</text>
+<text x="835" y="155" text-anchor="end" fill="#1f2328">$0.004</text>
+<text x="1005" y="155" text-anchor="end" fill="#1f2328">7.8s</text>
+<line x1="18" y1="203" x2="1022" y2="203" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="193" text-anchor="end" fill="#57606a">3</text>
+<text x="42" y="193" font-weight="600" fill="#1f2328">Sonnet 4.6 · WebMCP</text>
+<rect x="260" y="179" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="179" width="238.3" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="193" text-anchor="end" font-weight="700" fill="#1f2328">88.3</text>
+<text x="700" y="193" text-anchor="end" fill="#1f2328">96.6%</text>
+<text x="835" y="193" text-anchor="end" fill="#1f2328">$0.007</text>
+<text x="1005" y="193" text-anchor="end" fill="#1f2328">7.2s</text>
+<line x1="18" y1="241" x2="1022" y2="241" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="231" text-anchor="end" fill="#57606a">4</text>
+<text x="42" y="231" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
+<rect x="260" y="217" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="217" width="230.9" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="231" text-anchor="end" font-weight="700" fill="#1f2328">85.5</text>
+<text x="700" y="231" text-anchor="end" fill="#1f2328">93.2%</text>
+<text x="835" y="231" text-anchor="end" fill="#1f2328">$0.002</text>
+<text x="1005" y="231" text-anchor="end" fill="#1f2328">5.7s</text>
+<line x1="18" y1="279" x2="1022" y2="279" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="269" text-anchor="end" fill="#57606a">5</text>
+<text x="42" y="269" font-weight="600" fill="#1f2328">Opus · WebMCP</text>
+<rect x="260" y="255" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="255" width="221.2" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="269" text-anchor="end" font-weight="700" fill="#1f2328">81.9</text>
+<text x="700" y="269" text-anchor="end" fill="#1f2328">96.6%</text>
+<text x="835" y="269" text-anchor="end" fill="#1f2328">$0.014</text>
+<text x="1005" y="269" text-anchor="end" fill="#1f2328">9.9s</text>
+<line x1="18" y1="317" x2="1022" y2="317" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="307" text-anchor="end" fill="#57606a">6</text>
+<text x="42" y="307" font-weight="600" fill="#1f2328">GPT-5.5 · WebMCP</text>
+<rect x="260" y="293" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="293" width="205.9" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="307" text-anchor="end" font-weight="700" fill="#1f2328">76.2</text>
+<text x="700" y="307" text-anchor="end" fill="#1f2328">93.2%</text>
+<text x="835" y="307" text-anchor="end" fill="#1f2328">$0.015</text>
+<text x="1005" y="307" text-anchor="end" fill="#1f2328">5.8s</text>
+<line x1="18" y1="355" x2="1022" y2="355" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="345" text-anchor="end" fill="#57606a">7</text>
+<text x="42" y="345" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
+<rect x="260" y="331" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="331" width="201.8" height="18" rx="2" fill="#0099cc"/>
+<text x="580" y="345" text-anchor="end" font-weight="700" fill="#1f2328">74.7</text>
+<text x="700" y="345" text-anchor="end" fill="#1f2328">93.9%</text>
+<text x="835" y="345" text-anchor="end" fill="#1f2328">$0.013</text>
+<text x="1005" y="345" text-anchor="end" fill="#1f2328">9.4s</text>
+<line x1="18" y1="393" x2="1022" y2="393" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="383" text-anchor="end" fill="#57606a">8</text>
+<text x="42" y="383" font-weight="600" fill="#1f2328">GPT-5.5 · CU</text>
+<rect x="260" y="369" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="369" width="127.7" height="18" rx="2" fill="#a8b1ba"/>
+<text x="580" y="383" text-anchor="end" font-weight="700" fill="#1f2328">47.3</text>
+<text x="700" y="383" text-anchor="end" fill="#1f2328">90.3%</text>
+<text x="835" y="383" text-anchor="end" fill="#1f2328">$0.090</text>
+<text x="1005" y="383" text-anchor="end" fill="#1f2328">20.4s</text>
+<line x1="18" y1="431" x2="1022" y2="431" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="421" text-anchor="end" fill="#57606a">9</text>
+<text x="42" y="421" font-weight="600" fill="#1f2328">Sonnet 4.6 · accessibility tree</text>
+<rect x="260" y="407" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="407" width="96.7" height="18" rx="2" fill="#b06a00"/>
+<text x="580" y="421" text-anchor="end" font-weight="700" fill="#1f2328">35.8</text>
+<text x="700" y="421" text-anchor="end" fill="#1f2328">87.1%</text>
+<text x="835" y="421" text-anchor="end" fill="#1f2328">$0.043</text>
+<text x="1005" y="421" text-anchor="end" fill="#1f2328">35.6s</text>
+<line x1="18" y1="469" x2="1022" y2="469" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="459" text-anchor="end" fill="#57606a">10</text>
+<text x="42" y="459" font-weight="600" fill="#1f2328">Sonnet 4.6 · DOM + vision</text>
+<rect x="260" y="445" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="445" width="93.8" height="18" rx="2" fill="#b06a00"/>
+<text x="580" y="459" text-anchor="end" font-weight="700" fill="#1f2328">34.7</text>
+<text x="700" y="459" text-anchor="end" fill="#1f2328">88.4%</text>
+<text x="835" y="459" text-anchor="end" fill="#1f2328">$0.112</text>
+<text x="1005" y="459" text-anchor="end" fill="#1f2328">37.8s</text>
+<line x1="18" y1="507" x2="1022" y2="507" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="497" text-anchor="end" fill="#57606a">11</text>
+<text x="42" y="497" font-weight="600" fill="#1f2328">Luna · CU</text>
+<rect x="260" y="483" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="483" width="91.6" height="18" rx="2" fill="#a8b1ba"/>
+<text x="580" y="497" text-anchor="end" font-weight="700" fill="#1f2328">33.9</text>
+<text x="700" y="497" text-anchor="end" fill="#1f2328">83.0%</text>
+<text x="835" y="497" text-anchor="end" fill="#1f2328">$0.017</text>
+<text x="1005" y="497" text-anchor="end" fill="#1f2328">18.3s</text>
+<line x1="18" y1="545" x2="1022" y2="545" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="535" text-anchor="end" fill="#57606a">12</text>
+<text x="42" y="535" font-weight="600" fill="#1f2328">SOL · CU</text>
+<rect x="260" y="521" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="521" width="72.3" height="18" rx="2" fill="#a8b1ba"/>
+<text x="580" y="535" text-anchor="end" font-weight="700" fill="#1f2328">26.8</text>
+<text x="700" y="535" text-anchor="end" fill="#1f2328">83.7%</text>
+<text x="835" y="535" text-anchor="end" fill="#1f2328">$0.063</text>
+<text x="1005" y="535" text-anchor="end" fill="#1f2328">25.1s</text>
+<line x1="18" y1="583" x2="1022" y2="583" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="573" text-anchor="end" fill="#57606a">13</text>
+<text x="42" y="573" font-weight="600" fill="#1f2328">Opus · CU</text>
+<rect x="260" y="559" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="559" width="67.0" height="18" rx="2" fill="#a8b1ba"/>
+<text x="580" y="573" text-anchor="end" font-weight="700" fill="#1f2328">24.8</text>
+<text x="700" y="573" text-anchor="end" fill="#1f2328">86.4%</text>
+<text x="835" y="573" text-anchor="end" fill="#1f2328">$0.139</text>
+<text x="1005" y="573" text-anchor="end" fill="#1f2328">50.4s</text>
+<line x1="18" y1="621" x2="1022" y2="621" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="611" text-anchor="end" fill="#57606a">14</text>
+<text x="42" y="611" font-weight="600" fill="#1f2328">Gemini · CU</text>
+<rect x="260" y="597" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="597" width="41.2" height="18" rx="2" fill="#a8b1ba"/>
+<text x="580" y="611" text-anchor="end" font-weight="700" fill="#1f2328">15.2</text>
+<text x="700" y="611" text-anchor="end" fill="#1f2328">78.9%</text>
+<text x="835" y="611" text-anchor="end" fill="#1f2328">$0.020</text>
+<text x="1005" y="611" text-anchor="end" fill="#1f2328">33.7s</text>
+<line x1="18" y1="659" x2="1022" y2="659" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="649" text-anchor="end" fill="#57606a">15</text>
+<text x="42" y="649" font-weight="600" fill="#1f2328">Sonnet 4.6 · CU</text>
+<rect x="260" y="635" width="270" height="18" rx="2" fill="#d0d7de"/>
+<rect x="260" y="635" width="26.2" height="18" rx="2" fill="#a8b1ba"/>
+<text x="580" y="649" text-anchor="end" font-weight="700" fill="#1f2328">9.7</text>
+<text x="700" y="649" text-anchor="end" fill="#1f2328">78.2%</text>
+<text x="835" y="649" text-anchor="end" fill="#1f2328">$0.047</text>
+<text x="1005" y="649" text-anchor="end" fill="#1f2328">31.1s</text>
+<rect x="18" y="685" width="9" height="9" rx="2" fill="#0099cc"/>
+<text x="32" y="693" font-size="11.5" fill="#57606a">WebMCP</text>
+<rect x="102" y="685" width="9" height="9" rx="2" fill="#a8b1ba"/>
+<text x="116" y="693" font-size="11.5" fill="#57606a">computer use</text>
+<rect x="208" y="685" width="9" height="9" rx="2" fill="#b06a00"/>
+<text x="222" y="693" font-size="11.5" fill="#57606a">DOM / accessibility tree</text>
+</svg>

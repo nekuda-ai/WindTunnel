@@ -40,10 +40,23 @@ test("a throwing repeat is recorded as a failed attempt, not a crashed run", asy
   assert.equal(down, 1);
 });
 
+test("a returned timeout keeps usage and cost on the failed row", async () => {
+  const capsule = { reset: async () => {}, down: async () => {}, meta: {}, baseUrl: "http://fake" };
+  const result = await runBatch({
+    siteId: "demo",
+    method: { id: "paid", run: async () => ({ failure: "attempt timeout: 600s agent budget", usage: { input_tokens: 10 }, cost: 0.25 }) },
+    tasks: [{ id: "t", predicate: {} }], n: 1, boot: async () => capsule, page: {},
+  });
+  assert.equal(result.rows[0].pass, false);
+  assert.match(result.rows[0].failure_category, /attempt timeout: 600s/);
+  assert.equal(result.rows[0].input_tokens, 10);
+  assert.equal(result.rows[0].est_cost_usd, 0.25);
+});
+
 test("failure taxonomy and verdicts exclude infrastructure rows", () => {
   assert.equal(classifyFailure("429 overloaded"), "infra");
   assert.equal(classifyFailure("probe-error: offline"), "infra");
-  assert.equal(classifyFailure("attempt timeout: 300s agent budget"), "agent");
+  assert.equal(classifyFailure("attempt timeout: 600s agent budget"), "agent");
   assert.equal(classifyFailure("browser-use returned no result"), "agent");
   assert.deepEqual(verdictFor([{ pass: true, failure_category: "" }, { pass: false, failure_category: "harness-infra: quota" }]), { solved: true, passes: 1, attempts: 1 });
   assert.deepEqual(verdictFor([{ pass: false, failure_category: "harness-infra: quota" }]), { solved: false, passes: 0, attempts: 0 });
