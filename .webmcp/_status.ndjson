@@ -51,3 +51,5 @@
 {"ts":"2026-08-18T13:01:20Z","suggestion":"get_finance_summary","step":"verify","state":"start"}
 {"ts":"2026-08-18T13:01:20Z","suggestion":"get_finance_summary","step":"verify","state":"done","outcome":"verified"}
 {"ts":"2026-08-18T13:02:37Z","run_step":"pr","state":"start"}
+{"ts":"2026-08-18T13:04:22Z","run_step":"pr","state":"done"}
+{"ts":"2026-08-18T13:04:22Z","phase":"done"}
