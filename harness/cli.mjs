@@ -10,6 +10,9 @@ import { run as runWMClaude } from "../arms/wm-claude.mjs";
 import { run as runWMGPT } from "../arms/wm-gpt.mjs";
 import { run as runCUOpenAI, TOOL_VERSION as CU_OPENAI_VERSION } from "../arms/cu-openai.mjs";
 import { run as runWMStagehand, TOOL_VERSION as WM_STAGEHAND_VERSION } from "../arms/wm-stagehand.mjs";
+import { run as runWMStagehandV4, TOOL_VERSION as WM_STAGEHAND_V4_VERSION } from "../arms/wm-stagehand-v4.mjs";
+import { run as runCUGemini, TOOL_VERSION as CU_GEMINI_VERSION } from "../arms/cu-gemini.mjs";
+import { run as runWMGemini, TOOL_VERSION as WM_GEMINI_VERSION } from "../arms/wm-gemini.mjs";
 import { bootCapsule } from "./capsule.mjs";
 import { runBatch } from "./run.mjs";
 import { resolveProfile, loadSites } from "./sites.mjs";
@@ -26,6 +29,9 @@ const ARMS = {
   "wm-claude": { id: "wm-claude", run: runWMClaude, model: "claude-sonnet-4-6", version: "@anthropic-ai/sdk", key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
   "wm-gpt": { id: "wm-gpt", run: runWMGPT, model: "gpt-5.5", version: "responses-api", key: "OPENAI_API_KEY", paid: true, webmcp: true },
   "wm-stagehand": { id: "wm-stagehand", run: runWMStagehand, model: "claude-sonnet-4-6", version: WM_STAGEHAND_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
+  "wm-stagehand-v4": { id: "wm-stagehand-v4", run: runWMStagehandV4, model: "claude-sonnet-4-6", version: WM_STAGEHAND_V4_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
+  "cu-gemini": { id: "cu-gemini", run: runCUGemini, model: "gemini-3.6-flash", version: CU_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true },
+  "wm-gemini": { id: "wm-gemini", run: runWMGemini, model: "gemini-3.6-flash", version: WM_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true, webmcp: true },
 };
 
 export const USAGE = `Usage: node harness/cli.mjs [options]
@@ -33,6 +39,7 @@ export const USAGE = `Usage: node harness/cli.mjs [options]
   --preset <smoke|lite|full>  Task preset (default: smoke)
   --sites <profile|a,b>       Site profile or comma-separated ids (default: lite)
   --tasks <file>              Load tasks from a specific YAML file
+  --task-ids <a,b>            Run only these task ids; repeats are preserved
   --arms <a,b>                Methods to run (default: scripted)
   --n <odd number>            Repeats per task
   --seed <number>             Fixture seed (default: 1)
@@ -55,6 +62,7 @@ export function parseArgs(argv) {
       if (flag === "--preset") options.preset = value;
       else if (flag === "--sites") options.sites = value;
       else if (flag === "--tasks") options.tasks = value;
+      else if (flag === "--task-ids") options.taskIds = value.split(",").filter(Boolean);
       else if (flag === "--arms") options.arms = value.split(",").filter(Boolean);
       else if (flag === "--n") { options.n = Number(value); explicitN = true; }
       else if (flag === "--seed") options.seed = Number(value);
@@ -153,8 +161,15 @@ export async function runBenchmark(argv, {
     const { WT_WEBMCP: _ignored, ...armEnv } = env;
     if (method.webmcp) armEnv.WT_WEBMCP = "1";
     try {
-      const tasks = (options.tasks ? loadTaskFile(options.tasks) : loadTasks(siteId))
-        .map((task) => resolveTask(task, options.seed));
+      const availableTasks = options.tasks ? loadTaskFile(options.tasks) : loadTasks(siteId);
+      const selectedTasks = options.taskIds
+        ? options.taskIds.map((id) => {
+          const task = availableTasks.find((candidate) => candidate.id === id);
+          if (!task) throw new Error(`unknown task for ${siteId}: ${id}`);
+          return task;
+        })
+        : availableTasks;
+      const tasks = selectedTasks.map((task) => resolveTask(task, options.seed));
       const result = await runBatch({
         siteId, method, tasks, n: options.n, seed: options.seed, port: 3215 + index,
         model: method.model, perturbed: options.perturbed, browser,
@@ -188,7 +203,7 @@ export async function runBenchmark(argv, {
   }
   const outputDir = writeReport({ rows, verdicts, capsules, options: { ...options, fake: env.WT_FAKE_LIFECYCLE === "1", label: options.label ?? `${options.sites}-${options.preset}`, model: [...new Set(plan.runs.map(({ method }) => method.model))].join(","), armModels: Object.fromEntries(plan.runs.map(({ method }) => [method.id, method.model])) }, outputRoot });
   log(`Report: ${path.join(outputDir, "report.md")}`);
-  return { rows, verdicts, outputDir, options };
+  return { rows, verdicts, capsules, outputDir, options };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {

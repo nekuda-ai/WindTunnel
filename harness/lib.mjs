@@ -31,12 +31,17 @@ export const newRunId = (taskId, arm) => `${taskId}_${arm}_${randomUUID()}`;
 // a model that isn't covered.
 export const PRICES = [
   ["claude-fable-5", [10, 50, 1, 12.5]],
+  ["claude-opus-5", [5, 25, 0.5, 6.25]],
   ["claude-opus-4", [5, 25, 0.5, 6.25]],
   ["claude-sonnet-4-6", [3, 15, 0.3, 3.75]],
   ["claude-sonnet-4", [3, 15, 0.3, 3.75]],
   ["claude-haiku-4", [1, 5, 0.1, 1.25]],
+  ["gpt-5.6-sol", [5, 30, 0.5, 6.25]],
+  ["gpt-5.6-terra", [2.5, 15, 0.25, 3.125]],
+  ["gpt-5.6-luna", [1, 6, 0.1, 1.25]],
   ["gpt-5.5", [5, 30, 0.5, 0]],
   ["computer-use-preview", [1.5, 6, 0.15, 0]],
+  ["gemini-3.6-flash", [0.75, 3.75, 0.075, 0]],
 ];
 const warnedModels = new Set();
 

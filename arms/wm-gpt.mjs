@@ -5,18 +5,27 @@ import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
 
 const MODEL = "gpt-5.5";
 const MAX_TURNS = 12;
-const ATTEMPT_MS = 300_000;
+const ATTEMPT_MS = 600_000;
 const SYSTEM = `${BASE_SYSTEM} ${MECHANICS.webmcp}`;
 
 // ponytail: raw fetch to the Responses API — the loop needs one endpoint, not the openai SDK.
-async function respond(body) {
+export async function respond(body) {
   let retryWaitMs = 0;
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      body: JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      if (attempt >= 6) throw error;
+      const waitMs = Math.min(60_000, 2_000 * 2 ** attempt);
+      retryWaitMs += waitMs;
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
     if (res.ok) return { response: await res.json(), retries: attempt, retry_wait_ms: retryWaitMs };
     const text = (await res.text()).slice(0, 300);
     // Rate limits (429) and transient 5xx are retried with exponential backoff
@@ -68,7 +77,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const deadline = performance.now() + ATTEMPT_MS;
 
   while (turns < limit) {
-    if (performance.now() >= deadline) throw new Error("attempt timeout: 300s agent budget");
+    if (performance.now() >= deadline) throw new Error("attempt timeout: 600s agent budget");
     const tools = await listLiveTools(page);
     if (!tools.length) throw new Error("no live WebMCP tools registered");
     const toolNames = tools.map(({ name }) => name).join(",");

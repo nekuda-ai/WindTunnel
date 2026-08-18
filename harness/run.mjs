@@ -40,7 +40,9 @@ export async function runBatch({
           const started = performance.now();
           result = await method.run({ task, capsule, page, model });
           result.attemptMs = performance.now() - started;
-          verdict = await score(task.predicate, capsule, result.finalText);
+          verdict = result.failure
+            ? { pass: false, detail: `harness-${classifyFailure(result.failure)}: ${result.failure}` }
+            : await score(task.predicate, capsule, result.finalText);
         } catch (error) {
           const msg = error.message;
           verdict = { pass: false, detail: `harness-${classifyFailure(msg)}: ${msg}` };

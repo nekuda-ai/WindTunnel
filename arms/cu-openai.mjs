@@ -6,7 +6,8 @@ export const TOOL_VERSION = "computer";
 const MODEL = "gpt-5.5";
 const MAX_TURNS = 25;
 const VIEWPORT = { width: 1280, height: 800 };
-const ATTEMPT_MS = 300_000;
+const ATTEMPT_MS = Number(process.env.WT_CU_OPENAI_ATTEMPT_MS ?? 600_000);
+if (!Number.isInteger(ATTEMPT_MS) || ATTEMPT_MS <= 0) throw new Error("WT_CU_OPENAI_ATTEMPT_MS must be a positive integer");
 const SCREENSHOT_WINDOW = 3;
 const BLANK_SHOT = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 const SYSTEM = `${BASE_SYSTEM} ${MECHANICS.cu}`;
@@ -35,14 +36,23 @@ async function withModifiers(page, keys, callback) {
 }
 
 // ponytail: raw fetch to the Responses API — the loop needs one endpoint, not the openai SDK.
-async function respond(body) {
+export async function respond(body) {
   let retryWaitMs = 0;
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      body: JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      if (attempt >= 6) throw error;
+      const waitMs = Math.min(60_000, 2_000 * 2 ** attempt);
+      retryWaitMs += waitMs;
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
     if (res.ok) return { response: await res.json(), retries: attempt, retry_wait_ms: retryWaitMs };
     const text = (await res.text()).slice(0, 300);
     // Rate limits (429) and transient 5xx are retried with exponential backoff
@@ -128,6 +138,8 @@ export async function run({ task, capsule, page, model = MODEL }) {
   // the fallback when the task doesn't set one. Same rule in every arm.
   const limit = stepBudget(task, "cu", MAX_TURNS);
   let finalText = "";
+  let failure = "";
+  let model_snapshot = "";
   let turns = 0;
   let retries = 0, retry_wait_ms = 0, temperature = "0";
   // Both screenshot arms share one context policy: the model sees only the
@@ -146,7 +158,10 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const deadline = performance.now() + ATTEMPT_MS;
 
   while (turns < limit) {
-    if (performance.now() >= deadline) throw new Error("attempt timeout: 300s agent budget");
+    if (performance.now() >= deadline) {
+      failure = `attempt timeout: ${ATTEMPT_MS / 1000}s agent budget`;
+      break;
+    }
     turns++;
     const outcome = await respondAtZero({
       model,
@@ -155,6 +170,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
       input: windowed(),
     });
     const response = outcome.response;
+    model_snapshot = response.model ?? model_snapshot;
     temperature = outcome.temperature;
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
@@ -187,5 +203,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     }
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, retries, retry_wait_ms, budget_exhausted: turns === limit, temperature, caching: "provider-managed" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, caching: "provider-managed" };
 }

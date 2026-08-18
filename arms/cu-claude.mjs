@@ -1,14 +1,14 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import Anthropic from "@anthropic-ai/sdk";
-import { BASE_SYSTEM, MECHANICS, withCacheBreakpoint } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint } from "./prompts.mjs";
 
 export const TOOL_VERSION = "computer_20251124";
 const MODEL = "claude-sonnet-4-6";
 const BETA = "computer-use-2025-11-24";
 const MAX_TURNS = 25;
 const VIEWPORT = { width: 1280, height: 800 };
-const ATTEMPT_MS = 300_000;
+const ATTEMPT_MS = 600_000;
 const SYSTEM = `${BASE_SYSTEM} ${MECHANICS.cu}`;
 const KEY_MAP = {
   Return: "Enter", KP_Enter: "Enter", BackSpace: "Backspace", Delete: "Delete",
@@ -88,6 +88,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
   await page.waitForTimeout(2_000);
   const client = new Anthropic({ maxRetries: 2 });
+  const sampling = claudeSampling(model);
   const messages = [{ role: "user", content: task.prompt }];
   const tools = [{ type: TOOL_VERSION, name: "computer", display_width_px: VIEWPORT.width, display_height_px: VIEWPORT.height }];
   const usage = { input_tokens: 0, output_tokens: 0, cached_input_tokens: 0, cache_creation_tokens: 0 };
@@ -96,29 +97,31 @@ export async function run({ task, capsule, page, model = MODEL }) {
   // the fallback when the task doesn't set one. Same rule in every arm.
   const limit = stepBudget(task, "cu", MAX_TURNS);
   let finalText = "";
+  let model_snapshot = "";
   let turns = 0;
   const setupMs = performance.now() - started;
   const deadline = performance.now() + ATTEMPT_MS;
 
   while (turns < limit) {
-    if (performance.now() >= deadline) throw new Error("attempt timeout: 300s agent budget");
+    if (performance.now() >= deadline) throw new Error("attempt timeout: 600s agent budget");
     turns++;
     pruneImages(messages);
     const response = await client.beta.messages.create({
       model,
       max_tokens: 4096,
-      temperature: 0,
+      ...sampling.request,
       system: [{ type: "text", text: withToday(SYSTEM), cache_control: { type: "ephemeral" } }],
       tools,
       messages: withCacheBreakpoint(messages),
       betas: [BETA],
     });
+    model_snapshot = response.model ?? model_snapshot;
     usage.input_tokens += response.usage.input_tokens ?? 0;
     usage.output_tokens += response.usage.output_tokens ?? 0;
     usage.cached_input_tokens += response.usage.cache_read_input_tokens ?? 0;
     usage.cache_creation_tokens += response.usage.cache_creation_input_tokens ?? 0;
     messages.push({ role: "assistant", content: response.content });
-    transcript.push({ turn: turns, role: "assistant", content: response.content, usage: response.usage });
+    transcript.push({ turn: turns, role: "assistant", content: response.content, usage: response.usage, stop_reason: response.stop_reason });
     finalText = response.content.filter(({ type }) => type === "text").map(({ text }) => text).join("\n") || finalText;
 
     const calls = response.content.filter(({ type }) => type === "tool_use");
@@ -140,5 +143,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     messages.push({ role: "user", content: results });
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, budget_exhausted: turns === limit, temperature: "0", caching: "enabled" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled" };
 }

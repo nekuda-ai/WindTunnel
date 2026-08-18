@@ -15,6 +15,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "0.110.0",
     "@browserbasehq/stagehand": "3.6.0",
+    "@browserbasehq/stagehand-v4": "npm:@browserbasehq/stagehand@4.0.0",
     "js-yaml": "4.3.0",
     "playwright": "1.61.1"
   }

@@ -254,15 +254,19 @@ planned addition as an even stronger combined baseline.
   cost column, so excluding them would make caching arms look an order of
   magnitude lighter than they are. The uncached/cached split stays in
   `results.csv` for anyone who wants it.
+- **Leaderboard score** — a display-only composite: attempt success 60%,
+  median cost 20%, and median agent time 20%. Success is min-max normalized;
+  cost and time are log-transformed, min-max normalized, and reversed so lower
+  is better. Tokens are not scored separately because cost already reflects
+  them. The underlying metrics remain the primary results.
 - **Infrastructure exclusions** — attempts that fail on provider rate limits
   or capsule boot errors are excluded from every number and reported
   separately. Agent and driver failures — including step-budget exhaustion and
-  the uniform 300s per-attempt agent cap — **count as failures**.
-- **Per-tier multiples** (the journey-length table) are the pooled
-  browser-method median ÷ the pooled WebMCP median for that tier. Ranges
-  quoted as e.g. "9–13×" instead span the three browser method families
-  (screenshots, DOM+vision, a11y) measured separately. The long-tier sample is
-  12 tasks: 108 WebMCP and 144 browser attempts.
+  the uniform 600s per-attempt agent cap — **count as failures**.
+- **Per-tier multiples** (the journey-length table) are the pooled native
+  computer-use median ÷ the pooled native WebMCP median for that tier, with
+  each of the five paired models represented equally. The long-tier sample is
+  12 tasks: 60 model-task cells and 180 attempts per interface.
 
 Report format: [`results/README.md`](../results/README.md); template:
 [`results/TEMPLATE.md`](../results/TEMPLATE.md).
@@ -273,17 +277,17 @@ arguments and its result to the conversation, and tool schemas are re-sent on
 every request rather than registered once at the wire level. The difference is
 the growth rate: a page-reading interface re-reads the whole page on every
 step, so its payload compounds, while a WebMCP call's payload is independent of
-page size. Measured across tiers in the reference run (median cost per attempt,
-shortest tier → longest): **WebMCP $0.0107 → $0.0331 (~3×)**; **pooled browser
-methods $0.0593 → $0.4009 (~7×)**. That divergence, not a flat WebMCP cost, is
-what widens the multiple on long journeys.
+page size. Measured across tiers in the five-model comparison (median cost per
+attempt, shortest tier → longest): **WebMCP $0.0077 → $0.0223 (~3×)**;
+**computer use $0.0398 → $0.2667 (~7×)**. That divergence, not a flat WebMCP
+cost, is what widens the multiple on long journeys.
 
 **Per-interface turn budgets.** A task's YAML may set `max_steps` per interface
 class; when it doesn't, the arms fall back to their defaults — **WebMCP 12,
 computer use 25, DOM/a11y 20 turns**. The classes differ because the same
 journey costs a different number of model turns per interface: a screenshot
 agent needs roughly three turns per journey step, a tool-calling agent about
-one. Every attempt is additionally capped at **300s of agent time**, and a row
+one. Every attempt is additionally capped at **600s of agent time**, and a row
 records `budget_exhausted` when the loop ended by hitting its limit.
 
 **Model prices.** Cost estimates use a built-in per-model price table

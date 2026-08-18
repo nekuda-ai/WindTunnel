@@ -9,6 +9,20 @@ the full 7-method × 8-site × 49-task measurement — one benchmark generation 
 `explorer.html` for the interactive view; `results.csv` / `run.json` carry
 every attempt including full agent transcripts.
 
+**The cross-model view is [`model-comparison.md`](model-comparison.md).** It
+compares the paired computer-use and WebMCP arms for GPT-5.5, GPT-5.6 Luna,
+GPT-5.6 SOL, Gemini 3.6 Flash, and Claude Opus 5 under the canonical
+600-second per-attempt cap.
+
+| Run | Scope |
+|---|---|
+| [`2026-07-27-reference/`](2026-07-27-reference/) | Original seven-method reference |
+| [`2026-08-16-luna-full/`](2026-08-16-luna-full/) | GPT-5.6 Luna paired full run |
+| [`2026-08-17-sol-full/`](2026-08-17-sol-full/) | GPT-5.6 SOL paired source run |
+| [`2026-08-17-sol-600-timeouts/`](2026-08-17-sol-600-timeouts/) | Completes the canonical SOL result at the 600s ceiling |
+| [`2026-08-17-gemini-full/`](2026-08-17-gemini-full/) | Gemini 3.6 Flash paired full run |
+| [`2026-08-17-opus5-full/`](2026-08-17-opus5-full/) | Claude Opus 5 paired full run |
+
 ## Layout
 
 ```
