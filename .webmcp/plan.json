@@ -1,0 +1,228 @@
+{
+  "site": "IDURAR ERP CRM (local)",
+  "journey": "IDURAR is an authenticated back-office ERP/CRM: an owner signs in and works with three things — customers, the invoices raised against them, and the payments recorded against those invoices. There is no anonymous visitor and no public content; every page in this build sits behind a login and the whole surface is /customer, /invoice, /invoice/create, /invoice/read/:id, /invoice/pay/:id and /payment. The person driving an agent here is the business owner at their desk: they ask which invoices are still unpaid, what a given client has been billed, and how much is outstanding overall; they ask for a client to be looked up or added, an invoice to be drafted for work done, and a payment to be recorded once it lands. Those questions and requests are the spec. None of the seven journey templates match this app — it is not a shop, a directory, a booking site, a course platform, an events site, a lead-gen funnel or a brochure — so this set is instantiated from the app's own routes and navigation rather than drafted against the nearest category, and there is no ask_site because the app has no visitor-facing content to answer from.",
+  "suggestions": [
+    {
+      "id": "find_customers",
+      "name": "find_customers",
+      "description": "Search the CRM's customer list by name, email, or phone and show the matches in the customer table. Use this to look up a customer before invoicing them, to confirm a company is already on file, or to browse who exists. Returns each match's id, name, email, phone, country, and address, plus the total number of matches; returns an empty list with a note when nothing matches.",
+      "why": "Someone needs to find a company on file before they can bill it.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Text to match against customer name, email, and phone. Omit to list all customers."
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "How many customers to return, 1 to 50. Defaults to 10."
+        }
+      ]
+    },
+    {
+      "id": "create_customer",
+      "name": "create_customer",
+      "description": "Add a new customer to the CRM and show it in the customer table. Use this when the person or company you need to invoice is not on file yet; check with find_customers first, because this does not detect duplicates. Requires a name; email, phone, country, and address are optional. Returns the new customer's id and saved fields.",
+      "why": "A new client has to exist in the system before anyone can invoice them.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The customer's name or company name. Required."
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Contact email address."
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "description": "Contact phone number."
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "description": "Country, as a two-letter code such as US or IL."
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "description": "Postal address."
+        }
+      ]
+    },
+    {
+      "id": "find_invoices",
+      "name": "find_invoices",
+      "description": "List and filter invoices — by payment status (unpaid, partially, paid), by workflow status (draft, pending, sent, refunded, cancelled, on hold), by customer, or by free text — and show the result in the invoice table. Use this to answer questions like which invoices are unpaid or what a given customer has been billed. Returns each invoice's id, number, year, customer name, date, expiry date, total, amount already credited, currency, status, and payment status, plus the total match count; returns an empty list with a note when nothing matches.",
+      "why": "The most common question in this app is which bills are still unpaid.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "payment_status",
+          "type": "string",
+          "description": "Filter to one of unpaid, partially, or paid."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter to one of draft, pending, sent, refunded, cancelled, or on hold."
+        },
+        {
+          "name": "customer",
+          "type": "string",
+          "description": "Customer name or customer id; only that customer's invoices are returned."
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "1-based page number. Defaults to 1."
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "How many invoices per page, 1 to 50. Defaults to 10."
+        }
+      ]
+    },
+    {
+      "id": "get_invoice",
+      "name": "get_invoice",
+      "description": "Open one invoice and return its full detail, identified by its invoice number (with year) or its id. Use this after find_invoices when you need the line items, the tax and totals breakdown, or the exact balance still due before recording a payment. Returns the customer, dates, every line item with quantity and price, subtotal, tax, total, amount already paid, balance due, status, and payment status, and navigates the page to that invoice.",
+      "why": "Before chasing or settling a bill, someone needs to see exactly what was charged and what is still owed.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "number",
+          "type": "number",
+          "description": "The invoice number as shown in the invoice table. Use with year."
+        },
+        {
+          "name": "year",
+          "type": "number",
+          "description": "The invoice's year. Defaults to the current year when a number is given."
+        },
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "description": "The invoice's id, if you already have it from another tool. Use instead of number and year."
+        }
+      ]
+    },
+    {
+      "id": "create_invoice",
+      "name": "create_invoice",
+      "description": "Create a new invoice for an existing customer and open it. Use this to bill a customer for one or more line items; identify the customer by name (it must already be on file — create_customer adds one) or by id. The invoice is always created as a draft, so nothing is sent to the customer and it can be reviewed or changed in the app before it goes out; the invoice number is taken from the app's own numbering settings. Returns the created invoice's id, number, line items, subtotal, tax, and total.",
+      "why": "Billing a client for work done is the main thing this app is for.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "customer",
+          "type": "string",
+          "description": "The customer's name or id. Must already exist; the name must match exactly one customer."
+        },
+        {
+          "name": "items",
+          "type": "array",
+          "description": "The line items to bill. Each needs item_name, quantity, and price; description is optional."
+        },
+        {
+          "name": "tax_rate",
+          "type": "number",
+          "description": "Tax rate as a percentage, for example 17 for 17%. Defaults to 0."
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "description": "Invoice date as YYYY-MM-DD. Defaults to today."
+        },
+        {
+          "name": "due_date",
+          "type": "string",
+          "description": "Date the invoice expires as YYYY-MM-DD. Defaults to 30 days after the invoice date."
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Free-text notes shown on the invoice."
+        }
+      ]
+    },
+    {
+      "id": "prepare_invoice_payment",
+      "name": "prepare_invoice_payment",
+      "description": "Check a payment against an invoice before any money is recorded, and open that invoice so it is visible on screen. Use this first whenever you intend to record a payment: it confirms the invoice exists, computes the balance still due, rejects an amount above that balance, and returns a confirmation token. Nothing is written. Returns the invoice number, customer, currency, balance due, the amount that would be recorded, the balance that would remain, and the token that confirm_invoice_payment requires.",
+      "why": "Money should never move until someone has seen the exact figures first.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "number",
+          "type": "number",
+          "description": "The invoice number to pay against. Use with year."
+        },
+        {
+          "name": "year",
+          "type": "number",
+          "description": "The invoice's year. Defaults to the current year when a number is given."
+        },
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "description": "The invoice's id, if you already have it. Use instead of number and year."
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "The amount to record. Must be above 0 and no more than the balance due."
+        }
+      ]
+    },
+    {
+      "id": "confirm_invoice_payment",
+      "name": "confirm_invoice_payment",
+      "description": "Record the payment that prepare_invoice_payment quoted, using the token it returned. This writes a payment against the invoice, increases the amount credited, and moves the invoice to partially paid or paid — it is a money movement in the books and there is no undo tool, so only call it once the amount has been confirmed with the person you are acting for. The token is single-use and valid only for the invoice and amount that were quoted. Returns the recorded payment's id and number, and the invoice's new credited amount, remaining balance, and payment status.",
+      "why": "Once the figures are agreed, the payment still has to be written into the books.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "token",
+          "type": "string",
+          "description": "The confirmation token returned by prepare_invoice_payment. Required."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "description": "Payment reference, such as a bank transfer or cheque number."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Free-text note stored with the payment."
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "description": "Date the payment was received, as YYYY-MM-DD. Defaults to today."
+        }
+      ]
+    },
+    {
+      "id": "get_finance_summary",
+      "name": "get_finance_summary",
+      "description": "Return the headline finance numbers for the whole book: total invoiced, total still outstanding, invoice counts and percentages by status, and how many customers are new or active. Use this to answer questions like how much are we owed or how are we doing this month, without paging through the invoice list. Takes an optional period of week, month, or year for the customer figures. Returns the totals, the per-status breakdown, and the period used.",
+      "why": "Whoever runs the business wants one number for how much is owed, not a list to add up.",
+      "status": "approved",
+      "params": [
+        {
+          "name": "period",
+          "type": "string",
+          "description": "One of week, month, or year, used for the new and active customer figures. Defaults to month."
+        }
+      ]
+    }
+  ]
+}

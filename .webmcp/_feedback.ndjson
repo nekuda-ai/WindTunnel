@@ -1,0 +1,4 @@
+
+{"type":"submit","picks":[{"suggestion":"find_customers","note":""},{"suggestion":"create_customer","note":""},{"suggestion":"find_invoices","note":""},{"suggestion":"get_invoice","note":""},{"suggestion":"create_invoice","note":""},{"suggestion":"prepare_invoice_payment","note":""},{"suggestion":"confirm_invoice_payment","note":""},{"suggestion":"get_finance_summary","note":""}],"ts":"2026-08-18T12:45:37.440Z"}
+
+{"type":"approve","ts":"2026-08-18T12:56:15.239Z"}

@@ -1,0 +1,1046 @@
+diff --git a/frontend/src/apps/IdurarOs.jsx b/frontend/src/apps/IdurarOs.jsx
+index 517aa95..7009223 100644
+--- a/frontend/src/apps/IdurarOs.jsx
++++ b/frontend/src/apps/IdurarOs.jsx
+@@ -7,12 +7,14 @@ import PageLoader from '@/components/PageLoader';
+ import AuthRouter from '@/router/AuthRouter';
+ import Localization from '@/locale/Localization';
+ import { notification } from 'antd';
++import WebmcpProvider from '@/webmcp/WebmcpProvider';
+ 
+ const ErpApp = lazy(() => import('./ErpApp'));
+ 
+ const DefaultApp = () => (
+   <Localization>
+     <AppContextProvider>
++      <WebmcpProvider />
+       <Suspense fallback={<PageLoader />}>
+         <ErpApp />
+       </Suspense>
+diff --git a/frontend/src/webmcp/WebmcpProvider.jsx b/frontend/src/webmcp/WebmcpProvider.jsx
+new file mode 100644
+index 0000000..6d86559
+--- /dev/null
++++ b/frontend/src/webmcp/WebmcpProvider.jsx
+@@ -0,0 +1,53 @@
++import { useEffect } from 'react';
++import { useNavigate } from 'react-router-dom';
++import { registerTools } from '@nekuda/webmcp';
++
++import { setNavigate } from './runtime';
++import { clearIntents } from './payment_intents';
++
++import { findCustomers } from './find_customers';
++import { createCustomer } from './create_customer';
++import { findInvoices } from './find_invoices';
++import { getInvoice } from './get_invoice';
++import { createInvoice } from './create_invoice';
++import { prepareInvoicePayment } from './prepare_invoice_payment';
++import { confirmInvoicePayment } from './confirm_invoice_payment';
++import { getFinanceSummary } from './get_finance_summary';
++
++const tools = [
++  findCustomers,
++  createCustomer,
++  findInvoices,
++  getInvoice,
++  createInvoice,
++  prepareInvoicePayment,
++  confirmInvoicePayment,
++  getFinanceSummary,
++];
++
++/**
++ * Registers IDURAR's WebMCP tools for the signed-in admin.
++ *
++ * Every tool here reads or writes company data, so this provider is mounted only
++ * on the authenticated side of the app: it registers on mount and unregisters on
++ * unmount, which is what a sign-out does. Any prepared payment is dropped at the
++ * same time, so a token can never outlive the session that produced it.
++ */
++export default function WebmcpProvider() {
++  const navigate = useNavigate();
++
++  useEffect(() => {
++    setNavigate(navigate);
++    return () => setNavigate(null);
++  }, [navigate]);
++
++  useEffect(() => {
++    const registration = registerTools(tools);
++    return () => {
++      registration.unregister();
++      clearIntents();
++    };
++  }, []);
++
++  return null;
++}
+diff --git a/frontend/src/webmcp/confirm_invoice_payment.js b/frontend/src/webmcp/confirm_invoice_payment.js
+new file mode 100644
+index 0000000..8655a49
+--- /dev/null
++++ b/frontend/src/webmcp/confirm_invoice_payment.js
+@@ -0,0 +1,103 @@
++import { defineTool } from '@nekuda/webmcp';
++import { erp } from '@/redux/erp/actions';
++import { request } from '@/request';
++import { asDateOnly, balanceDue, dispatch, goTo, money, unwrap } from './runtime';
++import { claimIntent } from './payment_intents';
++
++async function nextPaymentNumber() {
++  // Number from the record count rather than by sorting: the list endpoint takes
++  // its sort direction off the query string and rejects it as a string. Payment
++  // numbers are not unique-constrained here (the app's own form just defaults to
++  // 1), so a count-derived number is the same guarantee the app already gives.
++  const response = await request.list({ entity: 'payment', options: { page: 1, items: 1 } });
++  unwrap(response, 'reading the payment numbering');
++  return (response.pagination?.count ?? 0) + 1;
++}
++
++export const confirmInvoicePayment = defineTool({
++  stableKey: 'billing.payments.confirm',
++  name: 'confirm_invoice_payment',
++  title: 'Record a payment',
++  description:
++    'Record the payment that prepare_invoice_payment quoted, using the token it returned. This writes a payment against the invoice, increases the amount credited, and moves the invoice to partially paid or paid — it is a money movement in the books and there is no undo tool, so only call it once the amount has been confirmed with the person you are acting for. The token is single-use and valid only for the invoice and amount that were quoted. Returns the recorded payment\'s id and number, and the invoice\'s new credited amount, remaining balance, and payment status.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      token: {
++        type: 'string',
++        description: 'The confirmation token returned by prepare_invoice_payment.',
++      },
++      reference: {
++        type: 'string',
++        description: 'Payment reference, such as a bank transfer or cheque number.',
++      },
++      description: { type: 'string', description: 'Free-text note stored with the payment.' },
++      date: {
++        type: 'string',
++        description: 'Date the payment was received, as YYYY-MM-DD. Defaults to today.',
++      },
++    },
++    required: ['token'],
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: false },
++  async execute({ token, reference, description, date } = {}) {
++    const intent = claimIntent(token);
++
++    // Re-read the invoice rather than trusting the quote: another user or an
++    // earlier call may have moved the balance since the token was issued.
++    const invoice = unwrap(
++      await request.read({ entity: 'invoice', id: intent.invoiceId }),
++      `re-reading invoice ${intent.invoiceNumber}/${intent.invoiceYear}`
++    );
++    const due = balanceDue(invoice);
++    if (intent.amount > due) {
++      throw new Error(
++        `the balance on invoice ${invoice.number}/${invoice.year} has changed to ${due} since this payment was prepared — call prepare_invoice_payment again`
++      );
++    }
++
++    const jsonData = {
++      number: await nextPaymentNumber(),
++      date: asDateOnly(date, 'date') || new Date().toISOString(),
++      amount: intent.amount,
++      invoice: invoice._id,
++      client: invoice.client?._id || invoice.client,
++    };
++    if (reference) jsonData.ref = String(reference);
++    if (description) jsonData.description = String(description);
++
++    const payment = unwrap(
++      await request.create({ entity: 'payment', jsonData }),
++      `recording a payment against invoice ${invoice.number}/${invoice.year}`
++    );
++
++    // The app's own record-payment screen ends by refreshing the invoice list and
++    // returning to it; do the same so the new figures are on screen.
++    await dispatch(erp.list({ entity: 'invoice' }));
++    goTo('/invoice');
++
++    const credited = money((invoice.credit || 0) + intent.amount);
++    const remaining = money(due - intent.amount);
++
++    return {
++      payment: {
++        id: payment._id,
++        number: payment.number,
++        amount: money(payment.amount),
++        date: payment.date,
++        reference: payment.ref || null,
++      },
++      invoice: {
++        id: invoice._id,
++        number: invoice.number,
++        year: invoice.year,
++        customer: invoice.client?.name || null,
++        total: money(invoice.total),
++        paid: credited,
++        balance_due: remaining,
++        payment_status: remaining === 0 ? 'paid' : 'partially',
++      },
++    };
++  },
++});
+diff --git a/frontend/src/webmcp/create_customer.js b/frontend/src/webmcp/create_customer.js
+new file mode 100644
+index 0000000..a0fe9d9
+--- /dev/null
++++ b/frontend/src/webmcp/create_customer.js
+@@ -0,0 +1,55 @@
++import { defineTool } from '@nekuda/webmcp';
++import { crud } from '@/redux/crud/actions';
++import { request } from '@/request';
++import { customerSummary, dispatch, goTo, unwrap } from './runtime';
++
++export const createCustomer = defineTool({
++  stableKey: 'crm.customers.create',
++  name: 'create_customer',
++  title: 'Add a customer',
++  description:
++    'Add a new customer to the CRM and show it in the customer table. Use this when the person or company you need to invoice is not on file yet; check with find_customers first, because this does not detect duplicates. Requires a name; email, phone, country, and address are optional. Returns the new customer\'s id and saved fields.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      name: {
++        type: 'string',
++        minLength: 1,
++        description: "The customer's name or company name.",
++      },
++      email: { type: 'string', description: 'Contact email address.' },
++      phone: { type: 'string', description: 'Contact phone number.' },
++      country: {
++        type: 'string',
++        description: 'Country, as a two-letter code such as US or IL.',
++      },
++      address: { type: 'string', description: 'Postal address.' },
++    },
++    required: ['name'],
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: false },
++  async execute({ name, email, phone, country, address } = {}) {
++    const customerName = String(name || '').trim();
++    if (!customerName) {
++      throw new Error('a customer name is required');
++    }
++
++    const jsonData = { name: customerName };
++    if (email) jsonData.email = String(email).trim();
++    if (phone) jsonData.phone = String(phone).trim();
++    if (country) jsonData.country = String(country).trim();
++    if (address) jsonData.address = String(address).trim();
++
++    const created = unwrap(
++      await request.create({ entity: 'client', jsonData }),
++      `creating customer "${customerName}"`
++    );
++
++    goTo('/customer');
++    // Reload the table so the new row is visible where the user is looking.
++    await dispatch(crud.list({ entity: 'client', options: { page: 1, items: 10 } }));
++
++    return { customer: customerSummary(created) };
++  },
++});
+diff --git a/frontend/src/webmcp/create_invoice.js b/frontend/src/webmcp/create_invoice.js
+new file mode 100644
+index 0000000..0b45bbf
+--- /dev/null
++++ b/frontend/src/webmcp/create_invoice.js
+@@ -0,0 +1,137 @@
++import { defineTool } from '@nekuda/webmcp';
++import { erp } from '@/redux/erp/actions';
++import { request } from '@/request';
++import {
++  asDateOnly,
++  dispatch,
++  financeSettings,
++  goTo,
++  invoiceSummary,
++  money,
++  resolveCustomer,
++  unwrap,
++} from './runtime';
++
++const DEFAULT_TERM_DAYS = 30;
++
++export const createInvoice = defineTool({
++  stableKey: 'billing.invoices.create',
++  name: 'create_invoice',
++  title: 'Draft an invoice',
++  description:
++    'Create a new invoice for an existing customer and open it. Use this to bill a customer for one or more line items; identify the customer by name (it must already be on file — create_customer adds one) or by id. The invoice is always created as a draft, so nothing is sent to the customer and it can be reviewed or changed in the app before it goes out; the invoice number is taken from the app\'s own numbering settings. Returns the created invoice\'s id, number, line items, subtotal, tax, and total.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      customer: {
++        type: 'string',
++        description:
++          "The customer's name or id. Must already exist; the name must match exactly one customer.",
++      },
++      items: {
++        type: 'array',
++        minItems: 1,
++        description: 'The line items to bill.',
++        items: {
++          type: 'object',
++          properties: {
++            item_name: { type: 'string', minLength: 1, description: 'What is being billed.' },
++            description: { type: 'string', description: 'Optional detail for this line.' },
++            quantity: { type: 'number', exclusiveMinimum: 0, description: 'How many units.' },
++            price: { type: 'number', minimum: 0, description: 'Price per unit.' },
++          },
++          required: ['item_name', 'quantity', 'price'],
++          additionalProperties: false,
++        },
++      },
++      tax_rate: {
++        type: 'number',
++        minimum: 0,
++        default: 0,
++        description: 'Tax rate as a percentage, for example 17 for 17%.',
++      },
++      date: { type: 'string', description: 'Invoice date as YYYY-MM-DD. Defaults to today.' },
++      due_date: {
++        type: 'string',
++        description: 'Date the invoice expires as YYYY-MM-DD. Defaults to 30 days after the invoice date.',
++      },
++      notes: { type: 'string', description: 'Free-text notes shown on the invoice.' },
++    },
++    required: ['customer', 'items'],
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: false },
++  async execute({ customer, items, tax_rate, date, due_date, notes } = {}) {
++    if (!Array.isArray(items) || items.length === 0) {
++      throw new Error('an invoice needs at least one line item');
++    }
++
++    const client = await resolveCustomer(customer);
++    const { last_invoice_number: lastNumber } = financeSettings();
++
++    const invoiceDate = asDateOnly(date, 'date') || new Date().toISOString();
++    const dueDate =
++      asDateOnly(due_date, 'due_date') ||
++      new Date(
++        new Date(invoiceDate).getTime() + DEFAULT_TERM_DAYS * 24 * 60 * 60 * 1000
++      ).toISOString();
++
++    const lineItems = items.map((item, index) => {
++      const quantity = Number(item.quantity);
++      const price = Number(item.price);
++      if (!Number.isFinite(quantity) || quantity <= 0) {
++        throw new Error(`line ${index + 1} needs a quantity above 0`);
++      }
++      if (!Number.isFinite(price) || price < 0) {
++        throw new Error(`line ${index + 1} needs a price of 0 or more`);
++      }
++      return {
++        itemName: String(item.item_name).trim(),
++        description: item.description ? String(item.description) : '',
++        quantity,
++        price,
++        total: money(quantity * price),
++      };
++    });
++
++    // Only the keys the invoice endpoint's own validator accepts, in the same
++    // shape the app's create form posts. Status is pinned to draft: drafting is
++    // reversible, sending an invoice to a customer is not, so that step stays a
++    // human action in the app.
++    const jsonData = {
++      client: client._id,
++      number: (lastNumber ?? 0) + 1,
++      year: new Date(invoiceDate).getFullYear(),
++      status: 'draft',
++      date: invoiceDate,
++      expiredDate: dueDate,
++      items: lineItems,
++      taxRate: tax_rate ?? 0,
++      notes: notes ? String(notes) : '',
++    };
++
++    const created = unwrap(
++      await request.create({ entity: 'invoice', jsonData }),
++      `creating an invoice for ${client.name}`
++    );
++
++    await dispatch(erp.currentItem({ data: created }));
++    goTo(`/invoice/read/${created._id}`);
++
++    return {
++      invoice: {
++        ...invoiceSummary({ ...created, client }),
++        items: (created.items || []).map((item) => ({
++          item_name: item.itemName,
++          quantity: item.quantity,
++          price: money(item.price),
++          total: money(item.total),
++        })),
++        sub_total: money(created.subTotal),
++        tax_rate: created.taxRate ?? 0,
++        tax_total: money(created.taxTotal),
++      },
++      note: 'Created as a draft — review it in the app and send it from there.',
++    };
++  },
++});
+diff --git a/frontend/src/webmcp/find_customers.js b/frontend/src/webmcp/find_customers.js
+new file mode 100644
+index 0000000..f56b9cf
+--- /dev/null
++++ b/frontend/src/webmcp/find_customers.js
+@@ -0,0 +1,61 @@
++import { defineTool } from '@nekuda/webmcp';
++import { crud } from '@/redux/crud/actions';
++import { customerSummary, dispatch, getState, goTo } from './runtime';
++
++const SEARCH_FIELDS = 'name,email,phone';
++
++export const findCustomers = defineTool({
++  stableKey: 'crm.customers.find',
++  name: 'find_customers',
++  title: 'Find customers',
++  description:
++    "Search the CRM's customer list by name, email, or phone and show the matches in the customer table. Use this to look up a customer before invoicing them, to confirm a company is already on file, or to browse who exists. Returns each match's id, name, email, phone, country, and address, plus the total number of matches; returns an empty list with a note when nothing matches.",
++  inputSchema: {
++    type: 'object',
++    properties: {
++      query: {
++        type: 'string',
++        description: 'Text to match against customer name, email, and phone. Omit to list all customers.',
++      },
++      limit: {
++        type: 'integer',
++        minimum: 1,
++        maximum: 50,
++        default: 10,
++        description: 'How many customers to return.',
++      },
++    },
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ query, limit } = {}) {
++    const term = String(query || '').trim();
++    const options = { page: 1, items: limit ?? 10 };
++    if (term) {
++      options.q = term;
++      options.fields = SEARCH_FIELDS;
++    }
++
++    goTo('/customer');
++    // The same dispatch the customer table's own search box makes, so the rows on
++    // screen are the rows this tool reports.
++    await dispatch(crud.list({ entity: 'client', options }));
++
++    const { result, isSuccess } = getState().crud.list;
++    if (!isSuccess) {
++      throw new Error('finding customers failed: the customer list could not be loaded');
++    }
++
++    const customers = (result?.items || []).map(customerSummary);
++    const response = {
++      customers,
++      total_matches: result?.pagination?.total ?? customers.length,
++    };
++    if (customers.length === 0) {
++      response.note = term
++        ? `No customer matches "${term}".`
++        : 'There are no customers on file yet.';
++    }
++    return response;
++  },
++});
+diff --git a/frontend/src/webmcp/find_invoices.js b/frontend/src/webmcp/find_invoices.js
+new file mode 100644
+index 0000000..349db2f
+--- /dev/null
++++ b/frontend/src/webmcp/find_invoices.js
+@@ -0,0 +1,99 @@
++import { defineTool } from '@nekuda/webmcp';
++import { erp } from '@/redux/erp/actions';
++import { dispatch, getState, goTo, invoiceSummary, resolveCustomer } from './runtime';
++
++const PAYMENT_STATUSES = ['unpaid', 'partially', 'paid'];
++const STATUSES = ['draft', 'pending', 'sent', 'refunded', 'cancelled', 'on hold'];
++
++export const findInvoices = defineTool({
++  stableKey: 'billing.invoices.find',
++  name: 'find_invoices',
++  title: 'Find invoices',
++  description:
++    'List and filter invoices — by payment status (unpaid, partially, paid), by workflow status (draft, pending, sent, refunded, cancelled, on hold), by customer, or by free text — and show the result in the invoice table. Use this to answer questions like which invoices are unpaid or what a given customer has been billed. Returns each invoice\'s id, number, year, customer name, date, expiry date, total, amount already credited, currency, status, and payment status, plus the total match count; returns an empty list with a note when nothing matches.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      payment_status: {
++        type: 'string',
++        enum: PAYMENT_STATUSES,
++        description: 'Show only invoices with this payment status.',
++      },
++      status: {
++        type: 'string',
++        enum: STATUSES,
++        description: 'Show only invoices with this workflow status.',
++      },
++      customer: {
++        type: 'string',
++        description: "Customer name or customer id; only that customer's invoices are returned.",
++      },
++      page: { type: 'integer', minimum: 1, default: 1, description: '1-based page number.' },
++      limit: {
++        type: 'integer',
++        minimum: 1,
++        maximum: 50,
++        default: 10,
++        description: 'How many invoices per page.',
++      },
++    },
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ payment_status, status, customer, page, limit } = {}) {
++    // The invoice list endpoint takes one filter field, exactly as the app's own
++    // table does. Narrowing on two at once would quietly drop one of them, so ask
++    // for a single filter and let the caller read the rest off the returned rows.
++    const requested = [
++      customer ? 'customer' : null,
++      payment_status ? 'payment_status' : null,
++      status ? 'status' : null,
++    ].filter(Boolean);
++    if (requested.length > 1) {
++      throw new Error(
++        `this app's invoice list filters on one field at a time, but ${requested.join(' and ')} were both given — filter by one and read the other off each returned invoice`
++      );
++    }
++
++    const options = { page: page ?? 1, items: limit ?? 10 };
++    let resolvedCustomer = null;
++
++    if (customer) {
++      resolvedCustomer = await resolveCustomer(customer);
++      options.filter = 'client';
++      options.equal = resolvedCustomer._id;
++    } else if (payment_status) {
++      options.filter = 'paymentStatus';
++      options.equal = payment_status;
++    } else if (status) {
++      options.filter = 'status';
++      options.equal = status;
++    }
++
++    goTo('/invoice');
++    // The invoice table renders straight off this dispatch, so the page shows the
++    // same filtered set the agent is reading.
++    await dispatch(erp.list({ entity: 'invoice', options }));
++
++    const { result, isSuccess } = getState().erp.list;
++    if (!isSuccess) {
++      throw new Error('finding invoices failed: the invoice list could not be loaded');
++    }
++
++    const invoices = (result?.items || []).map(invoiceSummary);
++    const response = {
++      invoices,
++      total_matches: result?.pagination?.total ?? invoices.length,
++      page: options.page,
++    };
++    if (resolvedCustomer) {
++      response.customer = { id: resolvedCustomer._id, name: resolvedCustomer.name };
++    }
++    if (invoices.length === 0) {
++      response.note = requested.length
++        ? `No invoice matches that ${requested[0].replace('_', ' ')}.`
++        : 'There are no invoices on file yet.';
++    }
++    return response;
++  },
++});
+diff --git a/frontend/src/webmcp/get_finance_summary.js b/frontend/src/webmcp/get_finance_summary.js
+new file mode 100644
+index 0000000..9750448
+--- /dev/null
++++ b/frontend/src/webmcp/get_finance_summary.js
+@@ -0,0 +1,52 @@
++import { defineTool } from '@nekuda/webmcp';
++import { request } from '@/request';
++import { money, unwrap } from './runtime';
++
++const PERIODS = ['week', 'month', 'year'];
++
++export const getFinanceSummary = defineTool({
++  stableKey: 'billing.summary.get',
++  name: 'get_finance_summary',
++  title: 'Finance summary',
++  description:
++    'Return the headline finance numbers for the whole book: total invoiced, total still outstanding, invoice counts and percentages by status, and how many customers are new or active. Use this to answer questions like how much are we owed or how are we doing this month, without paging through the invoice list. Takes an optional period of week, month, or year for the customer figures. Returns the totals, the per-status breakdown, and the period used.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      period: {
++        type: 'string',
++        enum: PERIODS,
++        default: 'month',
++        description: 'The window used for the new and active customer figures.',
++      },
++    },
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ period } = {}) {
++    const type = period || 'month';
++
++    const [invoices, customers] = await Promise.all([
++      request.summary({ entity: 'invoice', options: { type } }),
++      request.summary({ entity: 'client', options: { type } }),
++    ]);
++
++    const invoiceSummaryResult = unwrap(invoices, 'reading the invoice summary');
++    const customerSummaryResult = unwrap(customers, 'reading the customer summary');
++
++    return {
++      period: type,
++      total_invoiced: money(invoiceSummaryResult.total),
++      total_outstanding: money(invoiceSummaryResult.total_undue),
++      invoices_by_status: (invoiceSummaryResult.performance || []).map((entry) => ({
++        status: entry.status,
++        count: entry.count,
++        percentage: entry.percentage,
++      })),
++      customers: {
++        new_percentage: customerSummaryResult.new,
++        active_percentage: customerSummaryResult.active,
++      },
++    };
++  },
++});
+diff --git a/frontend/src/webmcp/get_invoice.js b/frontend/src/webmcp/get_invoice.js
+new file mode 100644
+index 0000000..c9adb60
+--- /dev/null
++++ b/frontend/src/webmcp/get_invoice.js
+@@ -0,0 +1,68 @@
++import { defineTool } from '@nekuda/webmcp';
++import { erp } from '@/redux/erp/actions';
++import {
++  balanceDue,
++  customerSummary,
++  dispatch,
++  goTo,
++  invoiceSummary,
++  money,
++  resolveInvoice,
++} from './runtime';
++
++export const getInvoice = defineTool({
++  stableKey: 'billing.invoices.get',
++  name: 'get_invoice',
++  title: 'Open an invoice',
++  description:
++    'Open one invoice and return its full detail, identified by its invoice number (with year) or its id. Use this after find_invoices when you need the line items, the tax and totals breakdown, or the exact balance still due before recording a payment. Returns the customer, dates, every line item with quantity and price, subtotal, tax, total, amount already paid, balance due, status, and payment status, and navigates the page to that invoice.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      number: {
++        type: 'integer',
++        description: 'The invoice number as shown in the invoice table. Use with year.',
++      },
++      year: {
++        type: 'integer',
++        description: "The invoice's year. Defaults to the current year when a number is given.",
++      },
++      invoice_id: {
++        type: 'string',
++        description:
++          "The invoice's id, if you already have it from another tool. Use instead of number and year.",
++      },
++    },
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ number, year, invoice_id } = {}) {
++    const invoice = await resolveInvoice({ invoice_id, number, year });
++
++    // Seed the app's current-item state before navigating so the invoice page
++    // renders this record straight away instead of flashing its loader.
++    await dispatch(erp.currentItem({ data: invoice }));
++    goTo(`/invoice/read/${invoice._id}`);
++
++    return {
++      invoice: {
++        ...invoiceSummary(invoice),
++        customer_details: customerSummary(invoice.client),
++        notes: invoice.notes || null,
++        items: (invoice.items || []).map((item) => ({
++          item_name: item.itemName,
++          description: item.description || null,
++          quantity: item.quantity,
++          price: money(item.price),
++          total: money(item.total),
++        })),
++        sub_total: money(invoice.subTotal),
++        tax_rate: invoice.taxRate ?? 0,
++        tax_total: money(invoice.taxTotal),
++        discount: money(invoice.discount),
++        balance_due: balanceDue(invoice),
++        payment_count: (invoice.payment || []).length,
++      },
++    };
++  },
++});
+diff --git a/frontend/src/webmcp/payment_intents.js b/frontend/src/webmcp/payment_intents.js
+new file mode 100644
+index 0000000..513ac26
+--- /dev/null
++++ b/frontend/src/webmcp/payment_intents.js
+@@ -0,0 +1,47 @@
++// The handshake behind the two payment tools. Recording money against an invoice
++// has no undo in this app, so no single agent call is allowed to do it: one tool
++// quotes the payment and mints a token here, a second tool spends the token.
++//
++// Intents live in memory only and are deliberately not persisted — a token must
++// not survive a reload, cross a tab, or outlive the signed-in session.
++
++const TTL_MS = 10 * 60 * 1000;
++
++const intents = new Map();
++let sequence = 0;
++
++export function createIntent(details) {
++  sequence += 1;
++  const token = `pay_${Date.now().toString(36)}_${sequence.toString(36)}`;
++  intents.set(token, { ...details, expiresAt: Date.now() + TTL_MS });
++  return token;
++}
++
++// Single use: the token is spent on the first claim whether or not the write that
++// follows succeeds, so a failed attempt has to be re-quoted rather than retried
++// blind against a balance that may have moved.
++export function claimIntent(token) {
++  const key = String(token || '').trim();
++  if (!key) {
++    throw new Error('a confirmation token from prepare_invoice_payment is required');
++  }
++
++  const intent = intents.get(key);
++  if (!intent) {
++    throw new Error(
++      'that confirmation token is not valid — it was already used, or the page reloaded since it was issued. Call prepare_invoice_payment again.'
++    );
++  }
++  intents.delete(key);
++
++  if (Date.now() > intent.expiresAt) {
++    throw new Error(
++      'that confirmation token has expired. Call prepare_invoice_payment again to re-check the balance.'
++    );
++  }
++  return intent;
++}
++
++export function clearIntents() {
++  intents.clear();
++}
+diff --git a/frontend/src/webmcp/prepare_invoice_payment.js b/frontend/src/webmcp/prepare_invoice_payment.js
+new file mode 100644
+index 0000000..02c5ae8
+--- /dev/null
++++ b/frontend/src/webmcp/prepare_invoice_payment.js
+@@ -0,0 +1,83 @@
++import { defineTool } from '@nekuda/webmcp';
++import { erp } from '@/redux/erp/actions';
++import { balanceDue, dispatch, goTo, money, resolveInvoice } from './runtime';
++import { createIntent } from './payment_intents';
++
++export const prepareInvoicePayment = defineTool({
++  stableKey: 'billing.payments.prepare',
++  name: 'prepare_invoice_payment',
++  title: 'Check a payment before recording it',
++  description:
++    'Check a payment against an invoice before any money is recorded, and open that invoice so it is visible on screen. Use this first whenever you intend to record a payment: it confirms the invoice exists, computes the balance still due, rejects an amount above that balance, and returns a confirmation token. Nothing is written. Returns the invoice number, customer, currency, balance due, the amount that would be recorded, the balance that would remain, and the token that confirm_invoice_payment requires.',
++  inputSchema: {
++    type: 'object',
++    properties: {
++      number: {
++        type: 'integer',
++        description: 'The invoice number to pay against. Use with year.',
++      },
++      year: {
++        type: 'integer',
++        description: "The invoice's year. Defaults to the current year when a number is given.",
++      },
++      invoice_id: {
++        type: 'string',
++        description: "The invoice's id, if you already have it. Use instead of number and year.",
++      },
++      amount: {
++        type: 'number',
++        exclusiveMinimum: 0,
++        description: 'The amount to record. Must be above 0 and no more than the balance due.',
++      },
++    },
++    required: ['amount'],
++    additionalProperties: false,
++  },
++  annotations: { readOnlyHint: true },
++  async execute({ number, year, invoice_id, amount } = {}) {
++    const requested = money(amount);
++    if (!Number.isFinite(requested) || requested <= 0) {
++      throw new Error('the payment amount must be above 0');
++    }
++
++    const invoice = await resolveInvoice({ invoice_id, number, year });
++    const due = balanceDue(invoice);
++    const label = `invoice ${invoice.number}/${invoice.year}`;
++
++    if (due <= 0) {
++      throw new Error(
++        `${label} has nothing outstanding — it is already marked ${invoice.paymentStatus}`
++      );
++    }
++    if (requested > due) {
++      throw new Error(
++        `${requested} is more than the ${due} still due on ${label} — this app will not accept an overpayment`
++      );
++    }
++
++    // Put the invoice on screen so the person being acted for can see what is
++    // about to be paid before the confirming call is made.
++    await dispatch(erp.currentItem({ data: invoice }));
++    goTo(`/invoice/read/${invoice._id}`);
++
++    const token = createIntent({
++      invoiceId: invoice._id,
++      invoiceNumber: invoice.number,
++      invoiceYear: invoice.year,
++      clientId: invoice.client?._id || invoice.client,
++      amount: requested,
++    });
++
++    return {
++      token,
++      invoice_number: invoice.number,
++      invoice_year: invoice.year,
++      customer: invoice.client?.name || null,
++      currency: invoice.currency,
++      balance_due: due,
++      amount_to_record: requested,
++      balance_after: money(due - requested),
++      note: 'Nothing has been recorded yet. Confirm the amount, then call confirm_invoice_payment with this token.',
++    };
++  },
++});
+diff --git a/frontend/src/webmcp/runtime.js b/frontend/src/webmcp/runtime.js
+new file mode 100644
+index 0000000..6ec7946
+--- /dev/null
++++ b/frontend/src/webmcp/runtime.js
+@@ -0,0 +1,189 @@
++import store from '@/redux/store';
++import { request } from '@/request';
++
++// Shared plumbing for the WebMCP tool modules. Every tool goes through the app's
++// own redux actions and request layer, so it runs on the signed-in admin's
++// session and the page the user is looking at moves with it.
++
++let navigateFn = null;
++
++// The router's navigate() only exists inside the component tree, so the provider
++// hands it over on mount and takes it back on unmount.
++export function setNavigate(fn) {
++  navigateFn = fn;
++}
++
++export function goTo(path) {
++  if (typeof navigateFn !== 'function') {
++    throw new Error('cannot navigate: the WebMCP tool provider is not mounted');
++  }
++  navigateFn(path);
++}
++
++export function dispatch(action) {
++  return store.dispatch(action);
++}
++
++export function getState() {
++  return store.getState();
++}
++
++// IDURAR answers every API call with { success, result, message }. Anything other
++// than success is the server refusing, and the agent has to hear why.
++export function unwrap(response, action) {
++  if (!response || response.success !== true) {
++    throw new Error(`${action} failed: ${response?.message || 'the server refused the request'}`);
++  }
++  return response.result;
++}
++
++function currentSettings() {
++  return store.getState().settings?.result || {};
++}
++
++export function financeSettings() {
++  const finance = currentSettings().finance_settings;
++  if (!finance || finance.last_invoice_number === undefined) {
++    throw new Error('the app has not loaded its finance settings yet — reload the page and retry');
++  }
++  return finance;
++}
++
++export function defaultCurrency() {
++  return currentSettings().money_format_settings?.default_currency_code || 'USD';
++}
++
++const OBJECT_ID = /^[a-f\d]{24}$/i;
++
++export function isObjectId(value) {
++  return OBJECT_ID.test(String(value || '').trim());
++}
++
++export function asDateOnly(value, label) {
++  if (value === undefined || value === null || value === '') return null;
++  const parsed = new Date(value);
++  if (Number.isNaN(parsed.getTime())) {
++    throw new Error(`${label} is not a date this app understands: "${value}" (use YYYY-MM-DD)`);
++  }
++  return parsed.toISOString();
++}
++
++// Money in this app is stored as plain numbers, so keep the rounding in one place
++// rather than letting each tool invent its own.
++export function money(value) {
++  return Math.round((Number(value) || 0) * 100) / 100;
++}
++
++export function balanceDue(invoice) {
++  return money((invoice.total || 0) - (invoice.discount || 0) - (invoice.credit || 0));
++}
++
++// Both the invoicing tools and the invoice filter need to turn whatever the agent
++// called a customer into one specific record, and both must refuse to guess.
++export async function resolveCustomer(customer) {
++  const value = String(customer || '').trim();
++  if (!value) {
++    throw new Error('a customer name or id is required');
++  }
++
++  if (isObjectId(value)) {
++    return unwrap(
++      await request.read({ entity: 'client', id: value }),
++      `looking up customer ${value}`
++    );
++  }
++
++  const matches = unwrap(
++    await request.list({
++      entity: 'client',
++      options: { q: value, fields: 'name,email', page: 1, items: 20 },
++    }),
++    `searching customers for "${value}"`
++  );
++
++  const exact = matches.filter((item) => item.name?.toLowerCase() === value.toLowerCase());
++  const shortlist = exact.length > 0 ? exact : matches;
++
++  if (shortlist.length === 0) {
++    throw new Error(`no customer matches "${value}" — add one with create_customer first`);
++  }
++  if (shortlist.length > 1) {
++    const names = shortlist.map((item) => item.name).join(', ');
++    throw new Error(
++      `"${value}" matches ${shortlist.length} customers (${names}) — pass the exact name or the customer id`
++    );
++  }
++  return shortlist[0];
++}
++
++// Agents know an invoice by the number printed on it, not by its database id, so
++// every invoice-shaped tool accepts either and lands on one record or throws.
++export async function resolveInvoice({ invoice_id, number, year } = {}) {
++  if (invoice_id) {
++    if (!isObjectId(invoice_id)) {
++      throw new Error(`"${invoice_id}" is not an invoice id`);
++    }
++    return unwrap(
++      await request.read({ entity: 'invoice', id: invoice_id }),
++      `opening invoice ${invoice_id}`
++    );
++  }
++
++  if (number === undefined || number === null || number === '') {
++    throw new Error('pass an invoice number (with its year), or an invoice_id');
++  }
++
++  const wantedYear = year ?? new Date().getFullYear();
++  const sameNumber = unwrap(
++    await request.list({
++      entity: 'invoice',
++      options: { filter: 'number', equal: number, page: 1, items: 50 },
++    }),
++    `looking up invoice ${number}`
++  );
++
++  const found = sameNumber.find((item) => item.year === wantedYear);
++  if (!found) {
++    const years = [...new Set(sameNumber.map((item) => item.year))].sort();
++    throw new Error(
++      years.length > 0
++        ? `there is no invoice ${number} for ${wantedYear} — invoice ${number} exists for ${years.join(', ')}`
++        : `there is no invoice numbered ${number}`
++    );
++  }
++
++  return unwrap(
++    await request.read({ entity: 'invoice', id: found._id }),
++    `opening invoice ${number}/${wantedYear}`
++  );
++}
++
++export function customerSummary(client) {
++  if (!client) return null;
++  return {
++    id: client._id,
++    name: client.name,
++    email: client.email || null,
++    phone: client.phone || null,
++    country: client.country || null,
++    address: client.address || null,
++  };
++}
++
++export function invoiceSummary(invoice) {
++  return {
++    id: invoice._id,
++    number: invoice.number,
++    year: invoice.year,
++    customer: invoice.client?.name || null,
++    customer_id: invoice.client?._id || invoice.client || null,
++    date: invoice.date,
++    due_date: invoice.expiredDate,
++    currency: invoice.currency,
++    total: money(invoice.total),
++    paid: money(invoice.credit),
++    balance_due: balanceDue(invoice),
++    status: invoice.status,
++    payment_status: invoice.paymentStatus,
++  };
++}
+diff --git a/frontend/vite.config.js b/frontend/vite.config.js
+index 1c4f6cc..965b311 100644
+--- a/frontend/vite.config.js
++++ b/frontend/vite.config.js
+@@ -17,6 +17,9 @@ export default ({ mode }) => {
+       base: '/',
+       alias: {
+         '@': path.resolve(__dirname, 'src'),
++        // The WebMCP SDK is vendored in this workspace rather than installed from a
++        // registry, so point its package name at the prebuilt browser bundle.
++        '@nekuda/webmcp': path.resolve(__dirname, '../vendor/nekuda-webmcp/dist/index.js'),
+       },
+     },
+     server: {
