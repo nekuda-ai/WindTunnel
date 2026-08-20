@@ -8,9 +8,15 @@ tasks:
       type: answer
       contains_any: [tailwind nextjs starter blog, multi-part posts]
   - id: blog-read-author
+    start_path: /about
     tier: answer
-    prompt: Who authors this blog?
-    # No author probe in the oracle — the seeded author is Tails Azimuth.
+    prompt: Who is the author shown on this About page?
+    # No author probe in the oracle. "Who authors this blog?" was ambiguous:
+    # the site carries a default author (Tails Azimuth), post co-authors
+    # (Sparrow Hawk), and the template's own credit (Timothy Lin), and the
+    # ask_site index legitimately indexes co-authors too. app/about/page.tsx
+    # renders the `default` author only, so naming the page pins the answer
+    # without rewriting site content.
     predicate:
       type: answer
       contains: [azimuth]

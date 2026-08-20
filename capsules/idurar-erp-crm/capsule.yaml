@@ -38,7 +38,8 @@
   },
   "fixtures": {
     "admin": "Upstream deterministic setup account admin@admin.com / admin123",
-    "crm": "One local Acme Evaluation client and one draft invoice created through authenticated APIs"
+    "crm": "One local Acme Evaluation client and one draft invoice created through authenticated APIs",
+    "financeDefaults": "Upstream Tax 0% and Default Payment restored by compatibility.patch \u2014 the visible invoice and payment forms require them"
   },
   "acceptance": {
     "publicPath": "/login",
@@ -51,13 +52,13 @@
     "observation": {
       "probe": "database",
       "arguments": {},
-      "assert": ".administrators >= 1 and .clients >= 1 and .invoices >= 1 and (.clientNames | index(\"Acme Evaluation\") != null)",
+      "assert": ".administrators >= 1 and .clients >= 1 and .invoices >= 1 and (.clientNames | index(\"Acme Evaluation\") != null) and .taxListStatus == 200 and .taxOptions == 1 and .taxDefaults == 1 and .defaultTaxName == \"Tax 0%\" and .defaultTaxValue == 0 and .paymentModeListStatus == 200 and .paymentModeOptions == 1 and .paymentModeDefaults == 1 and .defaultPaymentModeName == \"Default Payment\"",
       "mutation": {
         "probe": "rename_client",
         "arguments": {"from": "Acme Evaluation", "to": "WebMCP Reset Sentinel"},
         "assert": ".affectedRows == 1 and (.clientNames | index(\"WebMCP Reset Sentinel\") != null)"
       },
-      "resetAssert": ".administrators >= 1 and .clients >= 1 and .invoices >= 1 and (.clientNames | index(\"Acme Evaluation\") != null) and (.clientNames | index(\"WebMCP Reset Sentinel\") == null)"
+      "resetAssert": ".administrators >= 1 and .clients >= 1 and .invoices >= 1 and (.clientNames | index(\"Acme Evaluation\") != null) and (.clientNames | index(\"WebMCP Reset Sentinel\") == null) and .taxListStatus == 200 and .taxOptions == 1 and .taxDefaults == 1 and .defaultTaxName == \"Tax 0%\" and .defaultTaxValue == 0 and .paymentModeListStatus == 200 and .paymentModeOptions == 1 and .paymentModeDefaults == 1 and .defaultPaymentModeName == \"Default Payment\""
     }
   },
   "actors": [

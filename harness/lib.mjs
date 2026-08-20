@@ -3,13 +3,30 @@ import { randomUUID } from "node:crypto";
 export const CSV_COLUMNS = [
   "run_id", "task_id", "arm", "model", "tool_version", "site", "start_url",
   "success", "failure_category", "wall_clock_s", "reset_s", "setup_s", "agent_s", "model_turns",
-  "actions_or_tool_calls", "input_tokens", "output_tokens", "cached_tokens", "caching", "est_cost_usd", "cost_estimated",
+  "actions_or_tool_calls", "input_tokens", "output_tokens", "cached_tokens", "cache_write_tokens", "caching", "est_cost_usd", "cost_estimated",
+  "snapshot_source", "stop_reason", "refusal", "truncated", "effort",
   "retries", "retry_wait_ms", "budget_exhausted", "temperature",
   "perturbation_id", "spec_shape", "rescored", "source", "timestamp",
 ];
 
+// A provider outage must never be charged to the model's task ability. These
+// signatures are the ones a Claude/OpenAI incident actually produces —
+// `rate_limit_error`, `api_error`, `service_unavailable` and the SDK's
+// "Connection error." carry no numeric code, and raw socket errors carry no
+// HTTP status at all, so a status-code-only rule silently scored them as agent
+// failures. Deliberately NOT matched: "attempt timeout: <n>s agent budget"
+// (a real timeout under the declared cap) and bridge-registration failures,
+// which are site/harness outcomes rather than provider outages.
+const INFRA = new RegExp([
+  "\\b429\\b", "\\b5(?!55\\b)\\d\\d\\b", "overloaded", "insufficient_quota", "quota",
+  "rate[ _-]?limit", "api_error", "service[ _-]?unavailable", "internal server error",
+  "connection error", "apiconnectionerror", "request timed out", "socket hang up", "upstream (?:connect|request)",
+  "econnreset", "econnrefused", "etimedout", "enotfound", "eai_again", "epipe",
+  "capsule (?:boot|reset)", "boot-timeout", "reset-timeout", "probe-error:", "fetch failed",
+].join("|"), "i");
+
 export function classifyFailure(message) {
-  return /(?:\b429\b|\b5\d\d\b|overloaded|insufficient_quota|quota|capsule (?:boot|reset)|boot-timeout|reset-timeout|probe-error:|fetch failed)/i.test(String(message)) ? "infra" : "agent";
+  return INFRA.test(String(message)) ? "infra" : "agent";
 }
 
 export function isInfraRow(row) {
@@ -33,6 +50,10 @@ export const PRICES = [
   ["claude-fable-5", [10, 50, 1, 12.5]],
   ["claude-opus-5", [5, 25, 0.5, 6.25]],
   ["claude-opus-4", [5, 25, 0.5, 6.25]],
+  // Standard list rates. An introductory $2/$10 applies through 2026-08-31;
+  // pinning list keeps cost-per-task comparable with the other models and
+  // reproducible afterwards, and makes the budget cap bind conservatively.
+  ["claude-sonnet-5", [3, 15, 0.3, 3.75]],
   ["claude-sonnet-4-6", [3, 15, 0.3, 3.75]],
   ["claude-sonnet-4", [3, 15, 0.3, 3.75]],
   ["claude-haiku-4", [1, 5, 0.1, 1.25]],

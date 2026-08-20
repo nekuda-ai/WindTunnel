@@ -5,6 +5,7 @@ import asyncio
 import importlib.metadata
 import json
 import os
+import re
 import sys
 import time
 
@@ -48,6 +49,21 @@ async def main():
         }))
         return
 
+    def build_llm(model):
+        """Pick the provider adapter from the model id.
+
+        The dom-browseruse arm is reused across providers via --model, so a
+        gpt-* model must use the OpenAI chat adapter, not ChatAnthropic.
+        Sampling: Claude 4.7+ and GPT-5.x reasoning models reject a non-default
+        temperature with a 400, so only legacy Claude models send one. Mirrors
+        samplingFor() in arms/prompts.mjs.
+        """
+        if model.startswith("gpt-"):
+            from browser_use.llm import ChatOpenAI
+            return ChatOpenAI(model=model)
+        legacy = re.match(r"^claude-(sonnet-4-[0-6]|opus-4-[0-6]|haiku-4)", model)
+        return ChatAnthropic(model=model, **({"temperature": 0} if legacy else {}))
+
     base_url = sys.argv[1]
     max_steps = int(sys.argv[2]) if len(sys.argv) > 2 else 20
     model = sys.argv[3] if len(sys.argv) > 3 else "claude-sonnet-4-6"
@@ -55,7 +71,10 @@ async def main():
     prompt = sys.stdin.read().strip()
     agent = Agent(
         task=f"Start at {base_url}\n\n{prompt}",
-        llm=ChatAnthropic(model=model, temperature=0),
+        # Claude 4.7+ (Sonnet 5, Opus 5, ...) reject non-default sampling with a
+        # 400; only the older models still accept temperature. Mirrors
+        # SAMPLING_LEGACY in arms/prompts.mjs.
+        llm=build_llm(model),
         browser_profile=BrowserProfile(headless=True, executable_path=(os.environ.get("WT_CHROME") or None)),
         extend_system_message=system,
     )

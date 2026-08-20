@@ -1,0 +1,1016 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "directory-9d8",
+    "arms": [
+      "cu-gemini"
+    ],
+    "seed": 1,
+    "budget": 3,
+    "perturbed": false,
+    "models": {
+      "cu-gemini": "gemini-3.6-flash"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "directory-filter"
+    ],
+    "n": 3,
+    "label": "rerun-cu-gemini-gemini-36-flash-directory-9d8",
+    "fake": false,
+    "model": "gemini-3.6-flash",
+    "armModels": {
+      "cu-gemini": "gemini-3.6-flash"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "directory-9d8",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "directory-filter_cu-gemini_a3e168db-c305-4848-b738-239f036d8d64",
+      "task_id": "directory-filter",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "directory-9d8",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "22.025",
+      "reset_s": "7.789",
+      "setup_s": "3.176",
+      "agent_s": "11.060",
+      "ms": 22025,
+      "model_turns": 3,
+      "actions_or_tool_calls": 5,
+      "input_tokens": 7326,
+      "output_tokens": 327,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 7653,
+      "est_cost_usd": 0.00672075,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:33:05.026Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpMECpAEARFNMg9stI4UBcLHfKtfQ+6vg+dN4FRH2YSM5g+u4NbYtfzfY/IGPyWKmqOdDWiyEf61l1CI5sv4vY+Vp2qyfD/SIoGCbLGNDWSpoZz539yzXWJ7wOFJsd2DX6hmvaha4jzAZ3ZdF49hYJVr3iDitFmsKqyut0fzYjOh/KNaSgFGzP2mWF4rYq+9F78yI3BWiRtiWRh7uA5S6tRw72byx2ydci4KPVRwhstfEvCh9IP1XWTATtA8s5+xMoSE9+WdgJZZbhEKKsXLk3FeHVZna/6NZyABmvkQ0lZRHnxB/3dOZPTnTYrz+4j/mVFzKPFm52f3LfV69RJbarxQ90By90Okk2EcABPthwwx4KP7EgrXBB6ynUXqgfs8E/gxRIJqXD1c3g1JYj02Ohdqy/GfZeHzbDpacuXOch6ddSvkmYc8TI8Wx6XMscKdA0Zy9UNwwNP+NAyR3uT8VVkdNu2MHuJvZAic4W/srHyTvrh+2SgEOrCelKa04/kY0iRSbdLm0koLvLYLOUQRx4seTfEPyqDgq4HmD+wISxASRnsIJW1D/clmPbo0RSaDywomtsDLLBGe9voVHuLh9nG378fxQYrDYTFBCkgwF+fuSYOLKCTX4MgaZC99t3EHoG9UCZzA7a3g5MOHFLsA900QleTJCQUUcP4i/NLtkQZSMaiHaSjeAMoiILbfpxJJ7Y40pMFE",
+              "type": "thought"
+            },
+            {
+              "id": "call_522603",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 581,
+                "y": 665,
+                "intent": "Click on Development filter button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1332,
+            "total_input_tokens": 1179,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 87
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 32,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 121,
+            "raw_prompt_token": 5301
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "x": 581,
+            "y": 665,
+            "intent": "Click on Development filter button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpkDCpYDARFNMg+XmaioV7B4N8QEaE3+GqFY21EMaeEvGek24DhIKRUXjVLf70sJzKO7RFFUhllzYTgUtaLqjdoiQWmoEEuEp5VbaDqpVpeqfLFyaXGfaDG1elg+1L5giIcmnekH9Nl1TvdpM113CZBytKuRD8l4exVCDU3w5RlFg16EC30iAE2zq6gUA/01zM19NNgdTMIhB47NTM0R6iTbX5AGQ7hYF/+uj69sfScbUEn4EtsELAbDFzTjygHleaj5K6ZOcMR9hEI16YP1bssyA0BE86EElLM+/sTMp2QXTyyQX6X/Pf31w7hKF36fNJrXrlHR/Ft6zLqd6EUYZsWP14qiXMgFUvKpHd4uDXmTF7NvD2zdMneu4k1Jm+snrJwo1y/TByg4QLZ3rD3Myf34/arvpln5ULdadNJ90FEfYLn3hvvC41ndmDdYjtkQzrILUoY/hd4V+ouYpLtzRoCyi4xdUCgUAUZW6EW+lrjwqV2ce89Nxgbv9QXdPpxLV9r//B0Rhela84Ocu3M9A4PPYlhRKR6HlT9jdQ==",
+              "type": "thought"
+            },
+            {
+              "id": "call_522614",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "direction": "down",
+                "x": 500,
+                "intent": "Scroll down to see full card titles",
+                "magnitude_in_pixels": 200,
+                "y": 500
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2573,
+            "total_input_tokens": 2452,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 2184
+              },
+              {
+                "modality": "text",
+                "tokens": 268
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 48,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 73,
+            "raw_prompt_token": 6590
+          }
+        },
+        {
+          "turn": 2,
+          "action": "scroll",
+          "input": {
+            "direction": "down",
+            "x": 500,
+            "intent": "Scroll down to see full card titles",
+            "magnitude_in_pixels": 200,
+            "y": 500
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EsgCCsUCARFNMg+RbXAWnBUrpcQLpehhHoDYtkEB5P48vfiFJghm7M9d9ynr7uF957Tgzc4NIpyxPR4VAMAu07nuKZLYa8KU2A9XF1Yc5gFMHNzAr/Nu2Pbcim22ZJ4hG9f9YoXIFBmFs7ahDdipeNJShsmDbMzaX5C2g7Gz6eZdA99eaR4ug14Yeg9L343Skp9M2Rcyuchsj+jx3zDlCtoGlR9c2RTM7RqGKhNyYZAeFS+yIo+e+JM196BBD8i4ue3Z4flXHFLv8b6y66ckSyziOJTcaahFmYGRjKxS44rJk2hG6wXwZgW/mSWjWfrSBUk1Pne5QmnyVwGyCJHWR0hnOpW1uPEoVF3ZmWT/JBkiPjIUUWy3i4EqybmcPVt76ZdQAcZpinx0OiL9+9oxrbBuCehbaQKMRBMngyNJFsdgHlRcuk5rVeiAEQ==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: GitHub",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 3748,
+            "total_input_tokens": 3695,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 419
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 4,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 49,
+            "raw_prompt_token": 7849
+          }
+        }
+      ],
+      "final_text": "Final answer: GitHub"
+    },
+    {
+      "run_id": "directory-filter_cu-gemini_ec3acd09-13e9-4bcc-9c8b-9e798916d13d",
+      "task_id": "directory-filter",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "directory-9d8",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "22.706",
+      "reset_s": "9.357",
+      "setup_s": "3.186",
+      "agent_s": "10.163",
+      "ms": 22706,
+      "model_turns": 3,
+      "actions_or_tool_calls": 5,
+      "input_tokens": 7326,
+      "output_tokens": 372,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 7698,
+      "est_cost_usd": 0.0068895,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:33:27.784Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvADCu0DARFNMg/fAEGRB3lfdIPrbXjiJpT6uZVv8RIRCVb1TrbwIRKhABHR6SHVCC+uBBiV5DA3IFOcu4bJkvXuWsGYQAKUAWUUFQbdDjyHd2yfbJ4RadefEPi98b1hw+Dv3IyXpaDyc+rhSAOeMcX7Uj9ipuNbjVNJJptnyAyhQACW79AR3PYAnB9bbUKk3euvMeSGNx7mcvdSH2mitOFA2goRIHaRYXF1OHWnVacomHabpq3x/YYmZWSYu/wqb9kGCLbSvM3RG745ZT+YlWq+5wq0S1TL5tg2EfgERlwHUUoDP6/RwhTCMsa/FuTyp7Qa0DoNtkvKTN2wY5yXoq6wgHfVYUP8427HzAuaUVx9iheumUoNw1Eynl/DvAGaCq4l32JRNR7RH3U+COIAg3BTTSvMU/b7IZLsUphZJTaL6rIJQIBgmbY1rouvUkB2TlOJPQgFf3RdghIkcZcwx5oWkNROjtGwEnJRHa5KlUg1xfVFz1aKRDGmddiuL9B7GT826rf/6M7rcCRFuxW55UHOMRD0bx+FEkfY+/9N2XXv77FC65CaKp3ln3+P4eouMOhN3ZCGFrOPUMmusD1GqkC2/Drp7cMtMWSuOI4qeTmAnmSpOSuTxUqRh653vQYeomPgpSns2BSGeNNczycAR0xp1Q==",
+              "type": "thought"
+            },
+            {
+              "id": "call_730014",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 580,
+                "y": 663,
+                "intent": "Click on Development filter button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1347,
+            "total_input_tokens": 1179,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 87
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 32,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 136,
+            "raw_prompt_token": 5301
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "x": 580,
+            "y": 663,
+            "intent": "Click on Development filter button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpUCCpICARFNMg+W6JfPxSA7Jl40x7q7wpKZvr+ufGDmbA4y2wYzkmKeXC+fZKyjzPHb03x40wSfbLPBjfGAldYvcEkwbrGPb+4kUBO2Trd8jO7rTWZbddEEpDFkzId0S00DEOM+RcnN99ItpAdVMxms6gfdIFwTlSHRfqMMOR6qpIYKsDSk6XEZBK0glUDd69V52q5CDEWpejEqVSNHb3kvfQ2C7las4IIJ8Se0p703huHZQMDKFx44JGaEjESphYuAZLa9knPWlvFhUBSV6DE6yVg+qQ7iYH45rmFFPmRhFPEtnW0WS0wZVUlSZsDorXAHa/ro8K3jrEEYqZx8PMizhw9qhI/DqPxwgBbYSmHoGCPB0KUi+Q==",
+              "type": "thought"
+            },
+            {
+              "id": "call_1261340",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "direction": "down",
+                "x": 500,
+                "magnitude_in_pixels": 300,
+                "intent": "Scroll down to view all filtered results",
+                "y": 500
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2558,
+            "total_input_tokens": 2467,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 283
+              },
+              {
+                "modality": "image",
+                "tokens": 2184
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 48,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 43,
+            "raw_prompt_token": 6605
+          }
+        },
+        {
+          "turn": 2,
+          "action": "scroll",
+          "input": {
+            "direction": "down",
+            "x": 500,
+            "magnitude_in_pixels": 300,
+            "intent": "Scroll down to view all filtered results",
+            "y": 500
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EuIECt8EARFNMg+T0GbOh3wTVE1kK5DIp8lJt43QsQb6pEpZ7w1GbvLghfNMrkgomYgcfC86MKmZsiB0eXGJgcge89R7TRvB+SUjRirdgMVckpmDL83jpAlCpEtkdWzfHoEP3kzbjfnFEIJG/iJlVfr52vxw7+lFCrr3v3T3SCrS5UvpKy1RSnIHVRs8lrzgkeG6ORAWqpghnKItVaiEbJaMHaQi8J6qJIEphws2PB0t2bpIn8qGSnujd/pH2YJlwkcpPe1oUoTyoWCB+InUoiBCkBgMghF1zVXpr8EtPF9KYcr8oWMXUZmRgKecLLhN5OyeGeBdEM1WNsz2x2nnqy+ItOdnb7voNBuhFFKZ/7Sd3ktbm7tU7YgZHWU4hpUfWmYxBAIsSYr2M2jel6kc+6dUMfqREgmdYH1oqzJMsepOngYZA/RVkaXI1VdmpZuCFsuysUlOnLnJhVcrBgUWGh0NTni/ctZqQDCduZf7tgI4r8/wdH1SnoGQBylnDwWHWvO/3Iqb2gQfpucjuVRsVKtX466KabCA4uu9LCZ7/zcqubwQOzeRHFpjWT/XtWNCF08bHP0nlSZ/Wan23fSbWwA4R/2+ZcZZOTvItP2mk4at9OwmEgZ0eDJQ1JZjgQEkv79VPYSBctwUpmXqxhVVDeWA+QAeMgRV7lI4FVg5VwdlQlYN2vK5kqRae97YysvbArTXUJNMZm98c2kaHflzVPziIEZLxu8cO7a1Sc7TRMIG+n8u8yzyMISl5YuyPIEq3fYZTO7jaf1Uiuz5F6H3BjzRPlnqHs6Lc3IeevghSCKMA2MJCA==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: GitHub",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 3793,
+            "total_input_tokens": 3680,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 404
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 4,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 109,
+            "raw_prompt_token": 7834
+          }
+        }
+      ],
+      "final_text": "Final answer: GitHub"
+    },
+    {
+      "run_id": "directory-filter_cu-gemini_64e35a65-b7cc-4a35-9d7e-0aa5539ae31f",
+      "task_id": "directory-filter",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "directory-9d8",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "38.751",
+      "reset_s": "6.851",
+      "setup_s": "3.059",
+      "agent_s": "28.841",
+      "ms": 38751,
+      "model_turns": 9,
+      "actions_or_tool_calls": 17,
+      "input_tokens": 32633,
+      "output_tokens": 939,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 33572,
+      "est_cost_usd": 0.027996,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:34:06.586Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et4FCtsFARFNMg/hG1XQmQ9nAYSwGh39ut4CT8C+YE+Phh6RmZF3/JxV+Jq0m7Cp46oPig0iVu8JUWY6Q+LT4bMBx1ZV4XcSGY2PzyCm10+Z/v7qwnZDjHZ7pey1rT559ebpjYWV9Dt3d5PUl14YJrM9HVEBvmEDwsrbfES0wYR7iPcVFJCiqFJS3Z2TzHL27uamUCRNw1oe+rzTJR3rnUCcbdPRiWgB+FUCBsBtkM1TzWDlgt+iUsAiOQ1mfw24P5uexkCoBs2SyKpv8ZHNvI/Ph9YbZ95XM7QS5Q+9QWN3eswuHGwmKj603RQbIZyBqkro3XNUjgCJdYS+zpn4QWFdjZ6giFf7TmysAjGzaCQC3XAjUAw0iSsREGrQPEpjRJ8MRy8tk7b3IdOF54ffIfNEtKD1seeH861Wm3avNRlcO90tAE8xYRx9m4ei9CSfnWF09RL+ocSv8f/gSUaf7elajDCf25a/6CdYfhDP2C4vW9ZxrRfPruobaSVuHX+mG6YnfK7JuPtsuvYQr0o/R2pVYtBUGMmtKB3Wj7iGd+V+GIXYtd4+0V/c/9AHMnpFRfmg0kUG5HadQUFvfD1TYEdqQGxPiWSUUAQqfvLSw8yNnDDRNnfnuoO+BiwMNIMGazxckrElcta8c5v3b8W6/NKMQAbvIuQTLl1x2UcqaCdTJrqZXyl166nyCcyGX//PNEHoCxOwmXt2LCtK5QFUbhj3Zp9zDkxq0fW8NmwPVWHOw5+6D6guNx56wNU156K0iDRCuuxlKNgGBWEKwFsRBK/IFkiQcTPu/4VWqljiSk8IvoHHRepveJyJqzLV1saBwpWRyp53I7D21wCJsN8WoSYC+VQ6lYRyMkAcyiD6s6A1qFC0mc9K4L6b2xJS+JI3ai27Q4a7Fuhp+lX3BpFGqN/SjkR23PaPeoi1SapHn7TM5efZJnq3+HnTWI08qPTy+KczkdgcIXkWokWG5MsHWcY=",
+              "type": "thought"
+            },
+            {
+              "id": "call_299873",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 665,
+                "x": 580,
+                "intent": "Click on Development filter button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1379,
+            "total_input_tokens": 1179,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 87
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 32,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 168,
+            "raw_prompt_token": 5301
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "y": 665,
+            "x": 580,
+            "intent": "Click on Development filter button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Ep8BCpwBARFNMg94+dvhQjXBPHjkCHCsEuw6vkCQPrO7ccMXn2K34DCNHfDEXD84s8r1RRMaoz4rmviHTOrVvYTQLfvYn0jd2+mFUN9nQd1N+//EJJ3WxQ7l+FE48whVM3R/3XvzQI1d4tD8pbYYrm9dH4nj83naQBsn3ANdQ+ct0eqGzdSZGQdgxoE8rV6hAOOfAZDSLcGptCK9I1aQ477s",
+              "type": "thought"
+            },
+            {
+              "id": "call_650241",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "direction": "down",
+                "intent": "Scroll down to view filtered results",
+                "magnitude_in_pixels": 300,
+                "x": 500,
+                "y": 500
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2558,
+            "total_input_tokens": 2499,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 315
+              },
+              {
+                "modality": "image",
+                "tokens": 2184
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 47,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 12,
+            "raw_prompt_token": 6637
+          }
+        },
+        {
+          "turn": 2,
+          "action": "scroll",
+          "input": {
+            "direction": "down",
+            "intent": "Scroll down to view filtered results",
+            "magnitude_in_pixels": 300,
+            "x": 500,
+            "y": 500
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpYHCpMHARFNMg9uWoUwy2RUlwGDzydbHKJAXpMhGAYgeFAJXaYdbuOuNDUMiy6Wv+6Z1aXlE/2/6+QLRaOuJa4oQ+RRTKBAfBzvk/WBzcmzro4jI+/6VPIlIz9B6ECZx1B9t0jdEY1cU43IZOYNuPln2BbBtOECdAjC6PKvWXid9qekDKqGKuYtKOG9Jecu6KAMqulwnBSCuSn/XgDWJ3aa9mY5MwPqiShI6PG5pHPoHOQJKtCDhvY4oUviazE+pJcfVqwXG0Q2pqJC8wW+kybtOOYYleuwk+jaQ808JSWToMXB8Q2REG0stSBkzE43ALrExs5dNGjrtSVpBNaqb1UxKCkSjEOOlB+v5VD80QPjQcB9pmkAJBWL+Q6CjtE4MqEIgHOH8hjesZvgXV7s4ph7LQ2bIhYrE+92lm02JprJL+6YSq+AhnoypRAhtHUFKeNCtYHl7OaxP0xcigOVhvndq0LjSFhljN6KZeoqpj/WzqRQBmwar2PPl6Ae8YtOswZRf/GmPkCW8sA36nlBT8zL62aIiy7GjOu2QyQhrfiLWXanG3T7JNdXLtmpnYgvyGBA2jBBRNJn6abnxvyBL8QWj4uNvoCftT25AHJzE9/BIzxigNP+5HiMadUA7ph9EC+/Ap95V06oHDrztPitkuStYHZZaFBaghsFCjKi2OhbVTb+15oFg/rwzLhOaqP/syJ78JoXdBrzQNcG4/odXYnCWanRef/uwhaR1k/f43plYkSLOaAsEJkG3T8+kVbrIdruZ9r2di/JWSMqfi304Y5MC1+sQuLPTAHdDDa83kXEBEHr2f8bUwBxec3Uo722KHSxsfnqq4kt/vmXdIwoEuYjpmoIJyPj6E/kaHIp5zMT0EmwvpiANjfND+rBljhuHy1v5kfzjk6sPquvzkZHvBlGFW3/CfneRYhkdQ7su0vfozokfWlNl8CYkblMtQbGWv488GHvzzHipyEP9PRaAVrejEtXrBzApKURIH58TALMiMkLvdCtcl4SYbdD3TJovv1obDhw/lfsW2UVjJ8S7saxMi/5E6a7/801EpGhi7C9++4ARUrTmH+xOJrZ+MWZb4ohvnotmW+OmR/UCfO/1yizeQWpI9DIHWNvlVakPsXO65HxzKbvWjr/6IiETR2ok4l3blmAQHIMCzpvsJXnJawrvfxQvTaZQM+wEBdkpFh4ksXt4pKAg7Ior5Rso6i4vIMSWAYkzYu3",
+              "type": "thought"
+            },
+            {
+              "id": "call_437011",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 200,
+                "intent": "Click on search input",
+                "y": 288
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3897,
+            "total_input_tokens": 3680,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 404
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 188,
+            "raw_prompt_token": 7834
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "x": 200,
+            "intent": "Click on search input",
+            "y": 288
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqUBCqIBARFNMg9ORPIREgMwEgnolatHt5tKxqUi1kFY6NVYLqxz+JeEe4XCTOxkxJwDVtOn+uWZRDF9ejVzovONR0ZBzV1JC0RgIenHy+T/NRA9Nw/f9RkxiTjfWtQo4o5PqwINYhfoyxL3X4S6ZyAek4rKJ2O0j0pzfpbJkzCLPxfYU1DcGASWCHCEvZdjPfPJUaYZWdshSp10WolbQAu4/tRFWZc5",
+              "type": "thought"
+            },
+            {
+              "id": "call_378105",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type developer tools into search",
+                "text": "developer tools"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3973,
+            "total_input_tokens": 3932,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 656
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 25,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 16,
+            "raw_prompt_token": 8099
+          }
+        },
+        {
+          "turn": 4,
+          "action": "type",
+          "input": {
+            "intent": "Type developer tools into search",
+            "text": "developer tools"
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErsDCrgDARFNMg8Hcf0bJLLzRGFLltOgJqcVAMBBc7eZXkLsZtSjHN//JL9r0ZZUUs66HzVPpgTuieKDGiPYAq6SckuP64e11iQd/koYOEJbujalsQCT0AEVshtwbBUHe1DFywWJU/5xa45ZS2CpP1ztaVjkDa0OaDwhXDFWwPSey+OPFWwngrFm8n+wG4O9yDw4hsh1+/Jd55vrZsshQHFslXBP28hzLVJScp7cc2mvvhaFqViOws3eKRmgWARGHZc2LqR6wKVNx87qmkvthANR6PAGPV97U8V//K+6rJttwRf68/DRRqMEbqwnlHohkMp1D6UGPM9hGAnjIxOKJ7HLmtUnxC2sArE8IQrXnmqubxmLLvd3v30xJakCAcgUxV87cB90XQt6lVgD9r4EEQB0gwT+7a356jEQ6KseCk/iUU8uncOD+yk06A1ngfhTKsI9WfYcgw+/1eW6o9RQRL3zIUeurNvC3kgbdYHfeSXADO+NT3yn9y4GgsQ2CXI6fWs9vElEmPKPNhN5+/rCHAcETAhopH3ja4WyHfNKvlgoycIi4SFdBbqBqQqA4SUGKnzNwB6L8/bPIywAgZo=",
+              "type": "thought"
+            },
+            {
+              "id": "call_607600",
+              "type": "function_call",
+              "name": "hotkey",
+              "arguments": {
+                "intent": "Select all and delete text in search",
+                "keys": [
+                  "Control",
+                  "a"
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4125,
+            "total_input_tokens": 4008,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 732
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 86,
+            "raw_prompt_token": 8191
+          }
+        },
+        {
+          "turn": 5,
+          "action": "hotkey",
+          "input": {
+            "intent": "Select all and delete text in search",
+            "keys": [
+              "Control",
+              "a"
+            ]
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErECCq4CARFNMg8hx6WlR0WsWDUd6tM6zg9GpoHCCioRygvKyvJR3LMWYAuPjryfq4yXdC0NvysC91ixqcxXiEVwVKoPRe5jZo3psmZ6DKqYOwc3IM3k1Hia2mxI12yuPrYfFrXKP7Nfr7oA9LLIIvgMt8IePhvS2g7kl2gicWgj8/XpayBuXXMAhjd/cdCmo3KBIHBkTjh5GNsuc6XxMzXRH5RmXbqz5SZsw4gtE45wSmz6xRXsjpIEijCkstFFUd0eQshkP/5LKdSACjxQ8QG8Aznko/HZ3ePRvjzZbdgeyJaTsUCAUAw0yZKbfT2uoDuu6g5C820bHr9i3PZKtEfzKWIQGTSLeeHVPk/Qh32rT+iGupv+BZf7kdrmhS63SBkduYtLn0Bim9H4IeaWLKpBj0I=",
+              "type": "thought"
+            },
+            {
+              "id": "call_225545",
+              "type": "function_call",
+              "name": "press_key",
+              "arguments": {
+                "key": "Backspace",
+                "intent": "Press Backspace to clear search"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4239,
+            "total_input_tokens": 4167,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 891
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 27,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 45,
+            "raw_prompt_token": 8366
+          }
+        },
+        {
+          "turn": 6,
+          "action": "press_key",
+          "input": {
+            "key": "Backspace",
+            "intent": "Press Backspace to clear search"
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EtEBCs4BARFNMg/EPWOg6OdLZL5ugZycskQ7FMOTaXcU1Wn1hUIryz1GcWPanhgnxHjv4Zut9q8oNmCgQzpgCAdSbnC80a9U1d+STMiSwbpX/4685Ce7VQnToH+enSQCuwYmROix15oLKDwbfhbxFknOtKu/O7NmZGAKPVoztSg7BCY8COkhSTB/yzvhb2idY+hlH6+Lr7S+qJTaZ7ACsclsWz0TQd6naX0KYzo4PUcmnKIcBWWBT5BJXiJ+5r51Ion52gU4H0s5VKUAdiTmg9tnu4U=",
+              "type": "thought"
+            },
+            {
+              "id": "call_312703",
+              "type": "function_call",
+              "name": "navigate",
+              "arguments": {
+                "url": "http://127.0.0.1:3215/?category=development",
+                "intent": "Navigate to category=development"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4361,
+            "total_input_tokens": 4282,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1006
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 43,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 36,
+            "raw_prompt_token": 8497
+          }
+        },
+        {
+          "turn": 7,
+          "action": "navigate",
+          "input": {
+            "url": "http://127.0.0.1:3215/?category=development",
+            "intent": "Navigate to category=development"
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpgBCpUBARFNMg/BzX2ELXusy3aZnDru06TxbowoY7CMh/H5+NKvqQxgTUAVe3fUmilOYzuDswRbq6eWs4P2hA6o7/4xZN9TTjEZIdrOhnRlKEwkhJ5O5o3y6wcvtpCRjybmh+rUnKAbUJINJpFqKZ7xN2bo3K4ZoLHu4rvd5jPou9+6ew2GaiCgPck0tUo6YTkaDOw5Kry65Hg=",
+              "type": "thought"
+            },
+            {
+              "id": "call_540217",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "intent": "Scroll down to show filtered cards",
+                "y": 500,
+                "magnitude_in_pixels": 300,
+                "direction": "down",
+                "x": 500
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4455,
+            "total_input_tokens": 4396,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1120
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 47,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 12,
+            "raw_prompt_token": 8631
+          }
+        },
+        {
+          "turn": 8,
+          "action": "scroll",
+          "input": {
+            "intent": "Scroll down to show filtered cards",
+            "y": 500,
+            "magnitude_in_pixels": 300,
+            "direction": "down",
+            "x": 500
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoQECoEEARFNMg+hxICaeqjTn7FjS1H9j438AoKILXClQarAi4nfpCDtGWFk6JT4IxfLLH1IvUGelfLAQbuZ1apEuWIlju9d1ch5O6JEqX101YRNe1+nWCUHYjopiIf/mv/GDc7Dg4uNmFlBi9QcxYy9X66WlRStlDn7v/D+Fx6bNaFOtCFbDuYGsbhocCrSikzuTPxBJrUW6r5ihpAeGfZCkHdd8d7faA7/rEM/QYfXaxkkcM1Z3/zm8RxOmnr618vWgMivLvfo9XWzDUYQL6fdnzUtLeTqIqJVMV3XrXHKhSd3p0tryjnPtTxPaFrr+ni15wQ8MoBsSho9DtgmxGOWUQKAFHO7K7m9hID7sUn0V949lbAHUUwFowE5CrwC4wwYcLwGw3APsixiJNYnAxwddv9+EmO7wZUHsYPFkIjnLhdAsRvq5PbsOwZQx+OD2tRheSsTq3d8994bbecSPFbuWZH1ZNRtw2pvFar+V6jJMnr7Y7dNHnzOCEy6jJTIkwCQ/4wZGu9o2D2fvxpzkc6gmZ+lTJrBYRhEbqbsx/QWIOnRp/g6IW2YpaDO5ZiBGrJwWHbUUp05QyiQTH9XCOmo8j/xLtoalSNpNs5K/Y24zQ5iCgGo+TxmH9juscxMEXQhXIEAq/iFfNVkJ5SAUdcXYCPmDM07j/Ky844yYIuNIMyfcAKU",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: GitHub",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 4585,
+            "total_input_tokens": 4490,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1214
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 4,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 91,
+            "raw_prompt_token": 8741
+          }
+        }
+      ],
+      "final_text": "Final answer: GitHub"
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "directory-9d8",
+      "taskId": "directory-filter",
+      "tier": "act-short",
+      "method": "cu-gemini",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}

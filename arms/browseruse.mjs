@@ -2,10 +2,13 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
-import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, samplingFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "browser-use@0.12.7";
-const PYTHON = path.resolve(import.meta.dirname, "../.venv-browseruse/bin/python");
+// The browser-use virtualenv is gitignored and per-checkout. WT_BROWSERUSE_PYTHON
+// lets a worktree share an existing one instead of duplicating a large venv;
+// without it the arm fails at spawn with ENOENT and records zero usage.
+const PYTHON = process.env.WT_BROWSERUSE_PYTHON || path.resolve(import.meta.dirname, "../.venv-browseruse/bin/python");
 const RUNNER = path.join(import.meta.dirname, "browseruse_runner.py");
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const TIMEOUT_MS = 330_000;
@@ -53,7 +56,14 @@ export async function run({ task, capsule, model = DEFAULT_MODEL }) {
     turns: result.steps ?? 0,
     setupMs: (result.setup_s ?? 0) * 1000,
     budget_exhausted: (result.steps ?? 0) === maxSteps,
-    temperature: "0",
+    model_snapshot: "",
+    // browser-use surfaces only the model its adapter was constructed with, not
+    // the snapshot the provider served. Declared so the gate can tell "cannot
+    // report" apart from "failed to report"; resolution is proven out-of-band
+    // by scripts/verify-model.mjs.
+    snapshot_source: "unavailable:browser-use@0.12.7",
+    temperature: samplingFor(model).temperature,
+    effort: "provider-default",
     caching: "unsupported",
   };
 }

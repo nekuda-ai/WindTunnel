@@ -77,6 +77,14 @@ export async function runBatch({
           input_tokens: usage.input_tokens ?? 0,
           output_tokens: usage.output_tokens ?? 0,
           cached_tokens: usage.cached_input_tokens ?? 0,
+          cache_write_tokens: usage.cache_creation_tokens ?? 0,
+          // Compatibility signals the pre-flight smoke gate checks: a run that
+          // truncates or is refused is not a measurement of task ability.
+          snapshot_source: result.snapshot_source ?? (result.model_snapshot ? "provider-response" : ""),
+          stop_reason: result.stop_reason ?? "",
+          refusal: result.refusal ?? false,
+          truncated: result.truncated ?? false,
+          effort: result.effort ?? "",
           caching: result.caching ?? "unsupported",
           tokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
           est_cost_usd: result.cost ?? 0,

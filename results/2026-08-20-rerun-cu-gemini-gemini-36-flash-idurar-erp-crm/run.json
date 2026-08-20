@@ -1,0 +1,5303 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "idurar-erp-crm",
+    "arms": [
+      "cu-gemini"
+    ],
+    "seed": 1,
+    "budget": 8,
+    "perturbed": false,
+    "models": {
+      "cu-gemini": "gemini-3.6-flash"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "id-6",
+      "id-7"
+    ],
+    "n": 3,
+    "label": "rerun-cu-gemini-gemini-36-flash-idurar-erp-crm",
+    "fake": false,
+    "model": "gemini-3.6-flash",
+    "armModels": {
+      "cu-gemini": "gemini-3.6-flash"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "idurar-erp-crm",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "id-6_cu-gemini_81a657d3-7bf7-42ef-b41c-422b64c015a4",
+      "task_id": "id-6",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "119.736",
+      "reset_s": "35.326",
+      "setup_s": "2.770",
+      "agent_s": "81.640",
+      "ms": 119736,
+      "model_turns": 22,
+      "actions_or_tool_calls": 43,
+      "input_tokens": 101217,
+      "output_tokens": 2149,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 103366,
+      "est_cost_usd": 0.0839715,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:22:39.055Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EsgFCsUFARFNMg+5W68HZ9ApCmukNrZGJXVSfDFhdHRPSuh+chC3XMPwmCtFU4XbDa86RDW1mg7KFFxwa2FK4sS+JK//mw7vG204OX2KD0wI9iA4QNQwbk+lOBRXQMzO+wmEdoHIQyigUiLwhgd9g64dY+Dp+LdCAZr3CeP5md42ijaXDHd/vp87nelFxZlmFWk7eTP9LIFDuJ6YNXbuqyzmd/d2lJcZ2l8nmyNjZLIn+Ez2Zx0BitggPXWNAmJVfbprmmVLF7gI8OuMoO/e8uYIvll7eHyXd0X0vWURyeRCfGzMC8TsMbzZMTxWN4XMGyTEikOAjtmoEzIuVsSNDnfhML2wpO5B4axDSMoZFFkFwYD/Mc87s0S7GHLNzFaRKWTcuXboBJqNLmCELs6vPFtTed319iWe5GaKx3RKdoUlRImUSN4lpVuMUwmDRi8v0asQf5qgZZKt3qJ215NCP3u78DO+xpndALJ0pqT9md6oP4+3UZQMLR/4BL6dr5Fet+7aMNXKRtFnMwvW7PxfVTXNimy2s0jdIBIKBvkGpqc/cHcEHmSvcnjSp6am/K2IwN+vsABIeSjb91CJHqsCkP3iywQUPPISirj6ozLPYDxr5lQk9HWmVVom2VlNwjhhDdXGNOkd209+Tjhy/z0ZTO6FOlUJ98+m0TN0e4YNwFZx9j+mZKwILypYQoIvw0ABRh83nii/0sESZZIQXf/zUiMdho7QxFFLpViRxSXh9e6xKXq8Zo6hu/nirY4JOgTbbW8/dnEjv9ZMqE88RKKcw6EMDMc0CUK6KJe8WNgy89+mzOIUCOKgXpspKvn002t43CJ/Jj1SSNYJN2+YZnvmmKGPQn4AhaF+Z0yHqkj5GJiUwjoOGRPoEPy7fgLnv5Zv+g90nLZrDxItoJY9d8zj/WY7txY5GqNcCyC5m9AZ/DcxdWV4Qpb6znHleA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_745009",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 750,
+                "intent": "Click Log In button",
+                "y": 608
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1410,
+            "total_input_tokens": 1212,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 120
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 167,
+            "raw_prompt_token": 5334
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "x": 750,
+            "intent": "Click Log In button",
+            "y": 608
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EosBCogBARFNMg+Pjh0VhtzdMUems8x+faRxkxuqsiJav4JYiyK8eB0eLbdzpv33onIagnX5Gb+5QC9ppLM5l1S+7YmpQ1ZTo3cDgWDAalrYAkzAwX0YWOzi5LoK45pRNELaInalI6nbKEEaE9fLXun7/TalP8SBHOsRVakWXrHtu8ON6jxYCiF3+HifMw==",
+              "type": "thought"
+            },
+            {
+              "id": "call_723182",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "intent": "Wait for page to load",
+                "seconds": 3
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2562,
+            "total_input_tokens": 2527,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 343
+              },
+              {
+                "modality": "image",
+                "tokens": 2184
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 22,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 13,
+            "raw_prompt_token": 6665
+          }
+        },
+        {
+          "turn": 2,
+          "action": "wait",
+          "input": {
+            "intent": "Wait for page to load",
+            "seconds": 3
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoMDCoADARFNMg+1pwvruinclkbPruhMzDZ7eLRn7dzbJG/7pqkxpwnM0R6HCpMhB21OgW0E9OrZ3dIwinCo15B13bmvOF+TZwUqF1F+tlu70rhENJa/11n63cysGD4yJQWzLCxjG2U4wTLha9DfzdOemxWBhG05l1Ijeal4VwgkpF1vm3n9fTHbbeMHM9h7+m2EXKzbhMqlOIcqiImfwucwr3PVCjZfGRP1DoLaGnIqQ2OWmSUH5Squ5CVeH0fwZMRnEzPF0jlgutCEIjSSlX7nFBCm1vX6UUb0cS/hdXXVY8yFnin48r1ZNQ8SOrprIlumKIf4beHqSq9bb1WDw9mimZl+6OWfyXJdEWBe9F0FoIKg+rJ5/+TxPllr7gQSJUMUEUX98dza+vzmeoLXvWAZGJ2KUZD9Sdw7UXII3lNoQjZE7KGQB1tCqNLR0epZtwOZhpBgJbDEYUYVjgs3+Z9JWaMUi0N2Wf8FLwAO6u/viXB5NkQ+2n+7VXWJi9bnhjVUGGll",
+              "type": "thought"
+            },
+            {
+              "id": "call_866895",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Add New Invoice button",
+                "x": 865,
+                "y": 281
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3791,
+            "total_input_tokens": 3681,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 405
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 80,
+            "raw_prompt_token": 7835
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "intent": "Click Add New Invoice button",
+            "x": 865,
+            "y": 281
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqsECqgEARFNMg+uXdLMCMsA98ZmqGwLk2Pxr2LULICynmV10ZdHScei4D6WHY5nLT8+6oWrSkJfBa7lNkeCYrA64598fYP3dQDlyi6aPoO/vfOzMLT+wxQ0W/s3L6/PvajF/T346LGPmetIWPaPRJ/aTMtv4HGmC4zftdbxByNSQgbjyGTs/gDnq9DAbhxI2VOdv5BlBKkH//5TPNepGc9x87Yi775WAI8Ri3f2cw2JZfXVPcGHH0an8StIteoh6GuJkZt2chAMqJiKXCZ6SCqO+cTf9FSpH2UHVH7pWW1ZxqegQxFgYx8/NXP4iKPbLhLP84cAwkvBL1+tk1zeeakiDe5K29qMcX0wyOlwhHV3whFuYw5H8WsRSK3oQF/2F2ZhHfLPSC1GcvjcyHxv3L8iSIM4e5ZlsG88CSG/SjByeIoEl0BnyHS3vMwzXvnTkmItEQqSyCbI8eTO9N7J3uItAd45rrnLEES6lF2Jk0xTyTMkN/jFj1atyCK43UgU6XQbj6x84+nbrK+nadJvd5TDXBpIFAbVO3qM5mPe9/mM13FiN2sowwNvjV931M2xX2OoX+KM8c0MiVaw75LcVOgXPsJEg/QvkTU9iRhk0AF9Nclglfe3E2o2j+nuRxJ/uMfeCkMN5wbgPe3wMHZXmSzWUCy9CAozyr+KqNOZ2jDZmecOWj8217HikzCnLfs/bJTpebLEcpBDyxPyydm/Bl988ZdAPqluz332c8+M",
+              "type": "thought"
+            },
+            {
+              "id": "call_763485",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Client dropdown",
+                "y": 450,
+                "x": 350
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4014,
+            "total_input_tokens": 3826,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 550
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 160,
+            "raw_prompt_token": 7993
+          }
+        },
+        {
+          "turn": 4,
+          "action": "click",
+          "input": {
+            "intent": "Click Client dropdown",
+            "y": 450,
+            "x": 350
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpABCo0BARFNMg83qnhQmXDVgT31YkjRF4nTgceRP/r/qsWv8F4fY8lQvASV19cCONqGBkXe4iiTmdJAS/AHFdf0BcGeQ2xcQ9WLSUcPkclChcY+wv4KyQZ1i4LMC4Vi2zSg0TnaaaO+igb3BEkLmwoaQLtpz01dMma+oHLKPxFxFRkc2lN3jpvwp6nn3B0+umca",
+              "type": "thought"
+            },
+            {
+              "id": "call_651211",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Select Acme Evaluation",
+                "y": 500,
+                "x": 340
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4096,
+            "total_input_tokens": 4049,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 773
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 19,
+            "raw_prompt_token": 8232
+          }
+        },
+        {
+          "turn": 5,
+          "action": "click",
+          "input": {
+            "intent": "Select Acme Evaluation",
+            "y": 500,
+            "x": 340
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpUCCpICARFNMg8X5xZMCkWUp2wusuwRbdPEZGEpq9+XSfJcVFLZTTAwVgZ9IWBfvxz5qgiLmGY/JmsJAOd3Y7QHlixflLnuPlcMmoQiP60nzMQi15bj3fBPgWbkmSfwTtSR8BxK8b3k6MraoWJkXpIgELiHjkj95qLxHCQOeVDcvhMqGb7UVRw6GGdAl3bEq8pkaXl+2MuEjl6nzGe3nlT4gYfy+1PlUgnZWv32Lkwt2aszPdPsEM7Wukzsum1brJGIdjQ4j5FBdB221Lgjx7s9vKvvijOPwdYtyu4PikmYS9Y0PH4pzmsMUxle/twIBnhufw3mMrf83Ht58jVRpWzNRnSPf5HEVNZ8n8RK+67yhYWrRNnrtQ==",
+              "type": "thought"
+            },
+            {
+              "id": "call_538815",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 330,
+                "intent": "Click Item input field",
+                "y": 753
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4222,
+            "total_input_tokens": 4131,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 855
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 62,
+            "raw_prompt_token": 8330
+          }
+        },
+        {
+          "turn": 6,
+          "action": "click",
+          "input": {
+            "x": 330,
+            "intent": "Click Item input field",
+            "y": 753
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoEBCn8BEU0yD6OqgdWUMBPS58AN7VThgwHJKfMzwfK4bXtQf1ey5Wu8OfRridHmI4E/oMLghEMe9/EBJTXYaRPOFmNx6BuFfKejyZCvQXbMPNBAAiFMbGEuLI/Acpjdzx1TlKHGWLZoeK2X9rfiaXkvLLPnMlT4GT83uguisfDQ8Alh",
+              "type": "thought"
+            },
+            {
+              "id": "call_767632",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "text": "Quarterly Retainer",
+                "intent": "Type item name"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4289,
+            "total_input_tokens": 4257,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 981
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 25,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 7,
+            "raw_prompt_token": 8472
+          }
+        },
+        {
+          "turn": 7,
+          "action": "type",
+          "input": {
+            "text": "Quarterly Retainer",
+            "intent": "Type item name"
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpUBCpIBARFNMg+cAfez/f3KMionmo/jPIwQBn8aNwtHS28MW5eGpT9Xoje3rDtlrOMdkyYTciVn40RthEVeyqmxdWfHMoIxgoCkDpl+2UipecbyslNJGAH5v0d+85BkIFVsLVIeDwoTSXMlPyHX96yTbJV/mCV+BrfiGbCs7XYPtJXC0254RrArqWNoh7LMMMM6LU8Wycw=",
+              "type": "thought"
+            },
+            {
+              "id": "call_491553",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 753,
+                "intent": "Click Quantity field",
+                "x": 640
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4370,
+            "total_input_tokens": 4324,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1048
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 18,
+            "raw_prompt_token": 8555
+          }
+        },
+        {
+          "turn": 8,
+          "action": "click",
+          "input": {
+            "y": 753,
+            "intent": "Click Quantity field",
+            "x": 640
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EnAKbgERTTIP+375vKb4v+d/UE5JFKqBT7JL/dTgnMtbeyA7xt0sYm6aNpGg3l/6WpgMw+vkcfHbMbr8tSVtjVMXl2E0GOGduPdVlfK1WpVp4Qgw3kVXUjlwcw+X62D45TCQLrBgPPiU9w6+aao0Exao",
+              "type": "thought"
+            },
+            {
+              "id": "call_662650",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type quantity 1",
+                "text": "1"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4432,
+            "total_input_tokens": 4405,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1129
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 23,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 4,
+            "raw_prompt_token": 8652
+          }
+        },
+        {
+          "turn": 9,
+          "action": "type",
+          "input": {
+            "intent": "Type quantity 1",
+            "text": "1"
+          },
+          "result": {}
+        },
+        {
+          "turn": 10,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpIBCo8BARFNMg+CvOpA7oUVTTfALsyGR+UyUvzClwXD7HWuHIWD5soqpO1IBR9lL+dgV8rJr3ojVBuwvnMIgQkms1/TkAbVFXVdeA+p8LEaq+s+6lKg3haBQhqh1SFsbDQ3H1UuLJjKJx7fcKJe2iME2vAsnkHHLXpq6/Oo2NSUa4KxpzlGHF4j+M38xaeMkzDGF80=",
+              "type": "thought"
+            },
+            {
+              "id": "call_583946",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Price field",
+                "x": 750,
+                "y": 753
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4513,
+            "total_input_tokens": 4467,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1191
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 18,
+            "raw_prompt_token": 8730
+          }
+        },
+        {
+          "turn": 10,
+          "action": "click",
+          "input": {
+            "intent": "Click Price field",
+            "x": 750,
+            "y": 753
+          },
+          "result": {}
+        },
+        {
+          "turn": 11,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EnIKcAERTTIP9uv20beyZ2eGgBaDD2OAdQqrxyVCDsCB6Nk+gpaUwEBrWH2lW/iE8gS3qzwvAO1IGmA4TAqlCKWmJdczfSVjN9luC4+cJ1w0aTNioS0LtGgMsk9Tg9+0KUtWfzHtOuJEoWpGtNUss/zv6bk=",
+              "type": "thought"
+            },
+            {
+              "id": "call_827442",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "text": "400",
+                "intent": "Type price 400"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4581,
+            "total_input_tokens": 4548,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1272
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 27,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 6,
+            "raw_prompt_token": 8827
+          }
+        },
+        {
+          "turn": 11,
+          "action": "type",
+          "input": {
+            "text": "400",
+            "intent": "Type price 400"
+          },
+          "result": {}
+        },
+        {
+          "turn": 12,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo0DCooDARFNMg8V9HjBvErewsvWoyog05hq4b/Jyu9PnZ5yXXRKoeSIVuRU3OBx2vkcKAXYvZ5HZtAwhm9+RVtNpv8+SeGNCtZyqvLXppFUTEj3KgFWV3gH+2PqAgee1gXde6DxEybPXlBpeifXU2h0KwcDhxo7IIpguAQZWdd8oNbMnR+TlLABnNbqnD8nqCvEVg55P/zLLTthqiE+vibQLESUxj1mjWtLwYOhVf4Yoo8a0dipbcGIpU0+SAYYR/GhRWlf5BMZN0psNz6pNnxV1TviRCr2uOLpu2XeBUNoyiqf+yHxTZ/3e8kSqLyUhuqNETS64sMC9Rh8Lq4x/VSsYjQSEvmj6mepng/huDNZhSMJ7rnoRkWggv6HlqxFl5O7TzHNlVExtspyvYll6KuoOMtoDlkhb/yqrq0fjbprE1WOnJ2Q7CpRK4F4Y7IgY2Qn/dSytCCfFc+tahBeyJSDvA9jWJzxBAqDlhUZiL+TFTdYssz4bYqexdK751pdScsNIf3ofLrlaLYSJnK+ig==",
+              "type": "thought"
+            },
+            {
+              "id": "call_465634",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 895,
+                "intent": "Click Save button",
+                "y": 281
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4766,
+            "total_input_tokens": 4616,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1340
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 122,
+            "raw_prompt_token": 8911
+          }
+        },
+        {
+          "turn": 12,
+          "action": "click",
+          "input": {
+            "x": 895,
+            "intent": "Click Save button",
+            "y": 281
+          },
+          "result": {}
+        },
+        {
+          "turn": 13,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EucBCuQBARFNMg8Mxpvq1Wp0olNZHQJYa8Kfk8KZvLKA6wSxiyEEAcCspt/d642iux1aEpMSakZBygs4vDSsNg8e7uT/26+z+tX1GUzzwfBrO5N6jFt0eVe11l4dFSIj13fP/gbsIeMHzo2PpIryIf23XQbd5Nm61jIPi1lwTgyNTZskt/GZJMMPSEZ3Lu96UBCgw2qPsCsDMHkFN1NchqIAbApdcWN+ClHaQSd6h1AkjzpAP/VHsPv2pa2Xxn2nOis3JUy+rtc/yHYYJ0kTAfR8MtR3w8grVreA2yRvOU9gGmKZ/OJ/hvAN",
+              "type": "thought"
+            },
+            {
+              "id": "call_625850",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Save button at bottom",
+                "x": 335,
+                "y": 955
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4869,
+            "total_input_tokens": 4801,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1525
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 38,
+            "raw_prompt_token": 9112
+          }
+        },
+        {
+          "turn": 13,
+          "action": "click",
+          "input": {
+            "intent": "Click Save button at bottom",
+            "x": 335,
+            "y": 955
+          },
+          "result": {}
+        },
+        {
+          "turn": 14,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqMBCqABARFNMg+h+7Zp+Vh6Vpl5245I3QI+4FrOkQPjgJyyl82DvKJ5JA6TJIyzTWLWVbT2cveT5ZiWAoyQfrw3U+n4pEAdHGiPHmYjuM8k3/rnzCB1CKCcfDSjbffRYLph14fIr8aDZx7vEHGQpmcjxAftWXupx8zcbwKeYR0q6yIYSfzhufnAqa6rbp0qeM5Q84jcFrLkBzjfBqdefidvphFebQ==",
+              "type": "thought"
+            },
+            {
+              "id": "call_438036",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "intent": "Wait for save to finish",
+                "seconds": 3
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4942,
+            "total_input_tokens": 4904,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1628
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 22,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 16,
+            "raw_prompt_token": 9231
+          }
+        },
+        {
+          "turn": 14,
+          "action": "wait",
+          "input": {
+            "intent": "Wait for save to finish",
+            "seconds": 3
+          },
+          "result": {}
+        },
+        {
+          "turn": 15,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoMFCoAFARFNMg+1BGFUd7IN9scTwX1QMyddN65KrPcPmXCA/nie6xFO3y2YqdHitdQ1yabyoJnwpyjMsVijuvX++6DoqfItlgW7M2f9aquCJ75xYYKOLb4Gr+8TQ5ddZZpZddAT07CMdJxKqPorRJHE8nRd/8claWbGkvA0wgW09noho0dCN1rO7B+TA7tvbj5nx9ljFNVP38ycPuN09zXvmDfBLsFifYXQqahAKa6s43+O5adgrHnuyqIHaJCr3zY+hYDTSr4ylVRj7UI7cfN78M1JCQMyn4yzJg+Jm7bvki6ecqN9a7wj8n5nfZ417VEawNPAwFuMTHBceZ/foC0wxRIThNXWUFYcKlJi2O8GIvZUiR7kpTJ04CcJbrZprxJegBQE6gE0BxJZ0DX9XuaY4cr1m0qoIjQAH6mrVGUyh2OmuO5g+ZQAAcEliFkigX8lUq5kcgI+EPlQ/lm/ktKfKzDoPc3E+6H3j47KFP1ozRtwhLGwzU4niGn5zSbJvM/N3W4O0EFofmH9qoR1t19Sue0mhUGSIDmw8HWzD1AoaEcy5NPz0xnOSSsmud1nLgZ/o2igcdhVuNbKQT+dkP+EgX4vz4MEcuZ4GwbQsJJ36RdL9Iz0Lr7Ma7Z3R9XbVkGeQDXleZD4jIe+o7tRfGgEgnMAsVfldKFwC1J2rqIDc/AK3X2TM3iH3pjMaicS2+vYCb6ZQzNVZzqG01uBVbdzcd+XFd3up9tTIGUvDeZYIls82oiFJFHn5L2Edf2wQgxAdm0WKYY0cDTCCfVZSPlFnGA/VGKESTxm4FXg9V7FsSqj8LajtP3DGLPKgKClXbpTUDA7Du/M1+CNhdn+A84K9kpwaw==",
+              "type": "thought"
+            },
+            {
+              "id": "call_483742",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 281,
+                "x": 895,
+                "intent": "Click top Save button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5217,
+            "total_input_tokens": 4977,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1701
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 211,
+            "raw_prompt_token": 9320
+          }
+        },
+        {
+          "turn": 15,
+          "action": "click",
+          "input": {
+            "y": 281,
+            "x": 895,
+            "intent": "Click top Save button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 16,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EsgFCsUFARFNMg91aB+Xy6csdMdnoKUJc8ty/MJ9kd56ZZMm6NVozD/OzqozbB2DrBCnzHjb5uGSXFmPyQU2QA0JRmQd81GQWHU/c0kdnTzzrzTdAdoRTJlGePfHkIIN+A8oiN3UTBi7JHImM6+kz5+CB2xxHepvG8mrr1VLrh3YgXOdlS+SKWPnWibCycp2YEyORLyVIG7GIS64d9BSKqbJGrp3IJ7qp4iO3ZvTi1HjCcF1w98Nwahd4j8Ggz1NbaQreWUSUVjtt/mha1u8jrGEoDtTYwEWaAjIeXcZBLhslX5lbs6lYpVP+VRbDCpw8C4+RVzj/hlDm4LxRy5o9//Ogla+UFKrrPsv8Y5jT8Zol1oPKVwCxpUFTsCgodiONFFwbIjxMycdA+YD1YSzPt7l8YGR1egNLNhawsye3NOthaKtn9q2cG5BygMODemK2b4/nBP30sh/jefGcKzJv2H/s+UFhaVou35JKwvfhfmq8Cy5QNewZVkB3mW+kX6RFfnQO3IA3lsJj1VmtABJciSnIfztQbrHXWxfSaSAyX/FRdweuHOCjGTbEejWQNW9o4pxPx7tZ+ikeaw4Zw6hcnhOFczPGxd13CCrB4FxX9R1NkTWnvT24s8DgLbhoxcKK56Fv0uf1tZaKWOvRWq5J+bvBXleLsWYrGnDAKjbECqpPkFT5pqpK7ZccPVgJi2LCrPFlwdA5Pw6NaXBSdgXIJudyrYw6RV5RV90YH4DadqybgJnaPbGed4e+z9D/qUimaVOsjOcdzbO1WzvRDjpDPi36hlzrVk0y4zErHwSltHu+TE5kGBq8M//L+s5Y5gF7kpWW8YRGx/zYWU/3KlmI/gC4bdyvf6FEjI6xHCfypvCcfo73Ws+hscQGVutsbRVYXdbNsA9ScjAktk2SKdMFdwMqRlOfC0BJQKnLZF1JPYRXNxad8uoOyJToA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_843565",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 753,
+                "x": 450,
+                "intent": "Click Description field"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5512,
+            "total_input_tokens": 5252,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1976
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 232,
+            "raw_prompt_token": 9611
+          }
+        },
+        {
+          "turn": 16,
+          "action": "click",
+          "input": {
+            "y": 753,
+            "x": 450,
+            "intent": "Click Description field"
+          },
+          "result": {}
+        },
+        {
+          "turn": 17,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EosDCogDARFNMg8POTAiVVeq4cyPkcJCrLGi2YYEUsH1a9c2fTz9k6kfu3CcKkOEvGZSdvHeaFqsCOvOB3SLn3pFXNRXq8qSX1/Xx3C56EDZjDm20DthZcUT4dbvWIT5oD20AtZIUhsgDZXMih6FcGdkljyMdEL1di1nhM5Xt23OioNiI4YBgpAdX2NKpi8TZvyLxakeA0T9HMDI29xKFEkYUqvR6/7lmWn2l9LzZv+l5M+0A1cW6WAe3CgQCM9PLp098t/6x9Qna2ed/XAo1OhJp33ZZnGJmNVol6qRTnTrYYliwR6rpa2uGv4IFS5zpnM6+PnGm/bRQhEJdCQU4CCI8SsPnJ8Xtn4NZzgYtOEEjFOrzlqjSLKRlwieXLfs51xvd9QVeVt/KSfPdx192k/d4QfQelnVq/gTEmnfKcZAy1325v2gvA7yO8cyldW4BC2AMpn1fZx+mGRsIe4TiP2cZnm4KHy9YzQry3V5/CnJyTdCw6YeBYkgRO6gJ6UMjy8JELmvkvlsSws6kzU=",
+              "type": "thought"
+            },
+            {
+              "id": "call_726184",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 955,
+                "x": 335,
+                "intent": "Click bottom Save button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5671,
+            "total_input_tokens": 5547,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2271
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 95,
+            "raw_prompt_token": 9922
+          }
+        },
+        {
+          "turn": 17,
+          "action": "click",
+          "input": {
+            "y": 955,
+            "x": 335,
+            "intent": "Click bottom Save button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 18,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpcCCpQCARFNMg/5oLuc8W5RMfWe4pUfXX4LvhsViHb3fMgXKaveXKc8oYsjokZOyYOUbnKCEObc0vTpFKhyikM4Bc43KisWqW2x/iw8dTptr42Vjj7wEqrSINApvvS/JLLYRF25p5TNTn783NsLI7/u81hVCjkcDTle7k8GL+tuVo7p44ISQTmQhdwlOFBEnB1mfadF2clPQ6g4NWuLSxGeadJITDNUFJF1pqQyiiPvWKzW3Ui7FmFBXThhRyTuo8tJ/i8Cue3+Tl1/a9C32gNmKbvYJARfqkiNba0q+Kf0V+2eSJHjO/rEWR/XtkxIR0Khd4kIc5uAXlCQMROyFR7ItCn50Kw23nZHNu9TwdsoZzftrzJRJdQg",
+              "type": "thought"
+            },
+            {
+              "id": "call_867450",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "direction": "down",
+                "y": 500,
+                "intent": "Scroll down to view full page",
+                "magnitude_in_pixels": 300,
+                "x": 500
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5796,
+            "total_input_tokens": 5706,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2430
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 47,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 43,
+            "raw_prompt_token": 10097
+          }
+        },
+        {
+          "turn": 18,
+          "action": "scroll",
+          "input": {
+            "direction": "down",
+            "y": 500,
+            "intent": "Scroll down to view full page",
+            "magnitude_in_pixels": 300,
+            "x": 500
+          },
+          "result": {}
+        },
+        {
+          "turn": 19,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EooCCocCARFNMg8l9khhBeJGDkgRT1pA/XrZlGv6ypCAH7QZsP/PkMLmAGUabBfQULx7Lv4EaNdEYfYQTjmRu+8yiGkJmgxhbV8KY7DIJ0C3tG/oNplaZn7k7tbYxqtMz2++lDBCGxL82n4eNcnbwkX0gJI8zGbJyJeTnBJAO4ma5Vdil5xnAghucyGZ1ReIshZrewk418uF2rd3qS24lTEeN1eq+4a6fxIOPHGfB7xj85B5TEZqad9XBAtIBuYm3UcU3jfntXaU+9NM1PdaWUz0BC6geJ+yxXu3EI8v0zBwR0WUY9SwhKGIDs8uBIgmTu+GTXE9x+IPnQmJ5dvlvobxiaBT3WKGA8hAW0k=",
+              "type": "thought"
+            },
+            {
+              "id": "call_530174",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 735,
+                "intent": "Click Select Tax dropdown",
+                "y": 715
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5921,
+            "total_input_tokens": 5831,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2555
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 61,
+            "raw_prompt_token": 10238
+          }
+        },
+        {
+          "turn": 19,
+          "action": "click",
+          "input": {
+            "x": 735,
+            "intent": "Click Select Tax dropdown",
+            "y": 715
+          },
+          "result": {}
+        },
+        {
+          "turn": 20,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo4BCosBARFNMg9dgTb0n0Nf0gBosOxgbGS338wX3UPLhkI5IXvnEA+6d2jT0zkbxtHKpA6BfyKVkyY8aG11eWQrTZiWv1IaKMXPtnIf4UfgrMKUVBb6gwe/+Rg9c07ex++JZ+4WkUXj6f97oF0gEqAw9TNP7/X8dp4QncWSQojWjj11QKQDd5RS/ziFcgE7UQ==",
+              "type": "thought"
+            },
+            {
+              "id": "call_675923",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 765,
+                "intent": "Select Tax 0%",
+                "x": 735
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 6008,
+            "total_input_tokens": 5956,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2680
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 22,
+            "raw_prompt_token": 10379
+          }
+        },
+        {
+          "turn": 20,
+          "action": "click",
+          "input": {
+            "y": 765,
+            "intent": "Select Tax 0%",
+            "x": 735
+          },
+          "result": {}
+        },
+        {
+          "turn": 21,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErABCq0BARFNMg/yqCYQuBkvfC2f5lN4smUmfCTVhckceqA0/pbgCHbLqxWaJ2P22QQOuoEc50Oj8qkaQHhAQVlTxkYIbx6rgtyElSQMRfyk40hJnBraUNXJH5lpcFX5rVP0qK81j6qog0ZCTQ9pYWAECZr3dNBwlOnWn0m+AzwS4pRJNd3NfyhmhLbBjNC14GOtsjKIOs8SUWOHZlalWUjFAMeQv4OnvRxH41xZS0xPAKs=",
+              "type": "thought"
+            },
+            {
+              "id": "call_580653",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Save button",
+                "y": 670,
+                "x": 335
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 6100,
+            "total_input_tokens": 6043,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2767
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 29,
+            "raw_prompt_token": 10482
+          }
+        },
+        {
+          "turn": 21,
+          "action": "click",
+          "input": {
+            "intent": "Click Save button",
+            "y": 670,
+            "x": 335
+          },
+          "result": {}
+        },
+        {
+          "turn": 22,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EooDCocDARFNMg/sfZYx319QzD+XRSvwi9YYncw4OBxfdvAxG44fZDVbamCUe2jj2NAIVUKwAegzHjjXA1Qay/4B8My3iUx9UjPQ5OCeHhSBDO2tmMhS+jBuNZXClJrWNx4HGcM2hgq0LbockRORt6g0UJB4n31bOE+GNGgKQDFPAtums+m6y1Jwuaz4roKebIkxtvWNpOJHD7skuSjd7El4qxyRu6x8bi9mTFk033CQvQvoe+uOAZbmzJhgk/+Skbkw4VrE6TgIXd0Z85i0UOTKrhiOIp0XGkaY1kM9p2Wima/9Jmbq3M8f1ZsGukwIhaNiz4Tc4sSxP63/rvnaceLPN9arUhNW3cr52wZNKrYROCFXOogg6bQdQjPmBXBItL/Tp/LkMn3KufuofFNZD4oqqPHDx7UUNARhUVYISA1u9SohED4jyFoYDDaBc5M8f12EWQAKVdvFG5t7ss3w9P4X7e06XM5zyevDbVWwIqW5xoknCdjCog8YkJU4l22u2ddE5F1bfeGaQnOW2A==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: A new draft invoice (# 2/2026) has been successfully created for client Acme Evaluation with a single line item \"Quarterly Retainer\", quantity 1, and price 400.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 6284,
+            "total_input_tokens": 6157,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2881
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 46,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 81,
+            "raw_prompt_token": 10612
+          }
+        }
+      ],
+      "final_text": "Final answer: A new draft invoice (# 2/2026) has been successfully created for client Acme Evaluation with a single line item \"Quarterly Retainer\", quantity 1, and price 400."
+    },
+    {
+      "run_id": "id-6_cu-gemini_b3fa55fe-fc31-4dca-b9f6-6d73728e848d",
+      "task_id": "id-6",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "100.478",
+      "reset_s": "35.368",
+      "setup_s": "2.736",
+      "agent_s": "62.374",
+      "ms": 100478,
+      "model_turns": 20,
+      "actions_or_tool_calls": 39,
+      "input_tokens": 90556,
+      "output_tokens": 2019,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 92575,
+      "est_cost_usd": 0.07548825,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:24:19.897Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EuIECt8EARFNMg+3CnHu78hXzkDF/hEI69J0uUPzCgOnLQDhd+JE8rFpR1OVzs2KgfIagbMKow/GdL8igV6ta7XlGKn03BytSYml546YHvzdiwXXJbrb1IfaCTLh5FEg47ukyZ0jWqDl1w4eM3SjOuRX0yRw67lWZjpboD17ZGUq/my69unsVAzUM0hZaV13QGt/8KjJvzQJuTjri8EK19dG2m5h1kl1ZEzZA1kRm1lKD6/oPV2seJnYWVOOza0AoZ+0KumTn/C/uugmHY6bZwhuSJwG4gNPsMtCoe2IjCWuJUyjT9MbqKORdOVjuJjFdfG/t2B+LcRYe4S1ZGoSRi1M8ZsJdVw2h4zHSZToMVuHp/v+8BDAw0Rx9DBsA7Gao620EUvcx5Ijd3N1W+Ct4VG4On20gp8bz4niEzX2KWOS1FC9wo6Q/fUCzaMNxnnluHgrPoYIucMl+/k+pbDc+ZErRJixDdYK2HlpaTDJtHyF8JUHoqjl1+Hw5dGyvZtfz/Nymg7P8PkigDzfcjH48ylSPgwQJNYNrIXveSU+Xeg2L3zbPnZ7j2ASlo9QCv/gLfEHOV+PoncbQkpH6wUjyamR1RSKLqt9sXCbJWpdB+RCiYkhg2IueVVj+ZuKOkIHicpoAoY97Un26Y/A4VraWrKy+Yy4vx3lP2LSOcF4BATvup9z/27UiIrlSqoqTP8bf0E2dTtHQsdoMVyccUoWyGz2/TE2S4fkOJWlhM/JcHwnPOOS7xrwHV/Tnj/iCm2zz+fr6jcxqyY1SnU3I+imYjnarPoHDjgISzbdmeA5CxvTRWa9WA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_844006",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Log In button",
+                "y": 609,
+                "x": 750
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1405,
+            "total_input_tokens": 1212,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 120
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 162,
+            "raw_prompt_token": 5334
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "intent": "Click Log In button",
+            "y": 609,
+            "x": 750
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et8BCtwBARFNMg+ZCLbt6P6SLGTrIGeBX+ykqop0h7eGzFS86pycjjfX5rd8RuN9BgHyekAJrY3cJUVmsIwpvJqySQxegPrgsX0J8Ha9LElHQ1ZzazqkfIeOjo6s0FW82zaBabPRo7wv1m524EB8VrziHS8xUV9RB2MNjK594lo8J9ovQpVUqP9hEg83kn/tYwGaGT0dUmKaCuclB8Yy5OJnNXOc8rxisTelabpnUNcREJK7ICvBEqPST3OTaRizmANv5QuTlYs1V8DSDiQscTtMPL49M48+17k1mxNUIHEOfg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_1014377",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 864,
+                "intent": "Click Add New Invoice button",
+                "y": 281
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2595,
+            "total_input_tokens": 2522,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 2184
+              },
+              {
+                "modality": "text",
+                "tokens": 338
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 43,
+            "raw_prompt_token": 6660
+          }
+        },
+        {
+          "turn": 2,
+          "action": "click",
+          "input": {
+            "x": 864,
+            "intent": "Click Add New Invoice button",
+            "y": 281
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EooGCocGARFNMg9EpoA6Y2PGH8v30i2cdbZBgvT61/Ad5pFzkFobvjoYkExaCj2t6ii+pXVeyBWDDQl753BVx0FwX18zjAfYrNz9LxB8+fPbvp1YaK0GzpV9RNuqcXjR9nFaXgpu59FY4PHS3Ls+CX3A9HMOD6f/v3jxOczpNXKIYKxtRWydwXCj8Pgb8GsGShUzCQ0rn2mYLpoLUYU0rMAohNc50/VxAoyTEVMFsj9uzUXYQDSMXbGrfOQ/dtmDQRC4/Ku+JRb0A3RETHYa2+aW6sH7YCjzRNz8nMN0jkuOCtVjjjwdWCuyxb/zfmrAj+XMCAKLFJ1UTKSi9mQSntxiunFROntPcB66fUWyGXqxum1/cShDchvOSKCRwb4IyEfULCqSWmqTudvup20tSs5ufOyPC0mUbU+AMnGXEcqRcJdRd3MIAs1eEX7R80E8KwbAk4J9oEFRbk/OXCnyFxVSuVteGTh80FttAzM7RDSS+HjTdN9K4AmiOmXG/YIEwWoToF9YyvKoCRwGwzjRT2/AhMUTE8Tg7u9YWz7kP0OZKJ58n3mv/Y+H2bpkeE8tGyyVO1TIUsJ+AvxZ8PtrosgiJE36gxOJNYX1EzRlLvLzrHS/liF3VpVqF7z40glLY3MbZ87qSgsLzbb9P1hzYgr8CaEsjrtQX2rCdLjVFc1c/fvCKIsEvIFeN0TMpvqjR2TITOOF9/EAOxCRVyWTJb4mFylRH5IeqpILugqBt5zTWLIDl/sRb7AwQncGLsC/W6p9AzinbxVaEoPCxxqFJI3AAFkabGvlFcYrw5Y4wbeiq9SDxMAWeyjKZTjh2d9xlPkKLufMqSNFXFANvF2mmogQrczNgok/w0cwMG8cMcIwb8dLA9HUB6GXF/i7JJKYek0J5E3IJdD1Vt0lsJp4Q3B2nR3RAtcuT3Js9tZvEb/le++0bAktS20vFr4vF3cBslaM6QsNcNwDdNlEnhRKODmPbObDBVNbv6R1Of9+0IvPSRy1PDNc41V3cCtoQsodQrgRF7V4YLAZQCqzzg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_558130",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 451,
+                "intent": "Click Client dropdown input",
+                "x": 376
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3971,
+            "total_input_tokens": 3717,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 441
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 225,
+            "raw_prompt_token": 7871
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "y": 451,
+            "intent": "Click Client dropdown input",
+            "x": 376
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErIBCq8BARFNMg+rSV8OFfz6O9Nv9GOCLLBp/CQDqDnUbpp9UkGsisfNvRrLMLnTPy65WCImQcgl3fIIDDqpKtVuhTvLwzWJm5pxY1o1JuJ+3LyVhRogid6R9aNWdDUs++tadDJjg6CDs+ZpAVlisKGPhkGuYKCrEAsdncI7WrnMf0VFGAbKEHK5PLwZN4Jvjdw9LYaMG5SGWoWHIXwZJqBlwthwLFBYkFg8CC0Dadb1crzZ+Q==",
+              "type": "thought"
+            },
+            {
+              "id": "call_633627",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 500,
+                "x": 335,
+                "intent": "Select Acme Evaluation"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4060,
+            "total_input_tokens": 4006,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 730
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 26,
+            "raw_prompt_token": 8173
+          }
+        },
+        {
+          "turn": 4,
+          "action": "click",
+          "input": {
+            "y": 500,
+            "x": 335,
+            "intent": "Select Acme Evaluation"
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpsCCpgCARFNMg8A/V0BSQlPXaTBypcTrGzlEmzlSrb4cjfyNRqtRjq4j647uR7opGZNPxy8lJU9pCVZMriJn6chzbxdcbyCioIJkyRjI/aollcyTS+6qWfAdlvw6+LKQKHETGjwOmuptQSuhUV2OHEtKZaTVhybM3FIWyF5GCMPvcWutbqqlST2Y9NHuNJNKymXl6S8EcrBzNaN55PC4j1kdVBuLmTNnLRaQR4RRq3Rch4qcsi5z4t2pnpuqy9XT15KSh7xrT0wYbClSuXezhLwXpfxonP/v51aRzoBPNPna6gXrDDkrSoBHEiZG7EQLkez6epdlhCCg0bFrLbDvASX7+qo6EG3kvhbDw1ld75Gh/uGjVJeOm+rSB9HxA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_615929",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Item Name input",
+                "x": 335,
+                "y": 753
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4188,
+            "total_input_tokens": 4095,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 819
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 64,
+            "raw_prompt_token": 8278
+          }
+        },
+        {
+          "turn": 5,
+          "action": "click",
+          "input": {
+            "intent": "Click Item Name input",
+            "x": 335,
+            "y": 753
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoEBCn8BEU0yD55eL3qnHuxzItG/KerUj75jGsOTKABSkidF9h/7ct8QdQs2Wzvkga9XcIVUTaStC2FYy3b8cMGJlEzlnZXtWN4a3g+NlyMAhr2qePhX8yxssJ+EDg0/6SpK2mWzjMpoVxE8W67JCG1rnLYCU4wATclHIWzW8KYuSt1e",
+              "type": "thought"
+            },
+            {
+              "id": "call_535183",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "text": "Quarterly Retainer",
+                "intent": "Type Quarterly Retainer"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4256,
+            "total_input_tokens": 4223,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 947
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 26,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 7,
+            "raw_prompt_token": 8422
+          }
+        },
+        {
+          "turn": 6,
+          "action": "type",
+          "input": {
+            "text": "Quarterly Retainer",
+            "intent": "Type Quarterly Retainer"
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpkBCpYBARFNMg+PO+KgrQwbTGXDhO43EKiR4Pyrkz7rsG3ok9/a8oxvzC/P4b0m5AgeHl1B34slPDna3/PEC84vMisYnA6GTcN4d5kLwRtVXiNvhq+vnIgZTdLmdleIMvEE6wwEYtPIklrn7ww5ngTgfc+y7PtpXfUCkuKVGVT0UT+vIpLvthHmgkGJClx3Ln4fbKtzEaR56ABr",
+              "type": "thought"
+            },
+            {
+              "id": "call_630908",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 753,
+                "x": 642,
+                "intent": "Click Quantity input"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4338,
+            "total_input_tokens": 4291,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1015
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 19,
+            "raw_prompt_token": 8506
+          }
+        },
+        {
+          "turn": 7,
+          "action": "click",
+          "input": {
+            "y": 753,
+            "x": 642,
+            "intent": "Click Quantity input"
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EnAKbgERTTIPl6XuzOMHcgJtxigC2ehG1leHcVUXON/sqkAedy0HSM18iKtBLKaGtyJ+PyCOiK2NDr++AlFe/eJaU9IqcAYy/TjJhZwReseKzU4+2cmun+r3yo6ZQkV2F2qClGniPq3ow1yueg14rXDU",
+              "type": "thought"
+            },
+            {
+              "id": "call_854350",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "text": "1",
+                "intent": "Type quantity 1"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4400,
+            "total_input_tokens": 4373,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1097
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 23,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 4,
+            "raw_prompt_token": 8604
+          }
+        },
+        {
+          "turn": 8,
+          "action": "type",
+          "input": {
+            "text": "1",
+            "intent": "Type quantity 1"
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpYBCpMBARFNMg+3ddHO14Jg9tutHRFUKIOLaQDbIXgt2w0kIlR+PWT2ErGP2shaObDiZDVu8Zf17mBZ/A8KhdhFmd6Nyvl3lRTXX3Uwx9gj3TuR73UuakrDNfVD7OBgdDdN9Nkde/piYdLQcUoT3k16O1eYIMjuXARK45OvsG7VcRLcU7IVMKO/hakWzydBVDY2vzP8YTra",
+              "type": "thought"
+            },
+            {
+              "id": "call_600698",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 753,
+                "x": 740,
+                "intent": "Click Price input"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4482,
+            "total_input_tokens": 4435,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1159
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 19,
+            "raw_prompt_token": 8682
+          }
+        },
+        {
+          "turn": 9,
+          "action": "click",
+          "input": {
+            "y": 753,
+            "x": 740,
+            "intent": "Click Price input"
+          },
+          "result": {}
+        },
+        {
+          "turn": 10,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EnIKcAERTTIP4/ngbv9QYhEPjmEMwsLsPQh16jPipPQBsdNHyP2+Upd0qzy4N3JJmX+HU5CMYWyG4FEK2cmN0S93u5HuaPKgCELUi85rb+KP+JdmZcCb1exKsAwUEP9CbBYrN9fdbki8DwmeAKgiIFzDkWs=",
+              "type": "thought"
+            },
+            {
+              "id": "call_411720",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type price 400",
+                "text": "400"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4550,
+            "total_input_tokens": 4517,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1241
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 27,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 6,
+            "raw_prompt_token": 8780
+          }
+        },
+        {
+          "turn": 10,
+          "action": "type",
+          "input": {
+            "intent": "Type price 400",
+            "text": "400"
+          },
+          "result": {}
+        },
+        {
+          "turn": 11,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eu8CCuwCARFNMg/NzRqbNcxyZW2ajRygCK1jJVpJbv3Q0ESjne3nrmaLLh/o+AHwrvZPtfx3vXbLbCYN8wcz5N7+CJIYax2383SGHtywJKjWNIws5A5LcioYudjGY3aMdfFRlt1nR9WLlajUUMCithcX1K+9K/2nQw50HYD0YP9sTEdt7EJrVSYLjD9J959ZYN79V2hsW0y6WcCMBk+7lZ6C9kTcI8J/WiTCOFJNSemiF1NapOlxEJL0PCDhRHonBSZzbflhZzqX+y2Mm1xpfmc0Ruz7WRcTd5opJyvD5d/7L0p0IBWfHZfoe/CgygYyQnPVGkLaA+thYdY+yFxteAhmw9SpJPpagfr38mZMFneR9YPlFBYEV1dwvLwtVTWOoWqK8t33yvJH83sojQKop5Lyich2bxux3lPzgiQn4iOXrqgmmtXsj+zj5gFCwTCm/HvBaxGCiaRZoHFjRX1RlzUATBIEJCyC0mI+cHhuU83dow==",
+              "type": "thought"
+            },
+            {
+              "id": "call_633443",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 895,
+                "intent": "Click Save button",
+                "y": 281
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4722,
+            "total_input_tokens": 4585,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1309
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 109,
+            "raw_prompt_token": 8864
+          }
+        },
+        {
+          "turn": 11,
+          "action": "click",
+          "input": {
+            "x": 895,
+            "intent": "Click Save button",
+            "y": 281
+          },
+          "result": {}
+        },
+        {
+          "turn": 12,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo0CCooCARFNMg/mL0+alOntGthAwUAI/uzemGDaQw+gUDOb8sr4HdxUIGKVR5sTqsTyUDDURigQ7tKFRjz4sLeeEwa/KUbMtQlPoVHlhkYOjsJRJXL1lc7oOaIiG1W42Pwl7+RhKxmmUpviXYUb0tfGN4yYPnEVHvZrWlnP1TzsQmWV/UWhs9FdSJ+BAlC+rAXPFn8rZodmqSNVU7drRV0/p6ZQ/Xc1Ksms36iH99JbCPT3JO4c6/pQwa4m9OTA3j+mv4mNGHt8sowZzUKV9AQJ0VP0ZlxKdIn768xo7pkGhytkNr8IdGHvihsEIAgaB3FniWaxMi7aEID0UiOh9mG9/SiNYAEgXL7sVjTnP2E=",
+              "type": "thought"
+            },
+            {
+              "id": "call_567066",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 955,
+                "intent": "Click bottom Save button",
+                "x": 335
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4836,
+            "total_input_tokens": 4757,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1481
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 50,
+            "raw_prompt_token": 9052
+          }
+        },
+        {
+          "turn": 12,
+          "action": "click",
+          "input": {
+            "y": 955,
+            "intent": "Click bottom Save button",
+            "x": 335
+          },
+          "result": {}
+        },
+        {
+          "turn": 13,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EtQGCtEGARFNMg9QJLO+1LxPVvaypcAOM+U5lzNuqWsNdsZ1/RGaleNYUXz+CbhnlfQafaNNuJ0LbiGps86cDL3VMXV3K4WAzFal+7pJYNSU0V74sjmEDvvwlYuMvdq0er181y99GTgiemY7+XU8UhxSGMkllfnUatcOJ/29Vr3oQXNEP/wLoxjMkc6x5y66ziiO491TF3dZiikkcLM6drlIemHzXb3XMg+ZhbOzBXZw1/JKQmb50PB561CUWo0X9WwsEvfVPFf9vW0nTWtx7nseKlZCbIVQkHBzGyFMnGETqhLPWqUsqLj7s0lz9hdXfIg5pywzF9V94aftgcaXh0yD5fco4ME4h29absqLY5g/7j/Aev08Ii9r7bHdAhWsvdhAJZ83bKuRrcKy7rnuWQ+yU5Z8kw7NfyATMIMziSj5gbBxJKQNalsZRgnA+dptzto70bHvUgzcE6ZFGWsG9iztKq9Q8dCU8GzkpH9LionL8JnVZBVJWIcgoqHFpgK9HoSAGuIHRq0coUoTzPBzgVPgMEddP8fDTOXZ1poXSMEHhv/YpbzcJy+pw/zG/Oe6Jl826PaKv+Fzw9W/7RtwC10d7f4rMJXKhmyBsK9sWFNNC4FO+wO8xZCkisj+Gcx+WoqvOEGZZNzXTA8KyS3E5hp0zjuzHIynGFKhk2RDWlNdJxvDMIO4IoYSPMMyLMsybeqOvpqmX37N6EMd84K9DvgGrFMwXrUvLmYqJnVGrcU7DWNms3QNbTOmYgeOnaZWgxdCHEe2CAqM6y8zX5P/4/U2aEWW6POxp98Ae7HD7S8x2uGVLVdLlArrlf1uPuCPld56LP5pPnexwX926P5PF2yKR6Hd+q+7/bxB+YzLNh78rtO9sI3wr1BfOjSxl4kosPc09iFgZejocRso9QxGVnWzrEZ1tWljBHcV9ajx/S9r54sEi6yBVyeMPe1Qf3jhepBM8+diL7pCa9GOMUxufUcTW2X4E6KdG66KVw7SvsbRAFH/O6qnJHGkNXJE6QWvUEEwQqFvjRBIbjrvhPeGe4REjaHZs8iC+VHVFShDJPvFxf0D4MhiQxxvC5rqRuvfXSyK25xiuX9hixjjJKgL6aYV6DeZGweTkceMsZ2PrzPw9Cd4XMum",
+              "type": "thought"
+            },
+            {
+              "id": "call_741277",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "intent": "Wait for response",
+                "seconds": 2
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5121,
+            "total_input_tokens": 4871,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1595
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 20,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 230,
+            "raw_prompt_token": 9182
+          }
+        },
+        {
+          "turn": 13,
+          "action": "wait",
+          "input": {
+            "intent": "Wait for response",
+            "seconds": 2
+          },
+          "result": {}
+        },
+        {
+          "turn": 14,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErIBCq8BARFNMg8u97lFGqqT2vCx39ots5w8KVSq4UBubSGyPZ/BpX7tO1DqVTbdVnX9RBm8dNLuxC8kCErsZDn3cTRC6dWuyFxF3MDpwSdbvotX5zFbZW79HdFOmKNaxyMg8Bmp8Fg89biJZZZZmKCqgkrrIy6e9AOUU0L2TD9G5GsyNgdRysKjaYaiBm5WvfHAosJQLL9cAfi1N8VevwiFayaEl0K8IaM6iOgSFZJu5YdpyA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_503202",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 281,
+                "x": 895,
+                "intent": "Click Save button again"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5213,
+            "total_input_tokens": 5156,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1880
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 28,
+            "raw_prompt_token": 9483
+          }
+        },
+        {
+          "turn": 14,
+          "action": "click",
+          "input": {
+            "y": 281,
+            "x": 895,
+            "intent": "Click Save button again"
+          },
+          "result": {}
+        },
+        {
+          "turn": 15,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EuABCt0BARFNMg+wIahXSfQdw/1VNj0WuwF1zTsgg7MC4EPHcBJc5MrRMT2Fiz3ikC6GKTys4+Z6QiY63cg36ONuf5s/WQmWojZTlgZU8ntaXsAZ9RLFXWd6we+wSVvkijLAXjljWib5Jxbei1T1lakS+BxdfYuX73AgOF/Wup06Pne1ug07zIRfJBQrhqYqijz/fdFwmga2xPgoMZnOheR/jO4HWQc/LM+6ALKTTRgSCfwo3AEbwDH8XchggNjOw/DdEDv0zfa5gTXcvYs3fM5q8XS3R/A/QHG/MLlSO0IlYBo=",
+              "type": "thought"
+            },
+            {
+              "id": "call_527755",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click bottom Save button",
+                "y": 955,
+                "x": 335
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5315,
+            "total_input_tokens": 5248,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1972
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 38,
+            "raw_prompt_token": 9591
+          }
+        },
+        {
+          "turn": 15,
+          "action": "click",
+          "input": {
+            "intent": "Click bottom Save button",
+            "y": 955,
+            "x": 335
+          },
+          "result": {}
+        },
+        {
+          "turn": 16,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eq8FCqwFARFNMg8Ley6tFheDhSuqTfIAq9zuTmaE1bUFQn6W46QYMe5TZvqyYVv6v/f4Tk5XvdHBQbkvFfPlQAg5QdOQW+oaweR/TaKK5g/vVD4O6U/s4luC59+W/HyTF85U0xj1EXvxND7QlE/W8FQVNrVmel5Kauaihv7bZW7BH5ke5CtF0ln79XqBBHlUcNk9lb1bJGNCCOKGB3MBnJvhyRQDANCw6s31rwfhBnR369yAX4QTgO9A8oBGExSy5vVze6EZkl4ZEUcNd8p/+uVE6zWgesqzALpRlgoEyDPLjphEzORRhqW/DwnkoM/j2Lj1kmFNqb1fNHPRnCDjVTKYW75gJXNOUF6HzSHviBt0GNuQiAIngwEa6OnWn4OVB8HNmLt7E3l2QDLyTYJCZX4MqE8q4uUqFdeJzSlnQzrBawIXmZnI25c7k3pUP5aD0Gi/hU5VKxFSlf1yX0ObPWadLcohAh+QkSxmakwHHMEHF1NB0BFcncYvKqEkCYaiOs+YIyJqLoW6xz/ERQjWMT2JU8PWLzF/O1EQBxaCYm3qDjRoIJzI8FCq7StKpWTIn9VZUSg6wKPKujf2V22y8j/vtQngikAOTwYjv794eyQO7ILlXTREB7O9bdxGXFsbVyUWS4acO84Gtv/1UrwTP8X3GkHYdFe3c5NYNyV3oTvoXmoVP5dEA5DLXEZtoIi4g9ad+QDlSBR1zl6b+lfSo9Ue8xqwEYFNPcz4d2S5lrlRYpS6ccT3FVS1P0S6O104lpbKZtzWn+qmIySVQ5PkcvJn2STvr9hZHMlsI8OtBV7jokc7EeWoObgBIO+mzltyummGQw8pvA4ZHtUDE17JtXefKSBasAA6DGaAcq+71Fu8jTT3G3pfehsRyFR5BjJyG08t3sbcvx5kwaGvos4sRbtR",
+              "type": "thought"
+            },
+            {
+              "id": "call_698215",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "y": 500,
+                "magnitude_in_pixels": 300,
+                "x": 500,
+                "intent": "Scroll down to see form details",
+                "direction": "down"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5603,
+            "total_input_tokens": 5350,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2074
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 47,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 206,
+            "raw_prompt_token": 9709
+          }
+        },
+        {
+          "turn": 16,
+          "action": "scroll",
+          "input": {
+            "y": 500,
+            "magnitude_in_pixels": 300,
+            "x": 500,
+            "intent": "Scroll down to see form details",
+            "direction": "down"
+          },
+          "result": {}
+        },
+        {
+          "turn": 17,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqMCCqACARFNMg++ZFt0rdaWnlTIe1s5ACS7huQfwwdC4f4zQvugTlr2a5ViMBWPO/55ku6bxskIkHC5dMcIDqKxN7/rW06//+ezoI9TBoE8GgGw8Zn2x6NmhiJ53xCi9C9ew/dcMAiFVAPeENB63s9vEDPrXAldFd/5q91NSArQO1sTA63mqir62J2pLUs3gANZhqjlE5tHeHJxlMlQcF7NeYzoKkuo6VO/RoSA2N5fW8T6GzyuSN0eRRDh6tExQacJ9l0zeX5vzj7F8lPtpO/vOYZtu6i0lBPGtaOfFN0D1EbsDPhb2Jm5PagdZllp/gJTZtZhBHrcmthEIQ69dYVJNY5PuhlBcPIZPdMf0XOtDkUxYMKrYxQ/AS5oaVWUXb58Bk1x",
+              "type": "thought"
+            },
+            {
+              "id": "call_713694",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Select Tax dropdown",
+                "y": 715,
+                "x": 740
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5724,
+            "total_input_tokens": 5638,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2362
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 57,
+            "raw_prompt_token": 10013
+          }
+        },
+        {
+          "turn": 17,
+          "action": "click",
+          "input": {
+            "intent": "Click Select Tax dropdown",
+            "y": 715,
+            "x": 740
+          },
+          "result": {}
+        },
+        {
+          "turn": 18,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo0BCooBARFNMg/KYLZDpQn590BSgVGmuBqKmpwot/0fZYp3PiNK2az/swiKcegQbzaQNgQg9IeyV9Sac/5zc9Slg0VR6vIsGtmYDB1uP21qB7wPW1xztkHjPZ6obJvOAuwOHrS/e6rga/KKSQNtOptjOt1ty+Y686AJTuRj+55/JhGGjMmE6JcggFO4B9gX",
+              "type": "thought"
+            },
+            {
+              "id": "call_632198",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Select Tax 0%",
+                "y": 767,
+                "x": 735
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5811,
+            "total_input_tokens": 5759,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2483
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 22,
+            "raw_prompt_token": 10150
+          }
+        },
+        {
+          "turn": 18,
+          "action": "click",
+          "input": {
+            "intent": "Select Tax 0%",
+            "y": 767,
+            "x": 735
+          },
+          "result": {}
+        },
+        {
+          "turn": 19,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqEBCp4BARFNMg+95wuPchm1Fndj7fCksGKbysnBv90pc3WrTaiULy8POFXQL0b0BlDo0srKqO9RYh8kEUd2ROMTKeFZfOIu3scpTElXS55J5+2/NEV189CfU1Yv/yT4K8vhPzSLRKWGVMl0JKEWvYFG+v/6SRhjRUzLm9/nTiddUpceHbUESjukG3NFyy64Dghkb9nzL4LRDLbZyquagMSm52A=",
+              "type": "thought"
+            },
+            {
+              "id": "call_567234",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 335,
+                "y": 672,
+                "intent": "Click Save button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5898,
+            "total_input_tokens": 5846,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2570
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 24,
+            "raw_prompt_token": 10253
+          }
+        },
+        {
+          "turn": 19,
+          "action": "click",
+          "input": {
+            "x": 335,
+            "y": 672,
+            "intent": "Click Save button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 20,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoYDCoMDARFNMg/bkOZ31xveOjiZzLwchJl7lBFL+C3lAxB6wU4bYgV/LAz5Lh2IxlbAzuLnRSEJU7Cf2HHJs0xZ9FfD82bRTnZ3lWQ8DJx0MqV77X3G3MsTcg3zSuf3cbgaoiWQj6tGUW9Y5fxowPyHwXTJZiEBEd00eLCe8zA/ai+NOu0U4lg/MABAZlrDnvTF2e+QDCetCVK51bRYsEf3xWcaX0Ef3ivOeaNzN/qffpB8sT0oO/hJUOWlX0xCALZ5H4AHhPeqrhv+YSMHmGUj3OsS6bw+KXS1jCRNLYo+kBIeoJ8jqDrfvFqJ3Jksh4V5xRzoZEsQcqhQsvYPdf4k6ZsvoSBY1YNiHNW+gijqUk5Hz55MQdjNj+Zk6BuAElqGEh9GtoCumWD8sDHh33mAYlW0Qo03+MjDO9GHvlx1IJ+OI+9rg6brxMZo2tbkODBHE47ABa3gavMXNsj0zNjD/twD2uXT1xSFPUaVEQfrYADOmP/2uJkZotSKOtbduZfXppOcPhHA",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Successfully logged in and created a new draft invoice (# 2/2026) for Acme Evaluation with the item \"Quarterly Retainer\", quantity 1, and price 400.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 6087,
+            "total_input_tokens": 5955,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2679
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 44,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 88,
+            "raw_prompt_token": 10378
+          }
+        }
+      ],
+      "final_text": "Final answer: Successfully logged in and created a new draft invoice (# 2/2026) for Acme Evaluation with the item \"Quarterly Retainer\", quantity 1, and price 400."
+    },
+    {
+      "run_id": "id-6_cu-gemini_1847d01e-ec11-4a5a-9d1d-accd60ab0f9a",
+      "task_id": "id-6",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "109.231",
+      "reset_s": "35.422",
+      "setup_s": "2.768",
+      "agent_s": "71.041",
+      "ms": 109231,
+      "model_turns": 19,
+      "actions_or_tool_calls": 37,
+      "input_tokens": 85196,
+      "output_tokens": 2300,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 87496,
+      "est_cost_usd": 0.072522,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:26:09.511Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvAECu0EARFNMg8A34J5Ap3ApTlA6CnDZakLwkJSRRNrFwj66iMwGZML8FWQoWQKzpgSFfWPgF6VRsfMCfJJoKmSoe9yQ3Bhpbe8YCV06io1ZgFqtONxzIE5DHiebZ6Bm7eOcy8LFf0F/V1y2wf5DfT/bvCBhKqGPMTA0w2qFre8tUZTig4UQPX7XKc/Zqw2khch07axjR0iHUKl4/9wgCkeGclFHYiunLa+XfBjxse6X3ThQKM88AuM4+drQWiKYwItuVtMwKswsAbpV/p5/ERXryIPsViztuWyu5WExOwzx1xZDXCyb+Kj1ojtjomWCNNsnMgD6SRC+ImfMS+C1M7bM7Wm3q90b+razYVXaUiZ0MRFcprMZkaHTjkJSzgFUCurGllvQEACytYCHzCneEm6z3T95oBFOCX9BqdxlkQzA9ufioL1qImhFRHGNGyWvi5iCwaRwuiHlJ06g9T0VyoVaNLipmmF6VJJNQSu7+f7ktc6A1Ia1p7T0055wAcl0DJ3BbOV3H3tPpfv4aPLaeMruYtZW+pi1DBSJyEX4uUlWf2PaZXnWgjoDDNa43XGJ52mgfRirWEqarUbLN7m/4O2pxs5wesiuhzvRB/ly8lRK49J5f8JoOpSyrvDan4G6cqLyAs/QgmYeVZLwwMw1hNMYcAOpJ+Kutx9vtSi4Cpk8UYfnO3WvRaV9C1xb6VyyU80C8HQD7dRhi4D0ISY8N8+X5ksBL8DMVCuVstCukaqiVuRwl5Uh/JQ56vNEgstuc+qHs5pT6992mpXSfk/XsBiqLuOTOQc1Hrq5UWGY8VeQU0531o0kot1L7IQb5pXEmor",
+              "type": "thought"
+            },
+            {
+              "id": "call_335194",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Log In button",
+                "x": 750,
+                "y": 609
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1393,
+            "total_input_tokens": 1212,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 1092
+              },
+              {
+                "modality": "text",
+                "tokens": 120
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 150,
+            "raw_prompt_token": 5334
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "intent": "Click Log In button",
+            "x": 750,
+            "y": 609
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EtsCCtgCARFNMg9zwtJyFgr0+IPFd2lknBTyw/3hcDyFxPBRTEeXAFYyENivBWVh0lrMIsLdmxbTxILAxOBi1JcVaYYzQJBVCZIsLGl4az/DabhY3S8HdZ3RUwNPXCkLj0iQh7KOrwpdgf8AeHQ8IIs3DbEfvYNE5RGMVvjkIWf7n6389IjwDMvh8yPWvnD0vz1cg3PYXLgBB2+ylk129w7eyMhwDy+1nCcUPW0rwvqT0sb0MMALqTTmRHK/BobzIAuR+wXQGjvc0lEIAs+5DxMaCEwpr+7IFb3SvtDm4DLIzjJ6i/ZqFXhrqyvYVSPSQ8LkWt9LVdrYLd5DWjsbabkAvuDB+U5Y/KWsEXCEKKKZZLeZnoRXM2jtoVJxuHFBbFxiRqAI6XeQ3q8P+NfhKcT71eYqoMDy3y3kPMZurXYXXHXIUEPaGUf7IhbKAzSx91qXOa7Kfm8NYr2X4bk=",
+              "type": "thought"
+            },
+            {
+              "id": "call_725484",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Add New Invoice button",
+                "y": 280,
+                "x": 864
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2614,
+            "total_input_tokens": 2510,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 326
+              },
+              {
+                "modality": "image",
+                "tokens": 2184
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 74,
+            "raw_prompt_token": 6648
+          }
+        },
+        {
+          "turn": 2,
+          "action": "click",
+          "input": {
+            "intent": "Click Add New Invoice button",
+            "y": 280,
+            "x": 864
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpUDCpIDARFNMg8K781BnkCzo7IZMdm0/lGIEe9QosjQoK4eQs15qY4osWKXCtE7pd89+oZLACibUxJ/lMFHPulcI5TzMKFdr6bN1fP10+m+j/n+xDKaqbfJtOZvW7NYaOBH8OD1NchasbBlIkb1rvfn9ewX7n5qS0kvvkEdyamZPL/jqZ5l9dampkNWcgwgYQKzjAzZJMc3Yuqn4CaKwgfRWJ8GB/+sb3DFLWFlRRcCgXwGrH1v01do/xHSadaITLxiz1o+9pLo0JI245dgN9ZWKp3B/+CpaETl9T7ml12bZZosZsE4Sb/AFOg1qcjH5+5Zcu+fVBMyAvVJ473BVInfZQCQnOAfvMBFAFz6q2vyl+qyPgl8bBH9eMLKAWTzISpnRHEa+pLaPDvKP/LM3zsSpKvcA9fWWBQz2WCGEbPYWIuPNLLa4YsfmUTnSxBsukMpsN8vRNLFWLkIlgqeQDgJNKGXgPDyHRQSD8qMrP8UyRGSK+apH7K5lAkh9Y++2eWc9Cexf/DoOXi0IoMKvjFQdeqULtIM",
+              "type": "thought"
+            },
+            {
+              "id": "call_460894",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 377,
+                "y": 450,
+                "intent": "Select Client dropdown"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3864,
+            "total_input_tokens": 3736,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 460
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 100,
+            "raw_prompt_token": 7890
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "x": 377,
+            "y": 450,
+            "intent": "Select Client dropdown"
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErkBCrYBARFNMg878XgTSZ2wZAG7kub+rrV667rw5j6a44S84FkFYZKbnv19SSA9M/H/Kwmxl/eim9QaVl1fW8n7h+p21P1+le1wbk56X+9kSvYw2ViF20psN5cS8bfvut0q0n5xhKu0Z2lYtXkia/hQk2SA+YMQ/uwUO0TL2ZfmpAiUQuKJahZ5kHhCjDoOVNcN7JUAt+7p7zv+2CEXg0HGPLH/QduCZb7rYktCMOEs7teh5h0SDhCbTXk=",
+              "type": "thought"
+            },
+            {
+              "id": "call_643170",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Select Acme Evaluation",
+                "y": 501,
+                "x": 335
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3958,
+            "total_input_tokens": 3899,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 623
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 31,
+            "raw_prompt_token": 8066
+          }
+        },
+        {
+          "turn": 4,
+          "action": "click",
+          "input": {
+            "intent": "Select Acme Evaluation",
+            "y": 501,
+            "x": 335
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EosCCogCARFNMg/j/xsUAwCV01S9H1iuFeTVHGJq1zm2CPoLXDmnpEzupRzI/UPB7GWOUrpRXOHrnem4OPTPOU07UkmPYuGKNAceynDj/VzVcOhl3gGLMg2JvXi9rtTbhmEfb0Bgmln9MDGNCS7oJlBz80bewPy+CKdOXnPXuQarGhip8wCP+kwuO+FcArdNcbfQpdKinuOtZAzeIlPIyfdbgLPY7mEUVgBKDn736aT7P9j8ePQ5kf5k5wSOqEfGAm17LTCOzSgRPHjcylrxg2STdrMeE2Y5ryhx5GOb2HDdmICwHam3IvWvQeu+ve8heEKg706yPPWTr2bOZYyMF7cP0RceuixzVVHlAoRc",
+              "type": "thought"
+            },
+            {
+              "id": "call_335285",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 335,
+                "y": 752,
+                "intent": "Click Item input field"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4098,
+            "total_input_tokens": 3993,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 717
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 76,
+            "raw_prompt_token": 8176
+          }
+        },
+        {
+          "turn": 5,
+          "action": "click",
+          "input": {
+            "x": 335,
+            "y": 752,
+            "intent": "Click Item input field"
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpABCo0BARFNMg+fs4qHZaCDvPlXoThka6s8aAHvvS4rN7cbg03aH67ubGu8QKDsqpwiwSsn6XQ2pkFK58S1EuhhGwb4WT9d+iBZkROlN+KFbYWXXR7OUxkBXKDE8ZiEq7Uhr88eh4O0ah/xxDz7oTwQAxI80MtHkAQK16skJWsK4m70+r0Z7qQ1ICek4GKcvb85",
+              "type": "thought"
+            },
+            {
+              "id": "call_603422",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "press_enter": false,
+                "text": "Quarterly Retainer",
+                "intent": "Type Item Name"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4175,
+            "total_input_tokens": 4133,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 857
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 11,
+            "raw_prompt_token": 8332
+          }
+        },
+        {
+          "turn": 6,
+          "action": "type",
+          "input": {
+            "press_enter": false,
+            "text": "Quarterly Retainer",
+            "intent": "Type Item Name"
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpMBCpABARFNMg+i73FbNsVZWiGhNJAUAXnYrMtvIMSHcMxZfZ8cJRV0Ck90Vc+ibgGOjwynJ2OIOkd6ATGeFt7fy+F0BERXcAGSDIk5/ftfHmvhtWS5E6T+SaMCHkaBGS32/qQQaqOzXnIemNOF4qEGNLKaZJS5GTIt2vCsxk4JRoIV/L7lQ1SxrpaeD6Sdex3jPlaN",
+              "type": "thought"
+            },
+            {
+              "id": "call_699488",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 752,
+                "x": 642,
+                "intent": "Click Quantity input field"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4258,
+            "total_input_tokens": 4210,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 934
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 19,
+            "raw_prompt_token": 8425
+          }
+        },
+        {
+          "turn": 7,
+          "action": "click",
+          "input": {
+            "y": 752,
+            "x": 642,
+            "intent": "Click Quantity input field"
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EnwKegERTTIPrH5KHQVTvolqb4FhncCKWveSvXNoE2uDT+icJaCZpflxm3ZAhONxjoz7cfh8+4Lif9/IRgBvMZDM+ZQ3BSZ4MhXecjt0JgQkaWaQtmb6LGqunqLt+GK14WYaoa9gz+9cFsjvmEFY6IeZC1qYop9349T7no2I",
+              "type": "thought"
+            },
+            {
+              "id": "call_639361",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type Quantity",
+                "press_enter": false,
+                "text": "1"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4327,
+            "total_input_tokens": 4293,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1017
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 27,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 7,
+            "raw_prompt_token": 8524
+          }
+        },
+        {
+          "turn": 8,
+          "action": "type",
+          "input": {
+            "intent": "Type Quantity",
+            "press_enter": false,
+            "text": "1"
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpABCo0BARFNMg/mrWCzNBsOQHUeisSX6o090sZkM7e1hECHc3TGTcFuv6gEbO4ofJJjnS2FGBViNJ8dhvjiAS83bZaqMT3NoYhvvRUcYlsc/mLZxNErAn1g4adK4RIZT+RIgyZ2vfzv7XEndV2/erfaUMEpPLaZPlzF0sx90tvoEPfHSytj4FcOduoePCQdutU4",
+              "type": "thought"
+            },
+            {
+              "id": "call_394299",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 752,
+                "intent": "Click Price input field",
+                "x": 746
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4410,
+            "total_input_tokens": 4362,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1086
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 19,
+            "raw_prompt_token": 8609
+          }
+        },
+        {
+          "turn": 9,
+          "action": "click",
+          "input": {
+            "y": 752,
+            "intent": "Click Price input field",
+            "x": 746
+          },
+          "result": {}
+        },
+        {
+          "turn": 10,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EnsKeQERTTIPu++3D5V4FINJstHzgJNv6SvM5nhNR8MVJccWfddnnyXoolwCzG5WZ7d0Bf34J/Nkdy5D7wZlc0NtyOnLBvYzud6Yz0bG5J4ceMChKqCfD9u1W9NjOF65nUqm+ECcD8SUsvhuBcw/rzk+xVs5e86CPP4+oSU=",
+              "type": "thought"
+            },
+            {
+              "id": "call_468530",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type Price",
+                "press_enter": false,
+                "text": "400"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4483,
+            "total_input_tokens": 4445,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1169
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 9,
+            "raw_prompt_token": 8708
+          }
+        },
+        {
+          "turn": 10,
+          "action": "type",
+          "input": {
+            "intent": "Type Price",
+            "press_enter": false,
+            "text": "400"
+          },
+          "result": {}
+        },
+        {
+          "turn": 11,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo0DCooDARFNMg8MAslet2Ca9gVKlqg6ynoaYEBAgnazvM0DwlSLf+gYVSFqeKPJd0gBGzdlUelLPy+UB6Mv747rWXHwSAVPUXh2VBxRPWjRAeS0/TO+Ns+7TWBu60cGkAEIl0KbNcBqi9RduAPcytcYbc8+5pYZmgBBW+PRWNtz6pRY00HN2gZXZIM9L9biHFCEhVSw3Vp+MXd/1Hbzz03+t68DAh7taMrpbgP1CvMgYBpdOg97IHhBiDQZ1aAxSjpyZ0b7g3eiXt/tKUygdnh7HDcots7xlkaociBfwJK3ga+Ujfqo6zZY0pt3xyTXMoK2SHnVqUErb+IVVZPQEbc0c4BxzZH/rUljEIuc7aA6n0Du8OrF2Cp529xFJad8Iaqi6temaQYzH3DIqHJ3bMM0Epcx5gaEh1eNSvNkV5inW7TdtYjZmPg8P9bKUnFMDn8pBR+Ihvl+IDxdpwiBKI/eMd1FDJPcdAGQJqdAe3W2cjFPIw/PYnQErg1Ogpk6biwgibdLiz8jYQjZa9kDuA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_498581",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 895,
+                "y": 280,
+                "intent": "Click Save button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4659,
+            "total_input_tokens": 4518,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1242
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 113,
+            "raw_prompt_token": 8797
+          }
+        },
+        {
+          "turn": 11,
+          "action": "click",
+          "input": {
+            "x": 895,
+            "y": 280,
+            "intent": "Click Save button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 12,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqEBCp4BARFNMg999ZjeZucLjbTx//HjTz3y1+zM6lWxMdjuCQg3LWhCBDjI+QiEIRCFTDYxtIofyEsOyaiXdA7hEeX1y4SyDht7KlIAPvhPARBei1XL5KE6GxKhemufB3ped4IEVfGr54L/b6Do7YBPtE9nfkpiuwB87/mxyL93aHapuBQgVbsCvWjQbqqDnbabigPVqWfaCvbegD+UfCfxMrs=",
+              "type": "thought"
+            },
+            {
+              "id": "call_339355",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click bottom Save button",
+                "x": 335,
+                "y": 955
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4747,
+            "total_input_tokens": 4694,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1418
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 24,
+            "raw_prompt_token": 8989
+          }
+        },
+        {
+          "turn": 12,
+          "action": "click",
+          "input": {
+            "intent": "Click bottom Save button",
+            "x": 335,
+            "y": 955
+          },
+          "result": {}
+        },
+        {
+          "turn": 13,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErsECrgEARFNMg+5svDAQXsEgVHKBKk+LvyMobhTLdnL74+QIXmCDtKIfnRZdfdrSlrrrexGOMftTWBqJ7jygZiBl1sc0gEI69z6KmeFXHHXwgR4RW7aGqHDboc2aXpwSTtAxLsgHcq5kUtrAFNxRF0jjf6E0nJq1vvAfK7/dpVJlvgMpp3llePv3RuJOMDsj4vMqw6jYHTJ6CX/wETcJwPCuFHEdP/CgWFhJXbN3TDYnOvIpSMYddCFpBYHJCfUKx9cyJwWI49F9Fepp+cKmWGHTvdJU3ekhmr3//Ff71nijdHbLdelNM7mvmoi9HajQl3RPHe8eNuzxMvopO55xBeyRpYA7FB3z845+YDJ3PuTDg51l8pdS4/0WBZ83qOgFpU5QD6Qn0BU6x6uwlMuBjkjX2pqV04oPQavDuE6nSUVaqWeP/Na8Xcuzp8pDfpPCnO1djXQqOAuB2S0ChQEic58ripEhMsvP067qJ80sMhpIJ1bRuFYWTuYcgXC++X0LfmmssoJOzmSEXFpHZGe7FKqEwwNBDINRSdna3c3sJhD8RneYqH6aY9mAzIajMPWfs9CoO1a7tGUiE746f7wbP0GKa9duvPuDfUOlpKI8g1x7S0oi+UooHB8R5MZpjy9KvbsAk3r/NRfwiR7Wjvuqf2nzEx2v5mkhGm/+I3ahZfWKDAOScW2eFCHNgyQaYeqTDH+0s1QaLaWhdsV+1A6j9uNmoeHKTWGheUSi4+IaQYMC4boy1WlQQqE00yK8g==",
+              "type": "thought"
+            },
+            {
+              "id": "call_617386",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Save button",
+                "y": 280,
+                "x": 895
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4941,
+            "total_input_tokens": 4782,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1506
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 131,
+            "raw_prompt_token": 9093
+          }
+        },
+        {
+          "turn": 13,
+          "action": "click",
+          "input": {
+            "intent": "Click Save button",
+            "y": 280,
+            "x": 895
+          },
+          "result": {}
+        },
+        {
+          "turn": 14,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et4ECtsEARFNMg+uyrc61s6E2fubih6CW6scrMATh3SFbomsZqD0MGWni61c4OnCgy4QNHHCp9w6fG52qst5iuVcnQCrldeindx6G0uOVv7/ukAwmOD3G7WoH7nU1V06GnuhXrfaGelh/USMG1aRALI+7Rm7rCr/ivAdKrddrJKfu3qFIqtR3la7Hd/UGLRgRMQWGJzWr1N34IgwfVNcYDUo7mHBY6gyUFIVURpZakct+755+Nzxi8LoY3UgyXagW65ebwEKYghd4U3Hh1WQssnB7Wy5sjbbzz1DurWleuVl1jCUX9MEyXMYtWbWORE/HxNrpnPfC0v9feKZiqKuwE5O5l/PLqrK3rbL+5RFdUS3VZWYqaL10wcyuVtdArwW4eb63Pni2HAqDlpB5j0jvAbQ2VLrtfjC2CsZesohKbPiUe+rrLlL7QAhewW0amt29Le0HEdEdsFXJ3NpRsUv4XwNy4Cbr4Ca0r3QppbAe6qL13nJzFFCwTeQIt0chvmdiLMNMEgaXBgrUnST4WKk1FBQ6Ocq/vU3N8reOmDBqADAszMxPqiUb7BosxpQJAlk527KTUOwra6Lfp5TlBR3bBklHG2S9d+gTeg3l6McXKTvHpInmy3d8xjONNof+4fZ66gyJ/2LbdwO8Nx1heBgc/UcFvus5Cm5cTHYUoJuO174aEuIh0N60G8QW6Aeim7uB8Lll9Izh+qTszaLDg5hFleJbxuUaQrsF6KKcdv0x53BBLRKZP6MMrGE7SD7dD0Is8QYTO7mEI4r3QeSg4CIZOd4CR4pMWFTpy1rn1j64DsY",
+              "type": "thought"
+            },
+            {
+              "id": "call_726010",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "seconds": 3,
+                "intent": "Wait 3 seconds"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5158,
+            "total_input_tokens": 4976,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1700
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 21,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 161,
+            "raw_prompt_token": 9303
+          }
+        },
+        {
+          "turn": 14,
+          "action": "wait",
+          "input": {
+            "seconds": 3,
+            "intent": "Wait 3 seconds"
+          },
+          "result": {}
+        },
+        {
+          "turn": 15,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EtUPCtIPARFNMg8UwtvUPP5zlgMlZJlvRR/Sjxt7+qxLwdxJ5lF5VrcfXKclAKAKXHvVG2K3Bqyzd4BHZEOdQyIRyFQ9ZdydI1vx8vNBG6BXhhE+1ISN3lC/xE8ImyXS8O8AyNKK0lQEPP+LujgxcgO/qjvdbFtaTuAMBSpth4JEF73bAvU/AOWqlHCW8UWOh8VW0FOWBfKiP0BJyTkOxYXQu03vdUIs1M93ULNaDAJT5BHqGHn71iiTfuNUBbOe+hmKUEp7Re/v3qh+yvTM8wjPtiEtI7JoLMJO+r6Xv3eE5jwA1YtqvKY8cOwBbEhqvEEhzeae6j/mBSI5EekDtnU5SqN8toonUnFaa9/JDUoX6NZiBLDa0fC71gChkwbCobgAQ7/7+F6lbt4kSqQv3aFLirxFMXrL4Pc5Qa/WC4aF0SnKEF7ww7GSRY+0Yd0CdrSDIsDufvZT1KL8rIQWTeF9iaamEjlmMiwtEj+GlI4kkpq7TbsIoO35faX5F+4ai/G/7IJ9bBRmAEBYRwyaAJ7C8bJrc4dYAvIyp3K8nbYUo6lZGBJXBy8UpwzoVaxqucsbyIMCHdN4g3WjImR7fwNd75oaQ4E1f7cTVvLOlkm0YQtnmrmwIIXz3++8NATD0fYvS6Anud3jUudx20m7bh0nFrN3P41LkrJaClgwasat9+W1hG1It1N9erAurMCcz86pC47N9VKNXDVQ/xB6GkvRKvqdy2dScEYUReNO/GFViS9tmBHqdzgDSf8IwH3kqmR42CbkxBT9AA+C614Etep6z7bjRjf4uVOgeQKZPvP46X9As00ZEsV3AajWJyCW8nRsd+xAaRZog8zcCei9oPbJBm8moVQhdyBZZZMqfLVRUensPDnxOwM8N2j1n7ecRNVcLLcHBc4HpXOlk3kYpJ3P0HGNCuJTw+n2rxXiWR257RmTlYHXBszeko6a7a7UW76Fe2cBVlSRqnJGZzGhHOk58pqSvxL++s/DBhn5LBK/jHfJ04CzJGPB1UfDzrq7ecRa8BNFGwe8manCBl9EoM1rYHx2qV3RU+qiFPQuEosr65bWyrQvB+Y9dJ/zCYf7IjATgh7SFcrkwESCT5eimD3GiZS2LNQS5yn9/kIweR4cg+4R96wQQHtFbl9i+BnRB84iwIHvIG0xZTZptA0WKbm19VYuM9XlJz8DEXEgdYsvADcxiJ/THEUtgbDRJz64yJ9wTYTCLKDfaktENUK10gAQ59LAehb2+0RT0PPwA2PrLuli7KXiAefCIGyBwcMkwfM0DMDkr1pq2D6VzkDKrrKuEEZUcPrEt5CasvltC2hsGadiiIXM5uC5vnfAPwSzTacbGG6L4VtW+iajXvC6Zq0Srr7gZldJ1Howpc/OKmlnbK9TvBjExlATDwDOcUruQ9XPzVoTGUhTdw07BgESWTjt8e6hj205j+KMewAyeaQ5D0aN4otEbWtd/CkeRgR4ovOwAkKcmECs+Bgs9z0m9rLMWj+VVwA7XL1CYmH4VvzGXZ7JhGkJqH8vF/maSAX71DjBc5Zj6OfSHjOofBgGTMR9t0RVgdFECjKJWzzMRV3oHeyWLM7r4cPnrHyEXl9uzcg6Z6BvL7QdBf6Yf6HLRsFVCAnKemyTVduuS1ES+E2GY7PtCjJCQ107BK0BBhv1uiYM4yXlP2yi3dgUvJOAol4PcP0wdtGqC3idqPNqyWwVsII+z4xmmjSo17CEoL7/tdncKlzXEZF0GB0ROl2ZMmqy8KdhqOFu+JtzmaWxKdPm2aER10octcCnDKjsRRU3IXNkd39HwLLRjKldrgX3p6h8R2H6u9lmhdiUcSMNxmHJgW7a2ie37aQfzMX6vb+gMz2jM++O1YhXEw+e2qdLV79Sr8GOwHkJyH/tBxBZuxmL1sKLV/4rhXZ1Q8LT+vnygfKqxOgtpfqJdb3KQeWI57GKa1bXHPv6D3O2IiInmqP2izl5Oe1LzBIzYlq3oNMZWHXgQT0OKyGBcxW7tR6BhAVLmppp20VIOJEQo+dj4e8CFp7iQHSzTqvaN9Tz9GGNx+C8iTpwc7iTsaBOKrvTW1qPY9JuSnbzcZAMCGb8uCI38oyxbP2XFhG25uRDYsY5OkRXyGE5Ym3HyEsfp9QzTJ/fg/rdP5rIxkMoYapD4WJpLIVvaByBAQ4iZc/EskZVzHakcT/tE3yqcmYhljwaRZaxR6YOtc29fMRZ05ps3XkqGFoXKkDBNq0XQ8olqckIghLSe4AluGB9qCOvEngRtH8zcghTd0ppRG26pF+LbdO+18WVYXoI1mAs1SBXH5pmroLXZK121I8NKMSyodaTwbPyMAxCMJh7K94tAm9WVP58v3xyJcBOWfPpvfUIpKgV7qJAzmiZAvBwmdVxfi4xb4IDwpEKUyfuT7J5fDIo03YJTune1RXHXGdienU3kyoRpvsLoBJUXbCeSpOX9tqHbPa9H/f61mUcK0H8aGLGmQ6kpyNglTHFWtKuEtHlDmblwKJkDil2dTQDTnvWyKJGJeKggFH0FE2AjLItNRTiqJAoTM1o3aQEXSQ2GOB1AUqwhIHd7vn+KspfuIDlLeWbn1PFqNvx4LGdY3Tg9vEtFoq/GF/3VeE9kYE+akkN5XvpVFCoE6mcG4nJDhUTI+5VoHrgqwjy/Wl4B5xChhWSNzfaMt8htiNGlw==",
+              "type": "thought"
+            },
+            {
+              "id": "call_422951",
+              "type": "function_call",
+              "name": "scroll",
+              "arguments": {
+                "intent": "Scroll down to check for error messages",
+                "magnitude_in_pixels": 300,
+                "y": 500,
+                "x": 500,
+                "direction": "down"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5867,
+            "total_input_tokens": 5193,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1917
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 48,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 626,
+            "raw_prompt_token": 9536
+          }
+        },
+        {
+          "turn": 15,
+          "action": "scroll",
+          "input": {
+            "intent": "Scroll down to check for error messages",
+            "magnitude_in_pixels": 300,
+            "y": 500,
+            "x": 500,
+            "direction": "down"
+          },
+          "result": {}
+        },
+        {
+          "turn": 16,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoICCv8BARFNMg9rnChHsj8c2JIbVTuWUaJFdN+HP+vM07g7u42fRpfs9fwrf8373caumGOH09yulUBJsggRpoKIV5379n9csfFKIbZRBKngQe9ZcRPUf1kWJ86+fbW0DTE8k4Y3n5UT8HKEKhPbt8wND9ZRnen/BQiOXXNQXXRaNRDVp/lg6JULB+UZX3hS1kNVErkDGlHCmZOth9QmWK3WQeYWwR4psbgNjT1x0ERx6V3fRAC5rKq/dzHCmffbNitL0YdBHb7IM0fqHvmDFzSlrtdYFtFmG/sun+6XoYdDP0eCm/kDKKlnQTt0yLLluLiCKAcjk4RhjsYFBDKh8I067isV",
+              "type": "thought"
+            },
+            {
+              "id": "call_591509",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Select Tax dropdown",
+                "x": 738,
+                "y": 715
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5983,
+            "total_input_tokens": 5902,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2626
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 52,
+            "raw_prompt_token": 10261
+          }
+        },
+        {
+          "turn": 16,
+          "action": "click",
+          "input": {
+            "intent": "Click Select Tax dropdown",
+            "x": 738,
+            "y": 715
+          },
+          "result": {}
+        },
+        {
+          "turn": 17,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpABCo0BARFNMg8Osm6m21dBvn8KGQoZ5GzyyKLe8n6d3mfHkPTgLEU5n7TdEO4e1RQnlxjd1KIABKM6MHzCTwxtGk8ZUgFoFcCet4YOZIAZqt3vFbnttjjG9JHaFTZeCl/M5C7C4En0QBJnn49scuPFpyzn4HHpgnYDdjVWyvJTggJ5KvUGkqWkiFETTwveqhZB",
+              "type": "thought"
+            },
+            {
+              "id": "call_769085",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Select Tax 0%",
+                "y": 767,
+                "x": 738
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 6072,
+            "total_input_tokens": 6018,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2742
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 24,
+            "raw_prompt_token": 10393
+          }
+        },
+        {
+          "turn": 17,
+          "action": "click",
+          "input": {
+            "intent": "Select Tax 0%",
+            "y": 767,
+            "x": 738
+          },
+          "result": {}
+        },
+        {
+          "turn": 18,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpQBCpEBARFNMg/b+mWMVo9AYgt/6LMMCgjlxG4iSHDhgflbG+Gltmzes5fCOKZofc6cGRhzQ+PHdP32gl7FjgHS6Q3aYUhXij52hqwc20JvjNmSfMDFfLpEQ86kqIRNTcB6aBQnMs68rhlow4WhI2wKSr5q/TLiAMpSfMxO+wrH96uc3nj10ndX+6jJoSrcXjeFLvj3hQ==",
+              "type": "thought"
+            },
+            {
+              "id": "call_619380",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Save button",
+                "y": 671,
+                "x": 335
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 6156,
+            "total_input_tokens": 6107,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2831
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 21,
+            "raw_prompt_token": 10498
+          }
+        },
+        {
+          "turn": 18,
+          "action": "click",
+          "input": {
+            "intent": "Click Save button",
+            "y": 671,
+            "x": 335
+          },
+          "result": {}
+        },
+        {
+          "turn": 19,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EuACCt0CARFNMg/M03oeCnVoF2Yad04EbBYJ7IFpkjYskaeP0r1ENeOpgKSH0alp3h1JygIqO4ZlKMDMBorkXnDumf5UhE3YL+UtWEzIvyoNS8rntbp3csiv3IXb15I/05tJowjkhLc/1/ReMl3exa7Y44vXFK9YhQ38jR6U1BjKr65SFTR9oWEEEFRPkyL8FVCaGSBdt7775s8ejqo6EjTio3wHnpQ7ZsdT5zwuQdutYGK5TdEGa/AjSwuSfvfwsuC97kA12bSi61VPNNWeBxLhT6HXLNOpUEXf7vrQ/rsjADVhdA96XMWr4DN30TRvbBFzBK6KGcmjdylUYQQ/i6HxJQIZwBbmFAgPpnRu1fMVjnrRD9Oj0p/xXiFncwuuCK+2sq0xEfcy3IngC9h0GxRfteNf1XJvGLn7t99SWl+xh4I2LhuYXyPsPhbQHeom9uYJJxCaZ0wX4c+PX+5/OZX60g==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Successfully logged in as admin@admin.com and created a new draft invoice (# 2/2026) for Acme Evaluation with the line item \"Quarterly Retainer\", quantity 1, and price $400.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 6333,
+            "total_input_tokens": 6213,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 2937
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 51,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 69,
+            "raw_prompt_token": 10620
+          }
+        }
+      ],
+      "final_text": "Final answer: Successfully logged in as admin@admin.com and created a new draft invoice (# 2/2026) for Acme Evaluation with the line item \"Quarterly Retainer\", quantity 1, and price $400."
+    },
+    {
+      "run_id": "id-7_cu-gemini_6043fbca-835b-40bb-ade4-71a749fac511",
+      "task_id": "id-7",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "99.100",
+      "reset_s": "35.326",
+      "setup_s": "2.747",
+      "agent_s": "61.028",
+      "ms": 99100,
+      "model_turns": 14,
+      "actions_or_tool_calls": 27,
+      "input_tokens": 58431,
+      "output_tokens": 1367,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 59798,
+      "est_cost_usd": 0.0489495,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:27:48.979Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvUDCvIDARFNMg+q+aw1uNh/DEmTUHYi12teYh0z1UdKso4Kckj6XNn6PODpXpKuF+B7tRZfaFN0kRRcpWwMrJIlK/JokXAl2kUVPQuj8+ttRnaiHnak7rOVa+XRi+UnDgAkSEfz9hhHWDXU7xR8XMulOXD/BYlvAVx2fT+wSuX22DMI2SLOTROsEvr0uMYNhaMXG/THoOfDl8Ilhjl8fjOIoXvOtN54mxT2/F8/0GHGbXrBUTNEh2XbmL5st9SqtBsTE5AO06tn6Z6poH9X+fLfhgrcwY2DXV1VUYLqslL5EGScJfiIluCp9vmRqoay5d/3DQji9Vwv1GotiVawuLjr3GxudbaaEPCWiUhJkH8gqh/fIlTgitX4k9lgbNEWrovD1G3wr65ces/MfuOVdG+AzynT83J6dsjkZSur59O94DXQe3PX0utG1XK56N8rm5t3P6tiJUCuePZz6CTSGYDpLusZ206iXXBeuA8F5v5107D3ffr5Qu3pZA+WLlDLGfCK8wc2VfR06l2wSxn1e2XNXBtBpCDXuTo+svSaaHZ1ax2UgdUEe83wiBlVYmERYPT4veyB8MqIL5kzLgvnGgy/hXsU+cVKZ5yE8hH4aOp8tZ59k5H1kckCskzmIOFYA4HMmBye/adEzJ4aQX89v1Pkty8o3Xb4",
+              "type": "thought"
+            },
+            {
+              "id": "call_782077",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 750,
+                "y": 608,
+                "intent": "Click Log In button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1364,
+            "total_input_tokens": 1206,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 114
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 127,
+            "raw_prompt_token": 5328
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "x": 750,
+            "y": 608,
+            "intent": "Click Log In button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpwBCpkBARFNMg9fnm3VHfRTFqFFkTQcKJ9SbqYTYgfWF6QLouxS3bz8yzI/455hmUGyBlgR5D+JvpDcrQlQEaNI/PdzTuFQBHw1VHfIFqyI1jmDMa0DFpCDW+OB0gr1xq849OlSFjZMQ8mEW2QtwDwq6f2uq7EF+BCw6zfnGlGKIDJ2NdwiIF/GQ7Sm3EuPG+Vv/ArloXVkGMn14q3u",
+              "type": "thought"
+            },
+            {
+              "id": "call_726462",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "intent": "Wait for page load",
+                "seconds": 3
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2519,
+            "total_input_tokens": 2481,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 2184
+              },
+              {
+                "modality": "text",
+                "tokens": 297
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 21,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 17,
+            "raw_prompt_token": 6619
+          }
+        },
+        {
+          "turn": 2,
+          "action": "wait",
+          "input": {
+            "intent": "Wait for page load",
+            "seconds": 3
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpQGCpEGARFNMg+mIr4dukK3kE1BzUmp+ACsKf49rfSpfnJehMMRsN35IPpqNGYoPQwvnNgjUlL088V+Xr4LW0D9gK3Iv7Jm8bTRr/jtRnv4Mkf6U66W3Rna/MKvOvOnpmJ6SNGB7IM8A7mFToMzoZGo7LlaXXTNeSkoFivMWA53ezEkOfL96r+7sfwf8zokzMt/mbGhmHMp0+CvDa6YmUUPBOFbeAKqeyZS32xYKRI+OBcYmxd3xo7AhIQ+p7geUWwvMIOC1H3UMo91EJqLl2f8tDVi6lwXiFFlS/xo8Z4Fj9vP+0et8T26mc5ggpnQ9Lmp6MDiEkobS0ZSmKgTdT5+JezhvrGPQQT315hTx4aC/EIG3tQ8cTTstH7x4t+/OSRr1XSImWs7ZIaPNpvppHZzPNjvxsNuFEJ7FuJ3qISQg+xh6qZUW7UB1KB4U2SKL8nEhcpQVblQfrFDdRwT1dye4JkqH/yiQbiNR/ltj+XjitbyNBZeg3FF0utWJIbhteU8wRge9d3ohLC9oC6+jIt/CShozB2wWm/UfPgks1iByTZ30tRzKaoGsAeWeDPMt12uWxA4LeKUBxpLg4vVu0EwMf2wd8bob6P75v4KD3C+1c4wXOFQDcSq4Ez2TIs4gFC0vbvTNvdlm0Zaq1UudH281+O4xEpjeL+Y7AuMRgWC9n0OTc4ngsErzVA0mr/W6k6hjJGTqCFReqbZ3PHE7S9bWjPtfYx3Wc86IgEytYTkIhGwzJX1oKzhaReci1XYpzC21fXRVk9t+TUZU1GOnC6jt89+DCbBKGCsAw/S/Zey3LpmsOYmlt8fgT8011/qWC160ZbpDo2Sv36sj9/ifaKgd4vgaVjMEx0/F73DIiYp1wUQETFL9h0ZsAl/CuwqQEt4DKvg3dubea6t1/kX+aW1FFmWe+l+AFIUsxiLaVvQKXVBuiASGd/ar0Y+GQaljaioWHqqfle/lDwoVjF0RWqyXs1ZAqOSfFqkxJb0LymZaFt3wfFnvjyC8FmcOR/pXsn166n0NSg7GnWoAX6RNnoDnZ2pPFM=",
+              "type": "thought"
+            },
+            {
+              "id": "call_623174",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 100,
+                "intent": "Click Payments menu item",
+                "y": 312
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3888,
+            "total_input_tokens": 3638,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 362
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 221,
+            "raw_prompt_token": 7792
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "x": 100,
+            "intent": "Click Payments menu item",
+            "y": 312
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpUCCpICARFNMg/fgL5LZnl7aWHkMsrNt6d4HabABAai4fCdhr3SzC8Q7szIAL49HGodBSMMWA6P4qyMd9eik19vnubH0Uahb1yt72aOfelGinEYF2Wpt5sztyJjjEJ2IIXQAe/uzUVFmFwuYWmN1SrP2k2tTm3rMK5aBdynCKwxP9e8nGKZ9owqSnhTGXjxixjDUqKEIy6BIVtO+phW+FvKsXLhg5EpE42BD5XRc3yBKuMGdRaegJ6GZIefO9Tp8NN9C/DSVfUrQkQp+pVeKXFTxlkOT4ws2BnO5tJR5yNvjgNQfeB252I7jkmwomQ3mnFP0xBGbH0PTF5Sp4ZWRL411X78c3tad/B6xwvMifKK8DR+zw/2hg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_564305",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Invoices menu item",
+                "y": 262,
+                "x": 100
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4004,
+            "total_input_tokens": 3921,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 645
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 53,
+            "raw_prompt_token": 8088
+          }
+        },
+        {
+          "turn": 4,
+          "action": "click",
+          "input": {
+            "intent": "Click Invoices menu item",
+            "y": 262,
+            "x": 100
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo4CCosCARFNMg84BDkRoMAMlzxkpi1QDTPj3FPIHfupFqKC0EbPFhzJ9ABoMAMnMuJWHqBEFkjLpTtOEvlkhspy7HRwETuc0b0C6WfobbkvBRit7xxoJrEFT3jGEbU5gnPxXKD16m/74O7WujLTzEvGTKPVaU/dpW5ivcQ+OoW5/GIcUMpVZDAdi6Sx8PXLHz/sFUxKdTu7ihmuobk3xvSev7c6Juqi29w5WbXH1nnO0kT3llOKuM5/yVbrfFIS6UqCjQwtffGVogLB1EPg0k+ZmVOnj/6Cq9kURDFYjj6zwey+8KtU8wfEAF6IxgxFsdfhweuR5QElYXOWRFQJZe/8kkMyNc9hagXviPAY5wbA",
+              "type": "thought"
+            },
+            {
+              "id": "call_640087",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click options menu on invoice row",
+                "y": 438,
+                "x": 906
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4128,
+            "total_input_tokens": 4037,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 761
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 60,
+            "raw_prompt_token": 8220
+          }
+        },
+        {
+          "turn": 5,
+          "action": "click",
+          "input": {
+            "intent": "Click options menu on invoice row",
+            "y": 438,
+            "x": 906
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EswBCskBARFNMg+BVIa5BORB6Mmx36WZW5cZayhpq2GYGAESDMtMC/KkNwuMq2HTeNbZW7rywAyfhFE1p2KPQ+ntONBbjVhp4WIffKaCKN/yABTF6He6aj1FePmg0eKQKw4hcIxQDrizvsj70nbm+0cbnm1JySqNPqpiGEeD9PopfQK4DNDnBnogI9vvKiEaDkzeNUWVOeALhkeLe0D3XAnujMOtqywHSGwhLGldX5NPoVaBX6v61bbARMammMBEqQMl4+Tc+OtXJ05Es14u",
+              "type": "thought"
+            },
+            {
+              "id": "call_623264",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Record Payment option",
+                "y": 600,
+                "x": 845
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4225,
+            "total_input_tokens": 4161,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 885
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 35,
+            "raw_prompt_token": 8360
+          }
+        },
+        {
+          "turn": 6,
+          "action": "click",
+          "input": {
+            "intent": "Click Record Payment option",
+            "y": 600,
+            "x": 845
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvMGCvAGARFNMg+vRsydzzWFHDxtbFHouCIVQ5ONg61rgyAQVOXHWE7c4wo4i0FoQuV/I4TZh1/IMjphtAoAgy5ZpMeMlr8jefzzkHnb8c4BvO5ou1ZUJdH6SvL6AmcO9D5zfiTgqLcd2puJhEAEILUJY4/8Zn8KTIG6OMUFRa5C9cBS+8qYbJdTJKGyHOYqQ9W3Xa+3QICStuDNnHtVmruJScjBDqpWiKjnp/CZRCaQYLPur4ufUZYc6K8tOgYZJZfZqNdupLUEqqbEKjGEC9X6UaH2cRqj+65iQ78Ni9CwWovXmqQdLrhL88E/flzJPIk280jtgjyEaIHv9oymcv3LOYEjZGEQSCH2Cc7reDVzpwqrrGnwLKeZJmxngHO3JLg6cnrK8/MBZHtC394WxBYdenwIw6DdJ2jzECiL9pHhK9/AuxCApAkSpZBUqRPW50vIcTlPM8itrzFTkyxbC6zjgwcujwNA5RXPWCQc9OJQG2PM43pFT8bWPe9Z50E/syWE81hHI/dwpl5rsacZEqsUpuklvy3Ei5XR19HBen8c9PnjzBEyfhO2JVqe2EL4g137n47MMfxKpQv4OuvVJlCDhAiIpytjk7N6uwsNjJIJHZPfDrbpDVW91U0pm4fvh0CMgJNRJ6ECzI+pCFuGVwyyps1SU+Hrhf/Jymeo1xex/UJZEhXdhVvNXgHfEEw4qlKZ9u5tttQnwb4B+fscRRyERojNZyL5XspAJybCDyyL4Z/q9pwuNg7YGG0e0ZkloMiODihVxn/Z6XbPRNPwkPaZsvb8WSJq6olsgfXytY1bC+owNoVxqQjWmGbDyCL5xKHQDWv1tFCjCtOCIbQJ2lai/ctpEUuwtAxnxHfgZzESxi8Pm6x1no0mkc5UEV0ZHrw4k75R2LTITdZNQHRAFq6hx9XczwZBGfZZwDvHcT6eTSzhyG5dKTNFukZOfGCE8/tk3AGgMl7HH3LUE3JlGD5EB2YN9zncjzxW1g+Ysv30ExcqVOb8hDnveySZHoJiutUI5anrPvzU1e6UeG7ozRhNcawUW1LfTgayr4FsyEEOS3fwybJCzRsFp2/suAB5v9vI2t0iqdYdJHk53whdeUklbivJJHIZrL/d2cLHK1nNAg1Aa/i3bgb0eU6/WaaEJ35+6PyknAYWjpyoRsMKZAn5VCQzYA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_714614",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 416,
+                "y": 558,
+                "intent": "Click Amount input field"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4583,
+            "total_input_tokens": 4282,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1006
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 272,
+            "raw_prompt_token": 8497
+          }
+        },
+        {
+          "turn": 7,
+          "action": "click",
+          "input": {
+            "x": 416,
+            "y": 558,
+            "intent": "Click Amount input field"
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoMBCoABARFNMg+lt9htpH6sWZia3QnujqWq46WPfmmM/tr7ni46XKFKwPNPEYyOUNrswbLI/kXCM51sCubRQSRMeMJC7qHcpcqXGlJ7kktN3moLajKRwQ5eqBI9UCqaC3qlcuxSXSsv88KmzWNEdl2HZqFOFiUDi2KJJ91NLqvGIckgo/Q=",
+              "type": "thought"
+            },
+            {
+              "id": "call_505551",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "press_enter": false,
+                "intent": "Type amount 100",
+                "text": "100"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4682,
+            "total_input_tokens": 4640,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1364
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 33,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 9,
+            "raw_prompt_token": 8871
+          }
+        },
+        {
+          "turn": 8,
+          "action": "type",
+          "input": {
+            "press_enter": false,
+            "intent": "Type amount 100",
+            "text": "100"
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErQBCrEBARFNMg8z9ovp12tRcz+RbzGR6SvuHJ2sBIB99b1+tkgrXWPVBtjabPd1OJ9293UW66eAbZvE5hNER81gM9eDkcgIXWTbVnmGRgImCQ5NaELwMXEfFFSMftZrHBuqD7DLLPWwZrjJ0OAqc7RcIk2yqkz3UiMEr92pphR+xfWu+DPuWV1kQIJQGCVB+G9gJdXBlVAsjxxolKIqP4EpmVNN0RC370/tUf9ox86r6cWIfd4L",
+              "type": "thought"
+            },
+            {
+              "id": "call_696145",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Payment Mode select dropdown",
+                "y": 668,
+                "x": 416
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4795,
+            "total_input_tokens": 4739,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1463
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 26,
+            "raw_prompt_token": 8986
+          }
+        },
+        {
+          "turn": 9,
+          "action": "click",
+          "input": {
+            "intent": "Click Payment Mode select dropdown",
+            "y": 668,
+            "x": 416
+          },
+          "result": {}
+        },
+        {
+          "turn": 10,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpEBCo4BARFNMg/YSqe4L+rTJsRQ8TRcSFCB192ep6szNO8TQP3UpA06x6h/TB+j9KlYR4gxL04Fn1ZkrFp9WB/rqHWDH9pEARWUO++OmMZIcRIW7R9eJm3O4ssmEAjnW2IYvXXFYGF7G0vn/a3tb+Zi5WQJVdI5Wr2xYd19gFxUsNVamJjQZtRjVSF/8xXeEmu2Qg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_524723",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Select Default Payment",
+                "x": 416,
+                "y": 718
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4898,
+            "total_input_tokens": 4852,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1576
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 18,
+            "raw_prompt_token": 9115
+          }
+        },
+        {
+          "turn": 10,
+          "action": "click",
+          "input": {
+            "intent": "Select Default Payment",
+            "x": 416,
+            "y": 718
+          },
+          "result": {}
+        },
+        {
+          "turn": 11,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErwBCrkBARFNMg9dsgBO4ekifNsd/k/PQw/QBooMlxDgtFWI/Mbsjbj3GXoTmpiCab5oFL64m8w9YvThPbMBSDdRVXGMf7qMIikM7eq6B2evijMNVHjlJGEhtDri4irLBD18s3r0CqqICfH5fB8yIstgdBBwW8t47TJr5uzRwX5FxrfgagN5OjoMXlYL3VbyjI/8Q6JEYRuuTtyDd5/AGYnATHMl7yoc2CrHaJEhjYKLr7q0pUWNl60GHEpBtUE=",
+              "type": "thought"
+            },
+            {
+              "id": "call_594480",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 775,
+                "intent": "Click Reference input field",
+                "x": 416
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5018,
+            "total_input_tokens": 4955,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1679
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 34,
+            "raw_prompt_token": 9234
+          }
+        },
+        {
+          "turn": 11,
+          "action": "click",
+          "input": {
+            "y": 775,
+            "intent": "Click Reference input field",
+            "x": 416
+          },
+          "result": {}
+        },
+        {
+          "turn": 12,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EncKdQERTTIPtXTJEbnxkiSR67DLCDmDqZ3PQe/ABjjcRUGiEplLUO1ylrCQCmnjL+XkW1wT7OehPC1F+1csqDC5c6Yqhcxjhi0Vc/PiDWrxhPCpZJ1ccvmK7OMa5lHbTGWd5OOtJLzBhxk628mZdvAMckf8ELVntg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_689775",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type EVAL-100 in Reference field",
+                "text": "EVAL-100",
+                "press_enter": false
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5123,
+            "total_input_tokens": 5075,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1799
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 39,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 9,
+            "raw_prompt_token": 9370
+          }
+        },
+        {
+          "turn": 12,
+          "action": "type",
+          "input": {
+            "intent": "Type EVAL-100 in Reference field",
+            "text": "EVAL-100",
+            "press_enter": false
+          },
+          "result": {}
+        },
+        {
+          "turn": 13,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Ep4BCpsBARFNMg+NZT6Gx6oKg8oz53slqmlq7wgjD6rVSfoFq3IwkXbq4cLLDhfXmuotm1Z7ShzeFNscAglJd4NK0nka7yXPDZ29sKwRoJ+ZrXiyAFHtKvqXzRG9tpv3vvEATC2BynJkAA6WBH1ocoPwAdhTPoEjtFxM77RkkOccJaVPZlWTDLvL46ZW5Y8UaLxy7z/db5cQulbmzJe/zPo=",
+              "type": "thought"
+            },
+            {
+              "id": "call_350023",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Record Payment button",
+                "x": 380,
+                "y": 980
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5230,
+            "total_input_tokens": 5180,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1904
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 21,
+            "raw_prompt_token": 9491
+          }
+        },
+        {
+          "turn": 13,
+          "action": "click",
+          "input": {
+            "intent": "Click Record Payment button",
+            "x": 380,
+            "y": 980
+          },
+          "result": {}
+        },
+        {
+          "turn": 14,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqkCCqYCARFNMg9548ibJHOPyRwa/fRTUzAO730VXH/9Rsf+Jh+9C34XMudDNJlsqyjQC4bFK89fzrp6wWmkpIpYcf6Zs1pegqDJh3j/LIfLukr/MoRsatkBjXH1lUAs9cD8hRcJoouC7pyMah/h6rEfJXz0ba8t8jyJ4z+PfONA3Cjq4d4N+Jg/JQzsLLXEO9Ec61wzFLF9MkEwCUfouGFtyii1UcalYAPfvkRHqVdHvmSSnQWFzLBZCyshoDmySxsYtxOgqMqTLTdyaoKKSaovnriPo+3BUylS6ZJ6/pMVy9/m/I4+EGi2JKVfBgj7n0u9MRQSu2ubWEoEJBqUD5deGZCRHCSghlhnm1O8ogayLDzaEJDzZ4ADJVNS2jILR7P+7XTfWBQdN1C7",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100 successfully.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 5341,
+            "total_input_tokens": 5264,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1988
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 48,
+            "raw_prompt_token": 9591
+          }
+        }
+      ],
+      "final_text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100 successfully."
+    },
+    {
+      "run_id": "id-7_cu-gemini_ec9f1a6f-8660-4bb3-866a-164c0bee25dd",
+      "task_id": "id-7",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "99.056",
+      "reset_s": "35.333",
+      "setup_s": "2.739",
+      "agent_s": "60.983",
+      "ms": 99056,
+      "model_turns": 14,
+      "actions_or_tool_calls": 27,
+      "input_tokens": 56610,
+      "output_tokens": 1240,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 57850,
+      "est_cost_usd": 0.0471075,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:29:28.377Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErgDCrUDARFNMg/eW7JNcy7H7PGvWZZgzbWdvWWnHO+Wdjsxa9Vwc1lFZNRN6DpetnHpTkVBz6GmXu4y7y+Kc/t1hoh4kzIK3xIxUnHqEVXeUxfhakDLZSkR+ue4TTKhDkjV+XEAO0XSGkLcmk9/b4BxjT9qYUxicoUTQ2wBIBuxJfiUz6IyQgETCeHccNuRy2BKYBJdC2V4AQykSTUTglULdi/eodtcvUc8hSSFnYoK/pKHSqgCGvJ4sbWYAgP+QilqSHWgWJOTLR8iux7mQma1P1ro+Co+3NvWzBhYteIfeV5Qqv16wFuCrrB1pUpbUsPi73wzZXuBUeDJrcWkRf2r2d0ojcVVN02cpSvHnP/KzuexOWGTFSznD1AWGLvMaEeySFSWW0/947Kt3B63dKMqqkX46ng1f5tpbSf9TtIMN5wPATUSc1egbyiEAdmnDk6gjsWqLqi4Z+KizPvJxC9DdR6YNiRtmXJQ5pGQz5BgO7XNXGV7U+TNMGeZA6mm4Oo7yDH7OvIw5u7dlJ8tveyLM0ZslypYe4q6U1kgbNThpJeqBa89iZeCGm9j7ep+c1Vx/r1iMaRfMz4=",
+              "type": "thought"
+            },
+            {
+              "id": "call_642383",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Log In button",
+                "x": 750,
+                "y": 608
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1352,
+            "total_input_tokens": 1206,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 114
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 115,
+            "raw_prompt_token": 5328
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "intent": "Click Log In button",
+            "x": 750,
+            "y": 608
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EooBCocBARFNMg/FapPqiIKgNT0dkH18N/hIXy30RauoL5/s4c9zn5E9g2PTElvQGJxOTdcB7A10eUBC6DFwusLotv0Cuap59rAUeon3mrqVUZEI4V0i7Iy45dsd0BKMJMJ06CHt1zDKYEyhwQGTziZfLrKER2cYZVJ1gt5Zanoybnc7CJBwjbHpX+uA",
+              "type": "thought"
+            },
+            {
+              "id": "call_559954",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "intent": "Wait for dashboard to load",
+                "seconds": 5
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2503,
+            "total_input_tokens": 2469,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 2184
+              },
+              {
+                "modality": "text",
+                "tokens": 285
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 22,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 12,
+            "raw_prompt_token": 6607
+          }
+        },
+        {
+          "turn": 2,
+          "action": "wait",
+          "input": {
+            "intent": "Wait for dashboard to load",
+            "seconds": 5
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eu4ECusEARFNMg8Ph4zcesq8oakPJK09RgwUayNDP+spKDGmZnauOmXuDOlUQXhoNCfKEqa7NqQM0kqce77qOrbjCARm996aubRSMXSTPNB6yH2/dcMIsUzPT8OMVgonrG+WXATnBB+6N5DHElU/EluP26Xv0LA0D7h1p7XImfUqsc4iJx0aWE+A0mhierXsUhDzcdqyklriWjgunr5b7clti7s0Ul82dUwnYW6mJWEf2axgKb/fAuZEyRNqG7f89zvZE0KEFlGfCY/LM1TCxV/oTcpKzXYbm7LN4fTQJgpq2HPfDA0HBugscgZ6XoAUG2JXy3MgetMlJHztE5EzLw5I93sl5Ls/+K/Gqh4wcX8KVlQduZQ39NgwgHWGVvnlA56qMWZHfFaECMCcg5jeCEX9UiEuzQUcBQQVutZZCvJfkR+UG1j0JVR/LKqzgxyJHQ3yTh2P2R3OLuHQttXDtJOTWHehAxhgIHoV1L8WtqVgbYd12dqahZmMUPnuhJ45vma3vO6qwR+aidl+mJkhWOAh9JGCkNCEYG9VvUugn5v0KomY2KtVT2simjpETHIH6MzojFhCzScxLlhfjJkUzyii/ZRRNdLMFVmAcnHDAF4tAKKt1vfwiPqs8X+Hr/YPnrrXEVFv1ZC1uU8P4PWmY+/PpFgIZKBZ4fB84/wICGOXW3yBtRen65qEFIJ2KmlxWJWSD+sc2Z2BjoS9H5rocYuRES6rha2gKeN7FOa/qKJscgstJ/u5c+HfyW6rMq+CpMZzK3ndHJ3XHSMImlF6RecdG0OtGNadjvzWLgw/1dfAZEM9vYWOnkNWvWVw2Rk4/Q==",
+              "type": "thought"
+            },
+            {
+              "id": "call_772276",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Payments menu item",
+                "x": 80,
+                "y": 312
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3810,
+            "total_input_tokens": 3622,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 346
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 160,
+            "raw_prompt_token": 7776
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "intent": "Click Payments menu item",
+            "x": 80,
+            "y": 312
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvQBCvEBARFNMg//YFLM/804AKKn9FsbkIf6amjTbXXN719n4ely4ya4xi4XO1HsxMAyX9quc7K+tfvgm9mh13NEFXRyHayxhErZNStv5Lk35rPq4FNvriQne5PU42zGmIRR+7t8vdmxzlFXNfKNPZcDNnomq5gXnR1ZrDXkrd7eenhOhHJQWYtDidHmn0CbTETq7YTPXV3J6q38CGOcj2p9VtmABKuyoYdx6bwREBK+Sryvd1ywaC4dZFT0dMHEQIBZm/anf9yYK01GSuiom3o3Hp+mPjZZZS7Jvpy8yhAn3kKt+EEcza/x0dXGHYYwVPdCUA2ksA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_589178",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Invoices menu item",
+                "y": 262,
+                "x": 80
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3918,
+            "total_input_tokens": 3843,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 567
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 46,
+            "raw_prompt_token": 8010
+          }
+        },
+        {
+          "turn": 4,
+          "action": "click",
+          "input": {
+            "intent": "Click Invoices menu item",
+            "y": 262,
+            "x": 80
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EsABCr0BARFNMg8R8QvoJ6EbOCbBzI0oGyodLL4NrTbkI1CH6X/i5Vehta0WX3C89bLzkFa7q4wYwp82Fc53AjJ/970eJMNnez1YDUhvM7x6e9RjTV4ldKhpGqr7YTxh8shOUuD5ML+jDKcqPjMkiJbqAWF7FWV9xc7Rz7cwYTxs3H74mSO/LjcOGN0V5yfCKJ7aCb4VO0UTcnMZUvVV39X0zAiA/3eI3dmLKgCeFDQmqPTCXjo5Ds9lSOBqxDUJ4YUP",
+              "type": "thought"
+            },
+            {
+              "id": "call_677377",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 438,
+                "x": 906,
+                "intent": "Click three dots for invoice 1"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4014,
+            "total_input_tokens": 3951,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 675
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 32,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 31,
+            "raw_prompt_token": 8134
+          }
+        },
+        {
+          "turn": 5,
+          "action": "click",
+          "input": {
+            "y": 438,
+            "x": 906,
+            "intent": "Click three dots for invoice 1"
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EssBCsgBARFNMg8y/BHQRTassP09+i3c3nUC7jMWcmc+xHa6RRAqkLZL1fLJpSOZZKH3W7qlua6H+oASiEeYcxFOzdKEl2A0bhEU9e/O+cXM0GA1Na7bN2UOGO74CSxFmkdZEaUoTrapgaay983nriKWciGBYrZoGLypBI09BxnyjpiI8Kzhbr3/6S2hNI4CE27LNOK3Y3HvueJO5dmo1xjxfgyCwOC86I4bcfQBjXk5BOarA5Sh6MFWsZytb5s//WQPdr4jWf9lhQgPmKg=",
+              "type": "thought"
+            },
+            {
+              "id": "call_756406",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 600,
+                "x": 850,
+                "intent": "Click Record Payment"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4111,
+            "total_input_tokens": 4047,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 771
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 36,
+            "raw_prompt_token": 8246
+          }
+        },
+        {
+          "turn": 6,
+          "action": "click",
+          "input": {
+            "y": 600,
+            "x": 850,
+            "intent": "Click Record Payment"
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EswECskEARFNMg/xvxVPDvw3ddiDMiJUl2lRufR4gvCH2vbQAQh69IeWZy4W35Yh0zxr+I5v8wDh3Byya5KuKeiLELzPIvwij5J641tdmBZOMJutfeOhohflpcXuC6NubKIPzRX00/lVwNbTxpvnzHBLCHfBgqb6oHoEpALNOBUOyedvcxYAi571g3j7UE7h91dy6ZrED68xj/Fo8n+gD3IIqX8xqq+JfxMAQSezYLd0N6bl6YIZQ87VpKxrEvJE0Sd+GgIvZekX9AjtlM043lXwE8w28gHS6004emJ5+u4JD7jrGNty9/wapaLAQEoruczRjP8wUDlJLhR6QtcVF39ASzgaoHCi9QhmKUUjuFioszlkD/cI8TMXPrqwwQNb3TQy0tfhNknVJ3cRxVce73bDbNXlcDdGXQkb0qmiKSEBLc6oYYTZOWDrLnZ/G4xScXbVJQIcQc3Kx9zxzJGtTRBkBfEd0QmMJMyc1P6VsU5wX+wCj7mqDRly1oze486TPnjZ3hsIfvVhvm2pNyZHDWButxBcgXEz6KHYqIbEB37IfZlYRtP0K16rl0UdS54iAZRsH4BGeshUXhmqWGjAlD3i9N94N/FF9semFgCrhS8eb2zVnnvLqn01pHEzJk5Wo+Rg3Bd51iWX/zWWmZ5RSpJrNqYW1pVKLdKsjnof6OdSCj6tpmyf8/DOs/qkqh8NOzK/P+S5ESPUXKk7wcd+M20Ea+exbV2yyntqlojeIWYE0qKw+sZASI8Bwzt+0x3GRKCm0Gzq2LJlpv9aIkPi",
+              "type": "thought"
+            },
+            {
+              "id": "call_592694",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 560,
+                "intent": "Click Amount input",
+                "x": 400
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4377,
+            "total_input_tokens": 4168,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 892
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 181,
+            "raw_prompt_token": 8383
+          }
+        },
+        {
+          "turn": 7,
+          "action": "click",
+          "input": {
+            "y": 560,
+            "intent": "Click Amount input",
+            "x": 400
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoMBCoABARFNMg8TyI9MfZnE/VEZAeZ4hDjL1zC5B2xMQPHvsWpl+fWi+vI0EVqKDA8ThKRGEpAICnTZtC9MJe9/1AAcQQCjDPKvADMVgoVP1nED3zkxlL1RMa9hvC6riBIDOiJ22S2xrcoqNcGNv5am4+DHr5ECxwh2l0rSNeQky1K462w=",
+              "type": "thought"
+            },
+            {
+              "id": "call_247472",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "text": "100",
+                "intent": "Type 100 into Amount field"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4473,
+            "total_input_tokens": 4434,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1158
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 10,
+            "raw_prompt_token": 8665
+          }
+        },
+        {
+          "turn": 8,
+          "action": "type",
+          "input": {
+            "text": "100",
+            "intent": "Type 100 into Amount field"
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eu4BCusBARFNMg/4VDAqJgpWzx0+EQjDdSJBejZ2UcXil25hmcGFB8vsZeGLsAyHehSOsY6JfqnBTk6+eQJo112F5st3dIzu3ObQCi2vwJ7ncRXZFD9Qy3zCPMKzbWSp/ltAI/qFVezu64cPx4l5QIpehwV41w7/qns+8mznn+zHq7DR/DfIkkYofiC7ReSj2aQyhOSm11qi+kbaoRKaEVhM2h7Hh8QaPY71pnxbbfvAG4bUpeDX0ypeHDjw9FvpKAh7oO/nh7v9aa0Hb9AQWRIod/E4WbIqU47K7Ny2t4MkuvlkBHzDA27PO7Hlc7u7BA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_666649",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 668,
+                "x": 400,
+                "intent": "Click Payment Mode select dropdown"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4601,
+            "total_input_tokens": 4530,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1254
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 41,
+            "raw_prompt_token": 8777
+          }
+        },
+        {
+          "turn": 9,
+          "action": "click",
+          "input": {
+            "y": 668,
+            "x": 400,
+            "intent": "Click Payment Mode select dropdown"
+          },
+          "result": {}
+        },
+        {
+          "turn": 10,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpkBCpYBARFNMg8s35KYcH6MxTr66RkBb9dwXQ7KHR47LJjrDumFbcvXltdoNyAaS5Y6u6NTGmk86VWV7t0PqYDz2GsrDm5PVz/qqBHSZRYY2H1NloVPcB/FDyzZFCkGLJxSiwtXIpa4Wq46M6GBH09x2lbZTK6nIASHuvHje0WmtRO90F8Dvbsg/8ixT1VbwFvSgVNlldqcF5fI",
+              "type": "thought"
+            },
+            {
+              "id": "call_696905",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 400,
+                "intent": "Select Default Payment",
+                "y": 718
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4708,
+            "total_input_tokens": 4658,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1382
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 22,
+            "raw_prompt_token": 8921
+          }
+        },
+        {
+          "turn": 10,
+          "action": "click",
+          "input": {
+            "x": 400,
+            "intent": "Select Default Payment",
+            "y": 718
+          },
+          "result": {}
+        },
+        {
+          "turn": 11,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqMBCqABARFNMg/ZO3sn7WB3jJNkISQZ+gv/ao5u0LhDTBEQerdW1IFc8rz7YomWQc9L9r8tisgu5uteZoJONybSLZiszABzkH5SmLAaWiQpv9ctvAuJ+4s/X6OtBlx22f8Wc1lNQ/DyzfMaCzGPCDIMQffZkjSXWQKK+zxFSb8FO1mPA0e0H0BZ/bxmJh4YEuIvlOfHnD06GbwBPeFlyoXhnMuCWg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_462095",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Reference field",
+                "y": 775,
+                "x": 400
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4816,
+            "total_input_tokens": 4765,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1489
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 28,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 23,
+            "raw_prompt_token": 9044
+          }
+        },
+        {
+          "turn": 11,
+          "action": "click",
+          "input": {
+            "intent": "Click Reference field",
+            "y": 775,
+            "x": 400
+          },
+          "result": {}
+        },
+        {
+          "turn": 12,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpEBCo4BARFNMg8FE3NrhBic74RFfTTwB4xSFFhUSvX4f1qSHMVMGkd9oehrgTWrPhTnWEFryxSr+outtYTWjwmLDQzLcmToE1gq3+DYIcf0UDwRsqkIJz2+41BAke/8USVxkdHoU8d7Sugp7nwDBdKDE7gRDR1sgn2Z7EIEQJnffBnczdSFdSQ65eAfBIKDyikt0A==",
+              "type": "thought"
+            },
+            {
+              "id": "call_310930",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type EVAL-100 into Reference field",
+                "text": "EVAL-100"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4920,
+            "total_input_tokens": 4873,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1597
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 33,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 14,
+            "raw_prompt_token": 9168
+          }
+        },
+        {
+          "turn": 12,
+          "action": "type",
+          "input": {
+            "intent": "Type EVAL-100 into Reference field",
+            "text": "EVAL-100"
+          },
+          "result": {}
+        },
+        {
+          "turn": 13,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErEBCq4BARFNMg/Q9OSS53+G8j7JamxEg4fJ8YkihUVpYv5AqCA2E/9ppAIpUO2ckicMSp7GAeoIuYTiu3YJfJtRoQN/JQMd6d7xTiRi/q2ZD2n/e4LX/MEXfQz5AhWlqj2+Y0TYFeItWWO2ZEB/5sOpDV1uBSyQ4nWSkrX+kBL1pDwrEpo0il+WP3v+xnIMpLcmPXXFf5NjlN6BQ/5gfL3Ren5VHQmXBcGjrThtNB7X1y3S",
+              "type": "thought"
+            },
+            {
+              "id": "call_744117",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Record Payment button",
+                "x": 380,
+                "y": 980
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 5033,
+            "total_input_tokens": 4977,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1701
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 27,
+            "raw_prompt_token": 9288
+          }
+        },
+        {
+          "turn": 13,
+          "action": "click",
+          "input": {
+            "intent": "Click Record Payment button",
+            "x": 380,
+            "y": 980
+          },
+          "result": {}
+        },
+        {
+          "turn": 14,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EocECoQEARFNMg8b1hrABIL7aEevFkk1O0mqY1H63BB3SrPk8cqmaO+D7nOZDimgSVVpDtYyUeBvzw61scx8JednrT9H7rVeFxF5lctzgrWCfzLRqk3qCvkmJP9wn3UNGzH/En66TkfRQhMvXjlHTnRL9a7O3clob0thtKpddT7P8e5aKTR1ktnq/cGtJ+Q7uC/6fw8mZknu5CCIPBkv24KcXx4xJScpMvjvclUtKSfJiiVbwT2br43T3e5RXTy+fKu7Qo4gBbufflV9mah915bWE7SniECl2vZFnV1/oZY/Q6PYttL/tx1y3iIw2MSynSzGoGhlxjfHNDvDZklOCMxDp9JUuinGECaWx0q5eSM1kW5U/uoU4twA0CcSeIfrIfZU7WohHL0KH9ATBgeNCy6IQ6QwaDVPRE012UjmVR2t+YMpbn2EK7AP2ohQesihcp7yYc9y1cz4UsL0IiutV02fcuJpd9x4J6DnYQft8xpEbL4BazrS5+XStcl7CraVa947vFVutX6o5G+tvDYtSTzGDWWP1BzUTrCSMOzqA9UXSozgsZ7S7qEIylwArv2U6gG3aZCVix606mDUqtEtjgxXDfCLolkfSta1SWS7NBd6doEHFBTjOprX7OxaO1u/tQUrPtytXpoic+6XFbhsj0vacgUAiPbNH5C1ulbqe8bF5soyVi/cFP34",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100 successfully.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 5214,
+            "total_input_tokens": 5067,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1791
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 118,
+            "raw_prompt_token": 9394
+          }
+        }
+      ],
+      "final_text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100 successfully."
+    },
+    {
+      "run_id": "id-7_cu-gemini_29a0cd96-3a0e-4ce7-9ffd-73d72635bba9",
+      "task_id": "id-7",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "90.503",
+      "reset_s": "35.414",
+      "setup_s": "2.744",
+      "agent_s": "52.345",
+      "ms": 90503,
+      "model_turns": 12,
+      "actions_or_tool_calls": 23,
+      "input_tokens": 47741,
+      "output_tokens": 1172,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 48913,
+      "est_cost_usd": 0.04020075,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:30:59.284Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpwECpkEARFNMg9j/JvkUPTGybdoMq/xtE5M06w+s74z60wj+5eLRSYEQWHigyncjM49M2y0YqSLNDI5qNE0ZU/j+x+iz94hmkxN6P/UNhv8pkgrgleH+/ux709+DfjflM81zmmIDpc1CYI7SumpDjQbRVew/OoEJM6YYgKIisisLW/dIU3SSeLA++vu5HGoB/3/t+b87mGYUqOpa4GzKma2OwK3uOc/lpGX2Az4C90PNB8ZixZWRxzyP4K6iqX3jOvhOlBmGUsWgnyucZr59G01Gp+wkN/D8VpVdCdKZaxLznqC+nkufI/HlcbU3e910zjzgNTyeJm8Uvf3OiuLO7ETpd2eUx2qEMgyoK4QLRv4a2t+1UOgJeWSznmYu59mJnNww+H5mHCmTgekSg6e6vNZmUzyl0Yqu4/DWIfBgDmagA+SfYE29gfCVU8bmrSg96gk5dt6elPcay/kMnmVFZcJmzusn5Xbv9mm8EcKcYQibfEbD9CbW+OT25B0tfB42O5xcA+tVEUnEhJRM16agmp1VZcTpcpELKc4PCJwi8VLLVVZ/Pt6RwmA190esoLxfbh5bOTd3g3VLSnsd2ZzfRPNSvNGFMemZKzjkisBYl9g4VWVEwjmOteD9JDV/+4S3ETmr7YWArYN27OoTqCWxEmVm67TGWnE2639HPLefJb5oN5IK+iRsw5EZDho0qFjD1lIJ8T9nIgSzz3dQLmc",
+              "type": "thought"
+            },
+            {
+              "id": "call_145082",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 608,
+                "x": 750,
+                "intent": "Click Log In button"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1372,
+            "total_input_tokens": 1206,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 1092
+              },
+              {
+                "modality": "text",
+                "tokens": 114
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 31,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 135,
+            "raw_prompt_token": 5328
+          }
+        },
+        {
+          "turn": 1,
+          "action": "click",
+          "input": {
+            "y": 608,
+            "x": 750,
+            "intent": "Click Log In button"
+          },
+          "result": {}
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EocBCoQBARFNMg+6xxzvl+1upEiO6o0j7bYpgmK3B4S93C9WXXohl7R6LblPkIuAVAxucKcAum9zROz+jHjZ/0dXGPBUS5rPAUUC5OlB2LIkX15RQlqjeqPLQE5agulKDzzbJURB3RFO3LYQfqK9WZ0+4ZQJZNo+0XT+jzsYmVYuP9pIxBhznW/a",
+              "type": "thought"
+            },
+            {
+              "id": "call_1019364",
+              "type": "function_call",
+              "name": "wait",
+              "arguments": {
+                "intent": "Wait for page to load",
+                "seconds": 3
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2523,
+            "total_input_tokens": 2489,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 2184
+              },
+              {
+                "modality": "text",
+                "tokens": 305
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 22,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 12,
+            "raw_prompt_token": 6627
+          }
+        },
+        {
+          "turn": 2,
+          "action": "wait",
+          "input": {
+            "intent": "Wait for page to load",
+            "seconds": 3
+          },
+          "result": {}
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Er0FCroFARFNMg9cDvhi/OoQEGFfRq8hJy5u0wByFqU0tsmzAREAmrNcrneTV215ttrRYHnGAt7pbr5DRvCGf3CAMxMyn9KsmV31Uo+ncpLyCKdxlt3C/169YCI+ZUNvi0miJNhCpjmt/ELGBY2Ya3k9KLgs/Jb279RQe9xQAHLa/hKXyeCsi1TCO35DtKsHyYAxlX3rLUT0yU2/iMjGEDH1sEapQislZQ2eZ6TmTI/yR+eIT420o9XzPhQXHW5NRfCN7OP0HH7CXJ2NLCErUAU7SstVzjJTbl+FOIIfUEg8lH8bMRY43ybYbPAqqPohBCXZEFIWbW9hM/Ex4HR0hVgn77eMJ8lxyUuOHbdVAT5GLXEy+4KLyL5zCLzyY5Nv+GFL7iLsZTRfFkH9131P6+Tbc9PK47XIFCiik7NFLeMT4YmAPNw+SpS23KS9FcdI3/VPyeBkg9FmkA3KcLcsX3lVMsMaFEE0dsaf7kjqy6IbVjW06HUAtxn1c9NdAlQ24BxBiZQFhFSr5Nfi8GH6JEkxFHWcWueaLlJaHcyrHmKXmywFunZDbuma1dvM2M4k0BV73OqN9CNRCOxPDmWulVCLS6CgVSi+hn8/vfx8R4EOFu1QpLuVtKp4Dku9D5Iua+hF5TJyw7oLb8W9hZMNH7v+oUSs47pFoMnFS9Mb8hCd0DpJMufA72AtekLKkLfe0TmOM7+mg7rJK5KepBu7E5Ea5mpmIv8EjPrVKiVZwBiLiJ8A8j0Op+ibI8N0mRleKqKRBhinjC2u6zeEELfeu1kstO8guNlLkF+uRanWdK962fjhTvYP49b3GLClvoQn83Osxah4APdHoLPWJa0BylCO1Chja0bzcFf1TG4ypYtXPo1rROcZ6O5Lp4kH5b4EpwzLXNVp+9d3X8o+CTn2MWy0UQV9ct238fzzU0dRTIc=",
+              "type": "thought"
+            },
+            {
+              "id": "call_537341",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 438,
+                "x": 906,
+                "intent": "Click action menu for invoice 1"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3873,
+            "total_input_tokens": 3642,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 366
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 32,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 199,
+            "raw_prompt_token": 7796
+          }
+        },
+        {
+          "turn": 3,
+          "action": "click",
+          "input": {
+            "y": 438,
+            "x": 906,
+            "intent": "Click action menu for invoice 1"
+          },
+          "result": {}
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et4BCtsBARFNMg9AYzFyTJ/vzE4S9zqiL0g1z9AmmEIAQBBC1MOyxGKqQUCLNfmXsyC4xK1eF99YhxkogUf5fiIl1Tfv+pBxnMubCLKQ+KGWoraRxqkb0kjA4FAoQhJhIvgYVFQLESEHccg5KzwMiB2L2oEy5QUhJYrQSbl+ruGXMiUktae+dd2Cn2RlAL2i0R8ogK7iHKsA5KJ1+EhBW16+vQKNxm1WHQJoeS32lVgxz1tYY/ame6MaCtcM31+7LEq7OFUCDoIDJTJGdQQsaYHIcOaVDgFNop9JPC/nh2t5",
+              "type": "thought"
+            },
+            {
+              "id": "call_650763",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 840,
+                "y": 600,
+                "intent": "Click Record Payment from menu"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 3973,
+            "total_input_tokens": 3905,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 629
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 30,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 38,
+            "raw_prompt_token": 8072
+          }
+        },
+        {
+          "turn": 4,
+          "action": "click",
+          "input": {
+            "x": 840,
+            "y": 600,
+            "intent": "Click Record Payment from menu"
+          },
+          "result": {}
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eu8FCuwFARFNMg8hWBZheQoLLy22vckfzRQyPvTGjwuFaiyjCJSe1xmBbl6L9NsK7kthVPolHUggmGJbhFkdmAv3SeXmOzuYdQ9z4DURASOTUCO2rbG+N9zNoDmlJmsaY8FvBPC66CsIxc0haOz7E0tVQbfe6XX5x0Qhl5cbvWg/g5D4PBKSbR2W+0GM91HsKLb73xsxDZHPfcXwFd5Bg6PBj9jQCeay9pS1yfcojOFSxcAqiQwV2AzRit8ILa+vk0WecGB/gW2M84ivJGv4Ze065XYcrJEN7xDLlT5wXnpRWWTfr8+p45uelqplZxlNDCeMhMOQG6DLeqcBsD0u0s5/fox8Nwllcj/HklrxAbl6ohBQfHrrrVfEXu9NmngmMORx65/hIq8oHTfQek0V2Yj7k2/2hkxAIX1u9F1XAR5+fPvhlHVEpgHirug3g4pbmxLEd9+a47XxqVaDomBHHnSMLoYZ2g3czwgKyStKnOaUnTjcMpYAahKmqEYMNzshHZZL7b47gBhaJMW4f/4AYjo5JvN0SaVvEULNHVktzecR2nsETOt+GhA2g6cBnBWEB0J+2tf/zIGhSHLK1CpKufH2eM1Qu0O/3SA+ZCf7tEm15GoGVB6Xd04AYEZdpPnrlX9kA18crc4cBdMTPjoSdiT7ExFu/xuEQMKtf/aY02OOcqDeHYbNxjEZsp9AeXlgCIXaFGpGEPDNYCGJuOKMKY0L0PTlb8CxIqYxGJh0MMfdXQ4FJ+TyyWcpw9Hw4QgskrD28LT1Hvm4JU57tRRcNxeTB+QMpyOGYRwedkiBB16qqFN778aHWSQHHc/Hc524BT5+o6LY8RSswDpkzmazFO1VkBxhKmSged6k+5MshMBOlSLk+NKGccfPfeHba/nGXnvHKlL8kqaZkKHUChjGShdvLTxx9HjlwRGzucuy3//wHExkQsPm3Ayy7FrnBvywVurpPet+NmQcyaFQWPf2q2Ki0ZGQYwZxLRUxWBs4381FmA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_715724",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 415,
+                "intent": "Click Amount input field",
+                "y": 558
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4269,
+            "total_input_tokens": 4030,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 754
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 210,
+            "raw_prompt_token": 8213
+          }
+        },
+        {
+          "turn": 5,
+          "action": "click",
+          "input": {
+            "x": 415,
+            "intent": "Click Amount input field",
+            "y": 558
+          },
+          "result": {}
+        },
+        {
+          "turn": 6,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoMBCoABARFNMg9nFQvxJT1LvYtXKdGM+jE92mXKkMo20xYf/ry+Xz2W5vrTFOCs6eRTdMc9QuoLX22wQ5+I6Vl3sROeU4hxXQr42Ay3p8UeHqww+1zZ2b2b8aSYJFUF00CvW11TvbDmMe4pLB+o0l3oB/EsFk/kHpyv9BexOacwAFczh9U=",
+              "type": "thought"
+            },
+            {
+              "id": "call_1010574",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type 100 in Amount field",
+                "text": "100"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4364,
+            "total_input_tokens": 4326,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1050
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 9,
+            "raw_prompt_token": 8525
+          }
+        },
+        {
+          "turn": 6,
+          "action": "type",
+          "input": {
+            "intent": "Type 100 in Amount field",
+            "text": "100"
+          },
+          "result": {}
+        },
+        {
+          "turn": 7,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErQBCrEBARFNMg9E1IVyqkemrtP88DEDcKe0Yg8Vbjid7xYQ0zm+W4HN2Lzf+PKA8rNLcmjFhbSKXBH5k3c5iL1+T9Nf41196any3GLtQ7ixoQnYRhXM6EdbNs44Ljb/Izs9fLzYeG6fj0pAd7LbUUemZE6JYfy70u8bxGfcLeaz2fePefBsJIFpT+Xtb+Xg+t+CvEpxEQRKU64W3NaV0ouSIwzkRLd2V9tRc8a5UD5l+KhVA834",
+              "type": "thought"
+            },
+            {
+              "id": "call_732570",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "y": 667,
+                "x": 415,
+                "intent": "Click Payment Mode dropdown"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4478,
+            "total_input_tokens": 4421,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1145
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 28,
+            "raw_prompt_token": 8636
+          }
+        },
+        {
+          "turn": 7,
+          "action": "click",
+          "input": {
+            "y": 667,
+            "x": 415,
+            "intent": "Click Payment Mode dropdown"
+          },
+          "result": {}
+        },
+        {
+          "turn": 8,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpYBCpMBARFNMg8jrIU6ZgM3L0CfqjXgREIi0CiU0RKfs4r2d1i8HFgKQ0Xbtkta0jeVuwGVNUsb8pymURKmnC8RDnpQY7FcuHJE5Ooo0ERRwVjn0CzQLrVRxXZRkh2t9A/IHzEFgFrQmT5bfJLhRB7vqAjYM2jB6nOHjBCHG2N7gP6mdyd96mKs8SkJd5L/BGxyJQuF+5se",
+              "type": "thought"
+            },
+            {
+              "id": "call_542158",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "x": 415,
+                "intent": "Select Default Payment mode",
+                "y": 715
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4585,
+            "total_input_tokens": 4535,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1259
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 21,
+            "raw_prompt_token": 8766
+          }
+        },
+        {
+          "turn": 8,
+          "action": "click",
+          "input": {
+            "x": 415,
+            "intent": "Select Default Payment mode",
+            "y": 715
+          },
+          "result": {}
+        },
+        {
+          "turn": 9,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqABCp0BARFNMg86kEZS4NWPI1kb3bsZX9IGs4U+a9AH9dikqwtGRQSx8JcbvGRpNo7UxAsl/zW0KHFx3fz5WDpQD3Ku0B6+u9wF2lMNCbLz0u0T0WV6aBYnHpptOHJnf1mt1nMrctBBINjxlDYBtJryrdCWCL4Uq5R+aPCfF5WoI1La5vVt/5GmTO0ALxDCMx4/EnOJs4MaJHHvS97UbOR1IA==",
+              "type": "thought"
+            },
+            {
+              "id": "call_858348",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Reference input field",
+                "y": 775,
+                "x": 415
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4693,
+            "total_input_tokens": 4642,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1366
+              },
+              {
+                "modality": "image",
+                "tokens": 3276
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 22,
+            "raw_prompt_token": 8889
+          }
+        },
+        {
+          "turn": 9,
+          "action": "click",
+          "input": {
+            "intent": "Click Reference input field",
+            "y": 775,
+            "x": 415
+          },
+          "result": {}
+        },
+        {
+          "turn": 10,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpEBCo4BARFNMg9SOq9sk5D2BSaFqiIg0E+yY9Rw5QUvQuaOA23uhp0gKRqv8ngcFaM9gurih9mV1HKUWpbrLzVpi6RgQxfFu4FzwZbRUyYzumJOHa1ivqqzG83AlFc2VZ4oOw6YOuocTBSgauFV/CHl+sX2hcd4nfZQH2w1xdzbajuUQa5E/JjVSO1izYnmIaiC0A==",
+              "type": "thought"
+            },
+            {
+              "id": "call_888630",
+              "type": "function_call",
+              "name": "type",
+              "arguments": {
+                "intent": "Type EVAL-100 into Reference field",
+                "text": "EVAL-100"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4797,
+            "total_input_tokens": 4750,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1474
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 33,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 14,
+            "raw_prompt_token": 9013
+          }
+        },
+        {
+          "turn": 10,
+          "action": "type",
+          "input": {
+            "intent": "Type EVAL-100 into Reference field",
+            "text": "EVAL-100"
+          },
+          "result": {}
+        },
+        {
+          "turn": 11,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqQBCqEBARFNMg+u+ztp/HrL/CQniICsMQ1MEGQTmct3/KWaLLBvdLGhzAhHYUt4NtgvHYwbG/bGsDA0tpdSgZErtxbOo7B6aX+DNKHg503bPV01UzPZTPBe1FxTJm+2L+tk7UriFDmWTfkm8iZk9charHr7EKXzdKJcE8rKlPWq1KCinPJucRc10moMGwWxM2xEAcp06PmNBhvY9E6woRx+tEDJ2xo=",
+              "type": "thought"
+            },
+            {
+              "id": "call_614738",
+              "type": "function_call",
+              "name": "click",
+              "arguments": {
+                "intent": "Click Record Payment button",
+                "y": 980,
+                "x": 380
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 4907,
+            "total_input_tokens": 4854,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1578
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 24,
+            "raw_prompt_token": 9133
+          }
+        },
+        {
+          "turn": 11,
+          "action": "click",
+          "input": {
+            "intent": "Click Record Payment button",
+            "y": 980,
+            "x": 380
+          },
+          "result": {}
+        },
+        {
+          "turn": 12,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EscDCsQDARFNMg9qgfVxppDQN7ZLridLvyj3ScC1Ln6/Z9kvT6XKxdX7KTs5aCe5fD0goCUCLfMg2kOtaKJWsaL4RDKclO6jCxPzSsY6Hh7MY0yMGkM7kKZseulnKRsUKMZnhQDllRjeiQatNQpNrq/mGFXYQWp/oS+aKBR1j3ueUz1212sx3gICmmrF5tzjv1u1NyfOqUfFzvXdh4wgsP5xaoDl2k04CV84CJUbqPgr5UkBL5lHyraIFFbW+VcbTRPlUV7ic94VBRjAxXgNxvcfxzGUfhxRSIt0Vz2YBFesICtoKFoDaotjsWSurqDEXNwDxvqQkUkUe9wpara9Do6qvjbltdX8TscqOKmj5JljVnloJzaXYugQhZu72VYkJuDwoSKF8gJoDmgsSoZa2sSZ7jOsTt1zZHRVu174W2HmuasKxbFwUYNO/BrC8W6tHMQszItRyGrHeB/7vXZTlyirBjqNPat1voO6qMm+UJ0w21a4CblbRSCxnJgvu3o4LRsE/FbcS7I7A6CuF6F4EJ48Xt5JmgaHIFS37wFrlZXv7GIHO0Jlmc5vh6xUBOxlpwra6EhVu3BqaFafWL0Y3kyhBaaxNsv9MS0=",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Successfully logged in as admin@admin.com and recorded a payment of 100 with reference EVAL-100 against invoice 1/2026.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 5079,
+            "total_input_tokens": 4941,
+            "input_tokens_by_modality": [
+              {
+                "modality": "image",
+                "tokens": 3276
+              },
+              {
+                "modality": "text",
+                "tokens": 1665
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 38,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 100,
+            "raw_prompt_token": 9236
+          }
+        }
+      ],
+      "final_text": "Final answer: Successfully logged in as admin@admin.com and recorded a payment of 100 with reference EVAL-100 against invoice 1/2026."
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "idurar-erp-crm",
+      "taskId": "id-6",
+      "tier": "act-long",
+      "method": "cu-gemini",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    },
+    {
+      "site": "idurar-erp-crm",
+      "taskId": "id-7",
+      "tier": "act-long",
+      "method": "cu-gemini",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}
