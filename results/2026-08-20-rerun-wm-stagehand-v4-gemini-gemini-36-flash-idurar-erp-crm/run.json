@@ -1,0 +1,1600 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "idurar-erp-crm",
+    "arms": [
+      "wm-stagehand-v4-gemini"
+    ],
+    "seed": 1,
+    "budget": 8,
+    "perturbed": false,
+    "models": {
+      "wm-stagehand-v4-gemini": "gemini-3.6-flash"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "id-6",
+      "id-7"
+    ],
+    "n": 3,
+    "label": "rerun-wm-stagehand-v4-gemini-gemini-36-flash-idurar-erp-crm",
+    "fake": false,
+    "model": "gemini-3.6-flash",
+    "armModels": {
+      "wm-stagehand-v4-gemini": "gemini-3.6-flash"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "idurar-erp-crm",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "id-6_wm-stagehand-v4-gemini_b34f104a-948b-4d33-81f6-9976ac325f10",
+      "task_id": "id-6",
+      "arm": "wm-stagehand-v4-gemini",
+      "method": "wm-stagehand-v4-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "stagehand@4.0.0+native-webmcp+gemini-rest",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "54.916",
+      "reset_s": "35.427",
+      "setup_s": "5.540",
+      "agent_s": "13.948",
+      "ms": 54916,
+      "model_turns": 4,
+      "actions_or_tool_calls": 9,
+      "input_tokens": 6909,
+      "output_tokens": 732,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 7641,
+      "est_cost_usd": 0.00792675,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:12:37.863Z",
+      "transcript": [
+        {
+          "t": 6013,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "sign_in"
+          ]
+        },
+        {
+          "t": 8170,
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpEHCo4HARFNMg8DWjJDrKrnEYftT0G/Tui+SvUcffE0kH+j/khmcxrD+pgSVKsvKPOsJuPv2yUXQnstjNGfJZecxbhaqUIDPYVxmD1lkhkz2CiRKfaqbMAGEQW1w6X6pdTr4yyIdjFMwlzMz/sG9VUFOKDgvj6V4Z0kherDn71HTVRR3KXHQv5fwKnTcTET0iBPlU8+TR6/W3tYp2SrG06QEDkgxQrQTe0Ykg+YaIkcr9REpXZELqJHLRggcLKcWGdqewN5pvjOqlDiGHh4M3WjHaIW5FFPwGKfvk3SfA+a0KYXYKXJIV/H8V54unboadYV8PwDLk0DifDd27zm2GPMbaJWTAZrTq1WhXqSv1OgiFIRKonnVXEXyoO0iM4dvqgkt5qClzLgCpkSKfiO8U7cjo4Lnvke1pyIGycgSwycXZ9e2oMw8KQTsMbEG6zdk5At/8B81mhPJGi7KZ/JMW2Uu2hV3FjAoIaaK9SI4ZCqzQMMkaplBrVdi7AOpnw8SXXxNdaNg/cg8AbwoU8g+9fwCJkA79FeiER0ASktrSjiErvYJ1HKOxtBXyrAOcfgH1ON4+u1St+aK8Wu/Z0dOXxBSleC8zQGbFDSOf83lng0AKiW107iXQ4l0t9wrICDY6tUIwFeW5dbKoWHsl1r/Pj3FjiBRBh+RARRrOb1ojTgLipe1tzpuK1OprJTv4oYD9QgWvyZLHwtiEa6yvHxlsn4lZqi0SLoTRaP9YlA8aGQNrtVWNxchW9FJBmsSJviwChka6eqerBTOcdwPp/7Y6bB1EUEwI5oQkluZD5IiZ+/T8p28we9oTFT6H34TFAUMpIE3bhl+jsyQJbBph+5OpKzJg7k3g06o+p6gpvm20bpbxvmvz1ih1gsAnk+/tAmQIMjxwNNpdZFvPb6UskoZq2lj8gnujoRaw5VtVHE5j7HeY3bSPWTj1N+KFnlCiOCzG5NJIARY47Q0IEi4zE8hyJW79szrRCqLKKPKNfl98IzccM1UW90vpP7UVUT5RyWKMwbQgPqHFHFzHMY9A7NqF0jV3NDoLy0CHxW3xoFBpbl746C4is9rYxuFer+PedrfgBZ6D4X57VhBUeX1oB+SK8xNmNav/4MXYe8e030YXwlKPRCLoXwg8sQjC+MC5lyIo049vC6w1P/lvHsGjkaw2pvsjAVOuNmt0CerMq6O2royzc8E+HNhtGScLY/JsR5XV82wg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_580064",
+              "type": "function_call",
+              "name": "sign_in",
+              "arguments": {
+                "password": "admin123",
+                "email": "admin@admin.com"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 754,
+            "total_input_tokens": 501,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 501
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 224,
+            "raw_prompt_token": 548
+          }
+        },
+        {
+          "t": 8295,
+          "turn": 1,
+          "tool": "sign_in",
+          "input": {
+            "password": "admin123",
+            "email": "admin@admin.com"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 8711,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "get_financial_summary",
+            "list_invoices",
+            "record_payment"
+          ]
+        },
+        {
+          "t": 10516,
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqMFCqAFARFNMg9ivqqhBfgVam8QK5VbHNOE8ew2mtlUfXcmVQgg+1CFjdYmnH9/uyYEZKJhjC/jqb8FiSM3HZU1bNwi4tEBNgv0vEXGuL+wIykls8NNwvmBryS+MCOdSO1K74Bc8TcZ8cy0vfo8NjF1k4TYxD/x2bLwhLPUrnGiT+UP+3XMTBFmvQ+kKM842uD/DEnQWtDnFbUjsNHkXlcOMvltenHytyjxhPJr7sWJ1HubfjP5MYQcOm5ITwuppDz6L5ASXd09ovmdWsoMCVhnW7CuLypEDX+1RqYcwoV/JjF/7cJgcokirzpgSeUVEOwl7OROTiBCAm3r5HfKC50extwp5+t7dGAZeF/VLJT2kxoDEzBTQNvEuBCUNGkoVt/RClefqyDnTuTH8s79DIkA0MsSFO8wWaHjVvPeJNyCeb6b9Cq2562WvxGU5v1LNgqgZNxlE5vEadjVDCeRz31UEpGTIDDtuAvihIhpTZ6NNZyy62OOn/aHhQmn6jRyH+05dAba372/wrfSi1J8LEViq8EmQsmgO2ZHDpSDKza7AzMQZQMtzZgE6jxuVy6xeGvccKuKeHD1m7neZQxoRVrYJPfmBLRQaylNH/aQOxYHfAwH4UF34EHLzX4zapRDH9yP3o5lU+gjb3L0sDPkfJFtd9IZWYzyuSiGtaxGRXZfJgJ5GfwkRPbHyrgLwA3SAbmZF7Q3EA2DLTrXBCMacjndERRDtZJcT2KbQ/ZtNqVdtf6UqcPbpHL+wXC30ZHX9Q1k+z3ySyEPiZES1NQ0STo9LzbjWRavKgOwVTomU8W9/rKQbyRwHZfvQs2hPLYvk48B9h8u/tCnwhpk/OpoPmx1wmeU+yPx0pJilyaZssSwOgr/ACchdujPqsDqB/esfrTxWT3o",
+              "type": "thought"
+            },
+            {
+              "id": "call_1245257",
+              "type": "function_call",
+              "name": "find_clients",
+              "arguments": {
+                "query": "Acme Evaluation"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1964,
+            "total_input_tokens": 1788,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1788
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 18,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 158,
+            "raw_prompt_token": 1860
+          }
+        },
+        {
+          "t": 10538,
+          "turn": 2,
+          "tool": "find_clients",
+          "input": {
+            "query": "Acme Evaluation"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"clients\": [\n    {\n      \"id\": \"6a8651ea2f9829f6feb728f2\",\n      \"name\": \"Acme Evaluation\",\n      \"email\": \"billing@acme.example.test\",\n      \"phone\": \"+1 555 0100\",\n      \"country\": \"United States\"\n    }\n  ]\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 12282,
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvcCCvQCARFNMg9l7fXkGIZ70TM4ddo/OLJ9zJKhscniOhB3ZibxZBSy0eSlPQqSl5rQcGhDhYjCdm4cFTTOmnR4hUGBB5yHtsXEvt8n84fMvKoKqQ0panxX2oHdZGWpgW0246GZJZ3PKmzhtvh3sHOAowap9kKsUD7rFR7EJsftEp0bLnHqu2IAl3RYUwoxxBt28bmDv/CkJr89Adct/uFqbs4nbv/OYBEBCXKSFaJz7kUyDXbBdck4qbqZdfQQQLRp8iuu17PHRinyn2/wiCPrPlRxffQtf08rbv02IqQb41CEiAxITs24CpmzXG0gKkm+gTby5fhxg2U6F8gkVck0Fc/UKRwM+HSDppvNhgeJSwq2PluN9lRgRSjGEzTZXjjHuxVJtd4ELPFLGrvAGdZYzlXphqcM0+ZUnDIvSjd8ZBazVEtdy6nUvhE6NaY9bAS1otu8chEsIlhScHZ6ez9tMU3v/G6jZEuBGenKbkTvuCL9HV1I89rB",
+              "type": "thought"
+            },
+            {
+              "id": "call_363283",
+              "type": "function_call",
+              "name": "create_invoice",
+              "arguments": {
+                "items": [
+                  {
+                    "name": "Quarterly Retainer",
+                    "quantity": 1,
+                    "price": 400
+                  }
+                ],
+                "status": "draft",
+                "client": "Acme Evaluation"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2243,
+            "total_input_tokens": 2091,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2091
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 46,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 106,
+            "raw_prompt_token": 2176
+          }
+        },
+        {
+          "t": 12322,
+          "turn": 3,
+          "tool": "create_invoice",
+          "input": {
+            "items": [
+              {
+                "name": "Quarterly Retainer",
+                "quantity": 1,
+                "price": 400
+              }
+            ],
+            "status": "draft",
+            "client": "Acme Evaluation"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"invoice\": {\n    \"id\": \"6a86547e6591d18a3647596f\",\n    \"number\": 2,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-20T01:12:30.327Z\",\n    \"due_date\": \"2026-09-19T01:12:30.327Z\",\n    \"total\": 400,\n    \"paid\": 0,\n    \"balance\": 400,\n    \"status\": \"draft\",\n    \"payment_status\": \"unpaid\",\n    \"items\": [\n      {\n        \"name\": \"Quarterly Retainer\",\n        \"quantity\": 1,\n        \"price\": 400,\n        \"total\": 400\n      }\n    ]\n  },\n  \"ui\": \"The created invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 14518,
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Ev8CCvwCARFNMg9wxMasBsjRCTN6J145YVAI+OrEjtUlvU5zXon//rfuNkf7X1XQQdfB2UaRih87NB1VuAlErCvj+/cz3mgbKpFWqCPTqoaa/Op1F9pCxnEe8YiTBuHxmBy5Zk7l2zMNb/gcoDLIWvNqynIxrnz8TtnjTKIPIJsSr4uPaeuu4+guc3uAZBrsKEclef0V7qZ+S8QFvYkp09nW5c6rX2bN65IlUyjbe4dRPwcPdO4xICc9DSBBa/Ot0mkmhjdexRPbzjiJnymXEWEIzGwYl6ayR4+RbtTlS1C6ZYs2+Y52C513mYBkpgQ/2wBeuTJK+crEmsig5Q7YMUkQpH9XEIBbSTchT/NfZSou4LV4wxbYCO3f70a6A8jRLnUGss75oUiSykXRVTBQiJODUThKJOeyVHC6gN4LrKhKvQcDOvlYtYl0eoHoq+yPdkzouOBnmq/zJ9DsL3gBa2xOJDnlR4bCnLTChXgOa5vvMqK4JgoRvJbFEdjwkbithiU=",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Logged in successfully and created draft invoice #2 for Acme Evaluation with line item \"Quarterly Retainer\" (quantity: 1, price: $400, total: $400).",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 2680,
+            "total_input_tokens": 2529,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2529
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 45,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 106,
+            "raw_prompt_token": 2627
+          }
+        }
+      ],
+      "final_text": "Final answer: Logged in successfully and created draft invoice #2 for Acme Evaluation with line item \"Quarterly Retainer\" (quantity: 1, price: $400, total: $400)."
+    },
+    {
+      "run_id": "id-6_wm-stagehand-v4-gemini_6df6eb6a-640f-40e9-b81a-330051204b9e",
+      "task_id": "id-6",
+      "arm": "wm-stagehand-v4-gemini",
+      "method": "wm-stagehand-v4-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "stagehand@4.0.0+native-webmcp+gemini-rest",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "45.597",
+      "reset_s": "35.498",
+      "setup_s": "0.833",
+      "agent_s": "9.266",
+      "ms": 45597,
+      "model_turns": 4,
+      "actions_or_tool_calls": 9,
+      "input_tokens": 6364,
+      "output_tokens": 651,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 7015,
+      "est_cost_usd": 0.00721425,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:13:23.806Z",
+      "transcript": [
+        {
+          "t": 1309,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "sign_in"
+          ]
+        },
+        {
+          "t": 3027,
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqYDCqMDARFNMg9O7bBIv+PTddL6QnCh42vFDJ5jPZfozfxWoxEHiUvysimqp/xfq6lBwBSIb6G6HquDLGF4qyeVp7MkGemqtp0+EcNUQu2GApkGL8aJS77F/48Us2JEEcLwMOOpLNM3W1ke6dZavLvcDT01x5TAe1I75k29k/5kveMvajxsqueBzTxCyNf6FwvQFI25ZZXUjZ573rGuiqyXAIdYRm381w+PYkv2BuEqsdpXBYppL3LPVWMRee8pL+hz+86BRaZGFygtHYAoRYpB3dJDsEglgFszVkHz4b92CpN8Fy/aiJcVcZZsvM5e6b3q29HU4ZPWjt2ynRW0xsH+vC+TAsCP1EjEJLFZrjYWnBZvv63+wOaZ+L8hWeDCb0LMbA3vUodqIORugCj8Ks9iHyyhcd/P0YZPB/i5yR0pw063MW9nKDwDFdL9+snD9VZ4pGdkUuSGABOhoHqCtqSXsGG/bgMPcbdjNKKPTVS8fZ01igYEvw1lbVD900Osp7h6FAFmCmRPoX6cuLUFhUnHOlc1d4r5NfFIUUWquX1AQ3Z+hQfESaY=",
+              "type": "thought"
+            },
+            {
+              "id": "call_392341",
+              "type": "function_call",
+              "name": "sign_in",
+              "arguments": {
+                "password": "admin123",
+                "email": "admin@admin.com"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 628,
+            "total_input_tokens": 501,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 501
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 98,
+            "raw_prompt_token": 548
+          }
+        },
+        {
+          "t": 3145,
+          "turn": 1,
+          "tool": "sign_in",
+          "input": {
+            "password": "admin123",
+            "email": "admin@admin.com"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 3568,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "get_financial_summary",
+            "list_invoices",
+            "record_payment"
+          ]
+        },
+        {
+          "t": 4731,
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EpECCo4CARFNMg8pKWnuPy6mFm7RUQwKq2kS5ooLRwSBeK5DCDMhN0MpVxZuswArDe8wTzP6nQj9iSncW/XjYE9nOSE4VUF998TMy9wpDacQE+31hi02UgUKf4h25Zfp98qHOCKeikbUOnmRidr80+nt4t5EhRmPs6Aw55UqbAOEFlIlzKb/wT1kykMjpBiWCondA2YTZpBMwyUqsvC0TFZ4s9Bhe9uhzxiTSJ13jgmFjvn7zt1zRJC1PX8sQatChPGuPi4G1WLOMPK0uJWBcDdEvc7JJAPR6RGy6E+Vi+5oqWeHulD0BY52aDdJiuw8/lgqeDFo/aogpRnn3MYsN/FYYfM7Jc9wKKhYBE1w7HpYiheE",
+              "type": "thought"
+            },
+            {
+              "id": "call_347788",
+              "type": "function_call",
+              "name": "find_clients",
+              "arguments": {
+                "query": "Acme Evaluation"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1722,
+            "total_input_tokens": 1662,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1662
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 18,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 42,
+            "raw_prompt_token": 1734
+          }
+        },
+        {
+          "t": 4748,
+          "turn": 2,
+          "tool": "find_clients",
+          "input": {
+            "query": "Acme Evaluation"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"clients\": [\n    {\n      \"id\": \"6a8651ea2f9829f6feb728f2\",\n      \"name\": \"Acme Evaluation\",\n      \"email\": \"billing@acme.example.test\",\n      \"phone\": \"+1 555 0100\",\n      \"country\": \"United States\"\n    }\n  ]\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 7117,
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "ErAECq0EARFNMg8l7BqdTuFLCGGme3hWljxk7z9aPRfb7URS+6wDwlkL9BiDySI4G7Zq5LP2loXrPp9Ty0r1jFjY9JmyqVPQZFGLDrflUsecOdBXk33u2TrIzCUi0GAocFhOiBnM10uVXNrDA4KkQZt7HrVbLSnzYQYvMXEoN3jLaUi/1QdtdFvb8qRKKn5IHxD7jigw5J0cToFvl8ESzrzHV3PwF+dO8k0iYCsIqTAzpatgbRYop0mtn9YZyIGgZlzmONpS3W18yJZvnVg4wU1eDPguclFb2d7bpj+8AREQHwFKeVwncTTO7/n6zN+0jDlkWvCTvUvjiscMkPlJb01SHT4e2jSSLT3DTTUu91uxd9XZuCfGEWfiMGKNZ4KlIGBEO89hZbAimSv+++WxHWQQstQyOU0zZaid1fjy2d7SvZ5x9ks61cSXXSx7MSLxoo73ZQJ8apdmQaWxd9gnebWIAIRMMPiw/h/K/xPv6JMt/4NO+IKUleC0ifSYTC2QYRtV2TvBLu+wgTl9LqEEyO4XXfTu9xB8JEH4ky8ZRk0K0OKwj92lcEb+4hhVXQSvrTbmM091NC7NroA8lcU8OUAAVn7YKN1tprlBObon/yxwUmF6vdCQIIcZSJWtSEiSgjRApPeYRifHGqnHzPm8r3TN3wUfjA2xSqQP4GasLq83TqrsnuAPr8DIsdaOFWvF2claTMKRELm672U3rb1Quc/LupOmlpICBw7NmfWVKFacIB4=",
+              "type": "thought"
+            },
+            {
+              "id": "call_562755",
+              "type": "function_call",
+              "name": "create_invoice",
+              "arguments": {
+                "client": "Acme Evaluation",
+                "status": "draft",
+                "items": [
+                  {
+                    "price": 400,
+                    "name": "Quarterly Retainer",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2070,
+            "total_input_tokens": 1849,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1849
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 46,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 175,
+            "raw_prompt_token": 1934
+          }
+        },
+        {
+          "t": 7157,
+          "turn": 3,
+          "tool": "create_invoice",
+          "input": {
+            "client": "Acme Evaluation",
+            "status": "draft",
+            "items": [
+              {
+                "price": 400,
+                "name": "Quarterly Retainer",
+                "quantity": 1
+              }
+            ]
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"invoice\": {\n    \"id\": \"6a8654b0e74cfce26e0e5dee\",\n    \"number\": 2,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-20T01:13:20.538Z\",\n    \"due_date\": \"2026-09-19T01:13:20.538Z\",\n    \"total\": 400,\n    \"paid\": 0,\n    \"balance\": 400,\n    \"status\": \"draft\",\n    \"payment_status\": \"unpaid\",\n    \"items\": [\n      {\n        \"name\": \"Quarterly Retainer\",\n        \"quantity\": 1,\n        \"price\": 400,\n        \"total\": 400\n      }\n    ]\n  },\n  \"ui\": \"The created invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 10053,
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoAFCv0EARFNMg/96d8Ch/Max05+k0mgsVJmljGuw/tBU2g+L/lmfq63qag+0vVq4INxkHOzVos9sNjGr3b7E0HIgztyUaEQNB2F4CzBawnFvX/Arv9RYnYOl5zLFlMQpKHVtGgcYk7CtZOivHfpaTA69BozyI/hkN7nUti7mIfbgrcbeXbeUAWouz7Zg0Cqd4oAzrXU4M0ZdBh9O1fpw0wStlenfZPfrpeOhZPq7thJssRGWkhfyHVfHMnEoM81tVslUi2al752SRxwMZKgoyqHe4AvDKQ/8gO/qXr3aAHPZRt63PJrZupeu3jUGREQCkUd7bkNkkfXlCBCu/TsIjVKUKy0JaTJZjAotkV6mte69LfwSRaABLoCWsR3PwpZd89Gs30VO8ClaL66/vHj40SDW4XXWQyXKcq0w9J58ph/NiGBOyXKpofGmXcIb7bD8eIY6cnVb3VqAPSZdsEiPHMo9r4+jZc1cD7I7zFTePTaAj/KUOiaJvVyzbm3zuFDWl/Jh1xa22uV9yYOJiH+q9zgWWQ21mGGBWNw0ak2WDdX1Vn+wpHzkS4URtwoKgzVJzFhiFUYtZoYe0VpV8NXfZWJBXLD9hUGJ6f/rY3a0xXTHgr3+gT91dE5TowuVPd1T5ojOYkvVrC+ptQA1CxPJkYenT5j7vNsYsk6l46uhStyG8maTs+//BTAoqZkeQX42i90EPP6g+HX1ruhY8B/w7puI/jtvOlYCGAXdeSnB7HzYEVHkHItYqdB9/+1FkHLGeZ1jIswHq8zlOV5KaEOgvTUmFeHZ1Ki066mZqXvgZngp8ndjASE2EQ15zsmHKWyAjCN4sgz/zdk3UFsCwMLD9AfxQ==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Created a new draft invoice (Invoice #2/2026) for Acme Evaluation with a single line item \"Quarterly Retainer\" (quantity 1, unit price 400, total $400).\n\nFinal answer: Created draft invoice #2/2026 for client Acme Evaluation for $400.00.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 2595,
+            "total_input_tokens": 2352,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2352
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 74,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 169,
+            "raw_prompt_token": 2450
+          }
+        }
+      ],
+      "final_text": "Created a new draft invoice (Invoice #2/2026) for Acme Evaluation with a single line item \"Quarterly Retainer\" (quantity 1, unit price 400, total $400).\n\nFinal answer: Created draft invoice #2/2026 for client Acme Evaluation for $400.00."
+    },
+    {
+      "run_id": "id-6_wm-stagehand-v4-gemini_b4c07198-c77d-4121-a483-57c7c2e0087e",
+      "task_id": "id-6",
+      "arm": "wm-stagehand-v4-gemini",
+      "method": "wm-stagehand-v4-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "stagehand@4.0.0+native-webmcp+gemini-rest",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "47.347",
+      "reset_s": "35.320",
+      "setup_s": "0.672",
+      "agent_s": "11.355",
+      "ms": 47347,
+      "model_turns": 4,
+      "actions_or_tool_calls": 9,
+      "input_tokens": 6438,
+      "output_tokens": 560,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 6998,
+      "est_cost_usd": 0.0069285,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:14:11.491Z",
+      "transcript": [
+        {
+          "t": 1141,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "sign_in"
+          ]
+        },
+        {
+          "t": 3113,
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et4DCtsDARFNMg+Ka/ubEc5ryJIcBDsioqx1u+vzUEJbsA4kBCzHxvs44Xrpn8D1j0AtY0Fi/3247VKgYqgGGXfOIo3rGYAoaZnEjPLa6kC+6WgMM7eeWjvP1xNFjV6aVN5CskL2VzTZ5nmkLOWamVMr8ukqR6kDZH8qQUdVcLLlvUhUjOoqAT9ppNxkyGGtgtxB04tbL9gc0MOOSWNY2MBF9xVsAVqUCVkrCj/IdV5RPeM277e5PbCEFuwtqa81ErfY5glwQ/AaLvN9QmCBwf4ylUyKVWieMy7ZVEscBY/4u79+23HP6hnh2zpeF/f1tfANYEKSiWyDQ0zvjcZAZ6Ypxvyb1YsaVrcjxFu5AeVQ3+kbZviaT7GdCH6nhUSJ+WFdNQb1voL0JP07tyTOBq3TaUbx0VYYSZODEnDQie7lwqBb/dagWuEOo7+Zcxe4jz5oMT5kvjw+0aNcAndQA7m34/sMPpYiy3S150JeB46q5eRwA4z/30/95uNAVlVthwShzTaD3knx2aCwF6xwdcm+yC0Rg7nxklKdoAhqF/SX30k9BegkXHeu4qt4ug80rKpdH6Dcuk424jO9eh6LQRv+GKyITU4e9MZt4LlybZOckIDNERCfVQHMF33dDK3sxg==",
+              "type": "thought"
+            },
+            {
+              "id": "call_702701",
+              "type": "function_call",
+              "name": "sign_in",
+              "arguments": {
+                "password": "admin123",
+                "email": "admin@admin.com"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 645,
+            "total_input_tokens": 501,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 501
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 115,
+            "raw_prompt_token": 548
+          }
+        },
+        {
+          "t": 3247,
+          "turn": 1,
+          "tool": "sign_in",
+          "input": {
+            "password": "admin123",
+            "email": "admin@admin.com"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 3659,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "get_financial_summary",
+            "list_invoices",
+            "record_payment"
+          ]
+        },
+        {
+          "t": 4926,
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EuQCCuECARFNMg+2pwsmJpPqfWIK90QtQpnxuYYjpQ4uzJmVGI0D645L4nNEFv5IAH9VpvlqdhHLOtoLRzOy7SgXQoesIZG9m3ql3lIIFg9ATxCt9TTK9Ax5ucQzoD2jk6cam7LeHEP9e1EZEhWgfLjCPQOyW80qkubijKVnKK1KDLd+9EysqHOPmUmnMvSBWFyXFflByGPwDk2LIzxNN4PTwG7d/pira+pZdIhPpO72dM4UCN4sjpOUxSI43R4cAzXy1LxRqA8vcsAkPKGsSme38z+eP7ZV1rI9i9sZ/pBzPsuwN1ibVw981bR3flJOg4U30uq4cUN7gbJ0umi0yWwL5asRrrAFvxTsQtMnhZfr3hRaEvTxkWrKtG1spO0Nd0ASYPvWAab0sy+/QODOQEu8/KG9UckWBP/y7JIaaFiZ68HEjNL0ZK+ClHvD+sda0hNXzoOCYzw8fb44w3dt7x82jQdYYmQ=",
+              "type": "thought"
+            },
+            {
+              "id": "call_367972",
+              "type": "function_call",
+              "name": "find_clients",
+              "arguments": {
+                "query": "Acme Evaluation"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1766,
+            "total_input_tokens": 1679,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1679
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 18,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 69,
+            "raw_prompt_token": 1751
+          }
+        },
+        {
+          "t": 4946,
+          "turn": 2,
+          "tool": "find_clients",
+          "input": {
+            "query": "Acme Evaluation"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"clients\": [\n    {\n      \"id\": \"6a8651ea2f9829f6feb728f2\",\n      \"name\": \"Acme Evaluation\",\n      \"email\": \"billing@acme.example.test\",\n      \"phone\": \"+1 555 0100\",\n      \"country\": \"United States\"\n    }\n  ]\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 7197,
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvgDCvUDARFNMg/Hma9fNtZbWj0V5c62HRa6zB4B2+cem7ae6ULTO6fbY/0BeQOxttRuZl5MM8Xqmog9/WitJcB0BOHRavisHCRNbQCvretPaQt+pUiRKkE7IEdCLfos/cDyvrQBceFyhL7LVq0OpN6E5PyurKsBy16NZJpVyhnH7uq76mNvyqu9WOJI1kKptGGbt6yVfom3U3N27pPyu2CIWLbSgA3RD6M9HDOch03ekTkvG3HPxmuWQs9eaBgjDU2aWr7ulTpofXlaCMOj7lCo4sos5N2QCJs6w1SOHaGUDpyy8+6k6AsUH1l++tx3ti/1s+oKITekZkWv7XJQO6x7w5436AC3Uvxzazwik4sp3Y6c74JyZitGn/D/0x4WPqohl3az9CTZPlGmuQ87SmE7e0WFy0VMawUUK1t2UFsrl6Wd/3kM8Mzn/GtYiJi0EJGIZgq/1WCVbkntLPeS2hP9UxoxN0vUqthFOkwSJ2I5bNP/x7paVrCvsgalBTbLlIK67YJmtEMQSt4zaIlEpCLtnhhcSm53SJPc6XKckEPqN3OLmVVA9cYSF1hQRP6Mqw97cHpePfHWmwEHjjPmj0LMr0g4euwVwHMgCNW4yCjWvfi5M7OKZMCFheGADCzHYoyV1MnQhbeoRnsET1+Ywss3Mj7tBvqKiz/O",
+              "type": "thought"
+            },
+            {
+              "id": "call_372574",
+              "type": "function_call",
+              "name": "create_invoice",
+              "arguments": {
+                "status": "draft",
+                "client": "Acme Evaluation",
+                "items": [
+                  {
+                    "name": "Quarterly Retainer",
+                    "price": 400,
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 2082,
+            "total_input_tokens": 1893,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1893
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 46,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 143,
+            "raw_prompt_token": 1978
+          }
+        },
+        {
+          "t": 7239,
+          "turn": 3,
+          "tool": "create_invoice",
+          "input": {
+            "status": "draft",
+            "client": "Acme Evaluation",
+            "items": [
+              {
+                "name": "Quarterly Retainer",
+                "price": 400,
+                "quantity": 1
+              }
+            ]
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"invoice\": {\n    \"id\": \"6a8654defbf132309317a44e\",\n    \"number\": 2,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-20T01:14:06.356Z\",\n    \"due_date\": \"2026-09-19T01:14:06.356Z\",\n    \"total\": 400,\n    \"paid\": 0,\n    \"balance\": 400,\n    \"status\": \"draft\",\n    \"payment_status\": \"unpaid\",\n    \"items\": [\n      {\n        \"name\": \"Quarterly Retainer\",\n        \"quantity\": 1,\n        \"price\": 400,\n        \"total\": 400\n      }\n    ]\n  },\n  \"ui\": \"The created invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 9090,
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Eo0DCooDARFNMg8QV0cBtc6OEpe7FAQpZXx3CWu1okoo/OjQ6nAmEwfbifNGrqs1MKtH0iDjJObntQsk6/8JxU1kN/yHTRoU4I+Qtx7TCIMFiHhEqa2lH574Is+gzLanSHgm5q4CAgeTQBT6kd5RmwGuuqwj4G2h1kDFjit9DrUb5h1eaWglau741xbp50L6/2X5jta5JrIV9YGDPU8r/EeQ2VFiYqdThiSUKNJSrVlWMe8qfpIbDfCAgYRaSbcNXrc8CIvF8rVfIf7sqSfI1t4oLSqblF8lqeb9qvHEiB63Fv8cl2ulrTcywXer2E3SqQaVjJyNOUDkG/krvD8xm8adFNTyucfETpyCNJih2lCn8LaaAMzeQNyd6DpLi/fouL8iCowfj2M1kAww6tZXmqOmm4lSWShD3v9qlfZW3bf3IoWRbiS1+gL0IvsaVqEQx9IDEyVlfkPfYSrN+OwkOgiMCUxchj6VnVkcajh5jdWUDslgr3r7iLHeS549R+hbK13JCi5ZCHIKZd8ON9PgLg==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Created a draft invoice (#2/2026) for Acme Evaluation with line item \"Quarterly Retainer\", quantity 1, price $400, total $400.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 2505,
+            "total_input_tokens": 2365,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2365
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 43,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 97,
+            "raw_prompt_token": 2463
+          }
+        }
+      ],
+      "final_text": "Final answer: Created a draft invoice (#2/2026) for Acme Evaluation with line item \"Quarterly Retainer\", quantity 1, price $400, total $400."
+    },
+    {
+      "run_id": "id-7_wm-stagehand-v4-gemini_ec58230d-b708-4710-983a-15d80d7871e0",
+      "task_id": "id-7",
+      "arm": "wm-stagehand-v4-gemini",
+      "method": "wm-stagehand-v4-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "stagehand@4.0.0+native-webmcp+gemini-rest",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "42.167",
+      "reset_s": "35.253",
+      "setup_s": "0.675",
+      "agent_s": "6.238",
+      "ms": 42167,
+      "model_turns": 3,
+      "actions_or_tool_calls": 7,
+      "input_tokens": 4284,
+      "output_tokens": 422,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 4706,
+      "est_cost_usd": 0.0047955,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:14:54.005Z",
+      "transcript": [
+        {
+          "t": 1143,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "sign_in"
+          ]
+        },
+        {
+          "t": 2596,
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et0CCtoCARFNMg9oqrh5PXpwpYdTSpTV60NsdSS6V/PFsXpyurb2U54LSAqkUjSISS+g4iMLF42JyWrgQiFw8kpjfCLNA8naiUiF2O+wyqJVWMZoo8znxoZwzSAsxO4lZ7AQKgUG7qs6Z06/biB2HJeMUntlqHkYim2R/BZgTo3nQuK6afo89KXPSma9E3usJI0BS7f3cLOu9s7YPM4ESEPLMSR3JTseyTVoRRN9qQ/MDgsm+3Y7Napz49j1aOAawjiG3ef7F6Ztem/nGw25+h6fYlgzJpRiHLL3FD3PLJ3RFRohXgPTDSYpXUSD5GHD+HGuOk3oZnfQHmgkSdv9gGUzkJveW868y3sAxj2GpHs/eR9QfhjjL/uPK9gJEorUVqFl2vNiqVvvp/gOSs6FHLlaV2XlEEgkcykzriZb1zfDlUhaEhkU1wWONDvVPMSGbAkGSbBA2Bfu0+VAo+MjZQ==",
+              "type": "thought"
+            },
+            {
+              "id": "call_630964",
+              "type": "function_call",
+              "name": "sign_in",
+              "arguments": {
+                "password": "admin123",
+                "email": "admin@admin.com"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 601,
+            "total_input_tokens": 495,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 495
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 77,
+            "raw_prompt_token": 542
+          }
+        },
+        {
+          "t": 2713,
+          "turn": 1,
+          "tool": "sign_in",
+          "input": {
+            "password": "admin123",
+            "email": "admin@admin.com"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 3131,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "get_financial_summary",
+            "list_invoices",
+            "record_payment"
+          ]
+        },
+        {
+          "t": 4929,
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Er0DCroDARFNMg+hXCi38vdPeEpJVJMMgwp9b8Vgee9PXvupihdXLCzNNfB8WzeK89InANluPL0JqI7QfdS3D6voPk48dTLmTdC1zCCZz3YchhMgH91ScygPQonkZ/fg+SbL99ycVWx8PhGHGlzLRxYgzNUcpb8gu16z54Ybc12s2+nizjmgio5fFNAYSojA0hoK+a62afqigJPfj0MRPZ1x5mc32nGDqihcosHPSMw9BdcDimmL8XCYTJKZ3+o8SY5fh1I7cVYyyi1Zf2KgToYnlyvSb8XVrBV+RGZy9q4PJ7SNgYdVq9OlBSxSKWA2Fa2vjEnD1huXeohKAIYo5ZPB27T1PUH8//BTz46+bOTEs2hApubPyxOjR3AHoVPDIPyhjM6Z5btM4v1Ahym+TBUJaVMcq54dceU4zvXbjanKVzcm/IkNFHRjkPDi8BVLErAT31zj0aFCgcw7WqLg8AX9/1ekjY51brfzzwuNyLYJmjIq/XN6KioLYt+F2vUM9wRSiIK9RUgy0m0epHWkaksLyvmH0QiPQQwN+U2gf/IXtECYgtkdkRQslWCdLMN7cFrIAqkAR2GrcqdHSkpl8w==",
+              "type": "thought"
+            },
+            {
+              "id": "call_1007855",
+              "type": "function_call",
+              "name": "record_payment",
+              "arguments": {
+                "ref": "EVAL-100",
+                "invoice": "1/2026",
+                "amount": 100
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1801,
+            "total_input_tokens": 1635,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1635
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 38,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 128,
+            "raw_prompt_token": 1707
+          }
+        },
+        {
+          "t": 4987,
+          "turn": 2,
+          "tool": "record_payment",
+          "input": {
+            "ref": "EVAL-100",
+            "invoice": "1/2026",
+            "amount": 100
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"payment\": {\n    \"id\": \"6a86550b4ee732097dab43ac\",\n    \"number\": 1,\n    \"amount\": 100,\n    \"ref\": \"EVAL-100\"\n  },\n  \"invoice\": {\n    \"id\": \"6a8651ea2f9829f6feb728f9\",\n    \"number\": 1,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-16T09:00:00.000Z\",\n    \"due_date\": \"2026-09-15T09:00:00.000Z\",\n    \"total\": 250,\n    \"paid\": 100,\n    \"balance\": 150,\n    \"status\": \"draft\",\n    \"payment_status\": \"partially\",\n    \"items\": [\n      {\n        \"name\": \"WebMCP Evaluation Service\",\n        \"quantity\": 2,\n        \"price\": 125,\n        \"total\": 250\n      }\n    ]\n  },\n  \"ui\": \"The updated invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 6874,
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EoMDCoADARFNMg9ANdsNqNkpsoXUI9B0zqUbFazQ7RCMdf5ZGSqgpSwtCEUQyDqkOJyYCbY7VC8Sie3WeRdO0MoTMg4fNtVz2l1C7lKYW0wU/g/rrr2RlzDti9/Vqk6zhfArfgmCq4DCgIpOUxTPSZtEL3EiD4zHsI/5v6Duky0TiAA+DWTtu2KEh7jU0xbv1vjSb85IsKDJCLfuNvSa6IOZFkGPD549RVWID3hRH1HxGm1v/4PXmdBgk4jp4wZXxhWPG/dfiOkyZJkTAE9n/MVcdjZEf6aNlC71EpOiVshN3FKKDdLL4gwz9dyOc61NiJXfANiYeoJDdHJdN7anWYtcNgXHPMLZgUVjX2HBVkt2iBofqPBvwn9PPKVFJgjfUaRwotJFgIjO8/rjFQF2b0n5X4Olr9at+BkbB6n2FNz81HdS9zp3tM8if5q1oIQaqUkYfe/3dS8n/l4S5zxFskMjsllKUK/ixs6P8bu3pPeH+Qi6fjb1usETHew53BGufaiiuoXd",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice (Acme Evaluation) now has 100 paid and a remaining balance of 150 (payment status: partially paid).",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 2304,
+            "total_input_tokens": 2154,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2154
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 58,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 92,
+            "raw_prompt_token": 2239
+          }
+        }
+      ],
+      "final_text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice (Acme Evaluation) now has 100 paid and a remaining balance of 150 (payment status: partially paid)."
+    },
+    {
+      "run_id": "id-7_wm-stagehand-v4-gemini_df533f67-b55c-4daf-9017-b54449ffec44",
+      "task_id": "id-7",
+      "arm": "wm-stagehand-v4-gemini",
+      "method": "wm-stagehand-v4-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "stagehand@4.0.0+native-webmcp+gemini-rest",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "41.799",
+      "reset_s": "35.329",
+      "setup_s": "0.673",
+      "agent_s": "5.797",
+      "ms": 41799,
+      "model_turns": 3,
+      "actions_or_tool_calls": 7,
+      "input_tokens": 4264,
+      "output_tokens": 378,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 4642,
+      "est_cost_usd": 0.0046155,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:15:36.124Z",
+      "transcript": [
+        {
+          "t": 1147,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "sign_in"
+          ]
+        },
+        {
+          "t": 2640,
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "Et0CCtoCARFNMg+BNpfX/Etd3NwK2bhbYrhMIUckjT+bMpxkNw2k2otjDtP+ya5OpJAQl7s+3BY4fPfKXn6AXq3dDm/icgoLxIKprCfuR6w/LdqJ2d7pm7Vieh5vdYGIXUMOTb4VZ8ECUDEU0SQLyVSFQcrFw7aTGQD4rMxkJMQenV7aAeYb1AQh5G+QH4Oh5WR4gFVfbMTUwVV1CXKquhELu8ebE/ZljXy2vXbhY6AAjUrPrqObMOtGUTlbJa05stO6HESMLu5sbUWNn37CbKKmnx8MIxGE/0D2psAdW/8GEnlWQPcT/NDhNl0GlDe7ls3RNNSKscQk6yqwLPPomLSDrcwc4JEd6JT4jBpJmf7v7st1e51zaXRCt+iWcGlglB/hTJCv9V/Ew0FTBOnk0IT9niplpWpya6BovgpQr2L67QaR91mxW2vAsHuCoqJDFMres83tZbsMkwssew/Eyw==",
+              "type": "thought"
+            },
+            {
+              "id": "call_720563",
+              "type": "function_call",
+              "name": "sign_in",
+              "arguments": {
+                "email": "admin@admin.com",
+                "password": "admin123"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 600,
+            "total_input_tokens": 495,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 495
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 76,
+            "raw_prompt_token": 542
+          }
+        },
+        {
+          "t": 2762,
+          "turn": 1,
+          "tool": "sign_in",
+          "input": {
+            "email": "admin@admin.com",
+            "password": "admin123"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 3178,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "get_financial_summary",
+            "list_invoices",
+            "record_payment"
+          ]
+        },
+        {
+          "t": 4623,
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqkDCqYDARFNMg/MskJ8IAIE9qIKh7WRWz0fxynMuWY00GVOGfWnTRJNrui+wf0y0A67IZQTS9FD3po3GqWWZc90H1LJFzR9mBghYpCGU1o8raUiVuxZtd5P6fOcXdixbg8CXMbF6TiKx0hvuA/DWLexkxeN6akirOxjVStG8mV+m+Vmh+vruqx8hkLTzEO2iQjDGb6O6EwgzNQq50Jegwnlc2k28Cy24qJ1cSU5CnsXRbiV/RkzJSg/BJssh5/JVngTi9HUH2xIaq7Hz5oz3fdipukDkxCkElKsQ+s3bC4farzx3kwid8QiQ5Afzm0ennh40Vez4x7rDkhvUpjH8W1sTG4RWpMojzss0HQ/mjYWME+FR5EZhvp23rd29zxWo9YLcsyehhVDeHtCWIUfTchhtucpaNLmWnljeKIg76f3cTRCYCtic0BV5IyVDfGkpeX0mbAC4IinfTx7Vaq1NPkBTIKJTRvH+axK+eoZ+PrFllz2NTTN2J+yAShcF/lHGME6aH3LHk2RycMNxyb9TIqYS5qr6iiRW1ZIMzeMUKN+Tpgjipi2cNyqDzo=",
+              "type": "thought"
+            },
+            {
+              "id": "call_739209",
+              "type": "function_call",
+              "name": "record_payment",
+              "arguments": {
+                "amount": 100,
+                "invoice": "1/2026",
+                "ref": "EVAL-100"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1779,
+            "total_input_tokens": 1634,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1634
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 38,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 107,
+            "raw_prompt_token": 1706
+          }
+        },
+        {
+          "t": 4684,
+          "turn": 2,
+          "tool": "record_payment",
+          "input": {
+            "amount": 100,
+            "invoice": "1/2026",
+            "ref": "EVAL-100"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"payment\": {\n    \"id\": \"6a865536e6c6713216ae0428\",\n    \"number\": 1,\n    \"amount\": 100,\n    \"ref\": \"EVAL-100\"\n  },\n  \"invoice\": {\n    \"id\": \"6a8651ea2f9829f6feb728f9\",\n    \"number\": 1,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-16T09:00:00.000Z\",\n    \"due_date\": \"2026-09-15T09:00:00.000Z\",\n    \"total\": 250,\n    \"paid\": 100,\n    \"balance\": 150,\n    \"status\": \"draft\",\n    \"payment_status\": \"partially\",\n    \"items\": [\n      {\n        \"name\": \"WebMCP Evaluation Service\",\n        \"quantity\": 2,\n        \"price\": 125,\n        \"total\": 250\n      }\n    ]\n  },\n  \"ui\": \"The updated invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 6422,
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EtACCs0CARFNMg8kCvIf9j6ZHBPihWQVnBLbZJARYW6s7L1sc7/l8KBuY+p5M6C7tTHt+KCAQ46G8afZNZLSR6Sq7e/+GoZxtiehjao3DBK7CfK59yRI/J/SeTWNJ6oP0TVmis/x3srCktJg8Yhg3bgW59iZegE9m+VAtqHZJx1CZ/Hj3/42+OfhkEgeRnVeot+zwaWy1g+E7nt4GhPWZrdw2c53LczLXOWE8SKzOTVM+MynKEeduw1GAnk8lyw2kImBuAlfXa496CzdNSgkKapncE3FkrDI2ibMg6mnXAvLLwlbYK2byzOgbI4YbORm/1Z4BqjwZV8hDX3GVMvp/k2d6aE7UjCnCXZM+PB3Hj8kzIHJFpPUpMO7x0bahFm2IttfYCrgCcAM6arysBBpb7uhyq9BnlzPUgz9nHdsCQdaVZnelVodCxgsitFCCd0kN5a/",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Logged in successfully as admin@admin.com and recorded a payment of $100 (reference: EVAL-100) against invoice 1/2026. The remaining balance on invoice 1/2026 is $150 and its payment status is now partially paid.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 2263,
+            "total_input_tokens": 2135,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2135
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 67,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 61,
+            "raw_prompt_token": 2220
+          }
+        }
+      ],
+      "final_text": "Final answer: Logged in successfully as admin@admin.com and recorded a payment of $100 (reference: EVAL-100) against invoice 1/2026. The remaining balance on invoice 1/2026 is $150 and its payment status is now partially paid."
+    },
+    {
+      "run_id": "id-7_wm-stagehand-v4-gemini_2a2fad83-b706-4329-843a-b4a2fd403e8c",
+      "task_id": "id-7",
+      "arm": "wm-stagehand-v4-gemini",
+      "method": "wm-stagehand-v4-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "stagehand@4.0.0+native-webmcp+gemini-rest",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "43.104",
+      "reset_s": "35.328",
+      "setup_s": "0.675",
+      "agent_s": "7.101",
+      "ms": 43104,
+      "model_turns": 3,
+      "actions_or_tool_calls": 7,
+      "input_tokens": 4403,
+      "output_tokens": 586,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 4989,
+      "est_cost_usd": 0.00549975,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:16:19.571Z",
+      "transcript": [
+        {
+          "t": 1156,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "sign_in"
+          ]
+        },
+        {
+          "t": 2646,
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EqkDCqYDARFNMg/QDTTtDl3wdBW4pBfj763gZsTL5nPZtFkCu6yHHUrKn56VpZH0UB2Z2LwI4QSqGpxJ9wnQUEQj05WXfk2vQ8EJui9mi0OCfHmiWrLglEjzWTFDuQgUuoPoUpG7Mp1bPTChWkdn6DLjcG848bNwHFj1laOQHff8rTiPC3IK9xPC2oMFIKsOMghmqMa5FyqqdI578skkIXOniH3LYcubwdj7rTH494/P7Vd3ehtEeOoKy2/etEpJDwPnAH7jUhR+YyAo8lhbhYXoW7sPpvg5gK1JLcfgKk97HN7CAl5mrIvGP+BxVc1JWjNFGOnmB0BgsCtc6MDMbvT6DzE0FbGefbDB3sRmiul2HleI9J7/y75zaDL7jUIHs8el82FG5B0Gb43Ncj40A0wtTfolO+A11gximTRjnxt9j+qmo721cvReFv4BRE6qNGsQd5nyJ+2Gop2h/ZAOyOzUdvklUubk5Ga/o2sqK4vxxifx9Dr1d10t1XnnNsNTKgiuN/gAiz73207aBj3E6XBN85MGXB6UCmv3/qgpEFgHkvuYaVHPjsnPcQo=",
+              "type": "thought"
+            },
+            {
+              "id": "call_578541",
+              "type": "function_call",
+              "name": "sign_in",
+              "arguments": {
+                "password": "admin123",
+                "email": "admin@admin.com"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 637,
+            "total_input_tokens": 495,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 495
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 29,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 113,
+            "raw_prompt_token": 542
+          }
+        },
+        {
+          "t": 2766,
+          "turn": 1,
+          "tool": "sign_in",
+          "input": {
+            "password": "admin123",
+            "email": "admin@admin.com"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 3186,
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "get_financial_summary",
+            "list_invoices",
+            "record_payment"
+          ]
+        },
+        {
+          "t": 4930,
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EscECsQEARFNMg8jW07kR9kU4zT/kz3zN4okdyGZSn98WiV6dFdAUPBqKnokYV13XgfvhS/j5/5iTJzv6w1AOX4z/9eFj1yTvLJ2yvzZkLZ/kMNtppzc/bEWYaXrWFtOu6bv6jFXdKnx+xfiVEuh0SQ3Drc2ri73UIkZ60ha9YQHawfxWaTC8oMYAYyQ7MdlJJoTqWxGXNWVtLsb2W01fbLYmtaypDGIpiduKlWQJNc97uTV7c1rpRmW4gHZ3U/sYe4E9ww4zYmdWemXfnhtzdaTYGAQMUdcYi4VenDJ4Po6CfTCtcJvlx6kezUoPOHKzEw27vgs7iSiKeHXG9OZrDj5+MEcB9s8at9sdwFh/Sbgtc51/Z9dfg0XkpRVvh8xUJzECoYUCalKrNO/vgamATqtEoXrL6B2JJLxeCHo7iEHUwOeKUBCVlh2EQT11OlNT4dKTpyOTgVbuGW1ix5tVhPQI0wdC5G912B7fi/Owbua0++ykSCn5gi4wE66t3UXuN4EsW5ly0URr5PoPOXKJ25VmZgLtVsuttBNpg9AhI5om/aNQU33YnQ2Nh0/weqatRLR7qIX2o5T1mpv83wJZIixq3nrT0OCKYBNvgP+mlRvDiw34dVOVFFSx66e3DZ7SLJ9myFxIpKsZcUZZso+pZes/p6yMSpiwU0IQP6ihFYRFCSEiyc1G32sjTvZY53Haybs9DfOYf/Y3zTrj9QY1AiQdz5Rl4BPVvmcGHzIuNDfdoDFkPANih6DYVd+0RSfRfS4oTscbHQ2/w==",
+              "type": "thought"
+            },
+            {
+              "id": "call_390170",
+              "type": "function_call",
+              "name": "record_payment",
+              "arguments": {
+                "ref": "EVAL-100",
+                "amount": 100,
+                "invoice": "1/2026"
+              }
+            }
+          ],
+          "usage": {
+            "total_tokens": 1885,
+            "total_input_tokens": 1671,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 1671
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 38,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 176,
+            "raw_prompt_token": 1743
+          }
+        },
+        {
+          "t": 4994,
+          "turn": 2,
+          "tool": "record_payment",
+          "input": {
+            "ref": "EVAL-100",
+            "amount": 100,
+            "invoice": "1/2026"
+          },
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"payment\": {\n    \"id\": \"6a86556089abad8857cdee2a\",\n    \"number\": 1,\n    \"amount\": 100,\n    \"ref\": \"EVAL-100\"\n  },\n  \"invoice\": {\n    \"id\": \"6a8651ea2f9829f6feb728f9\",\n    \"number\": 1,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-16T09:00:00.000Z\",\n    \"due_date\": \"2026-09-15T09:00:00.000Z\",\n    \"total\": 250,\n    \"paid\": 100,\n    \"balance\": 150,\n    \"status\": \"draft\",\n    \"payment_status\": \"partially\",\n    \"items\": [\n      {\n        \"name\": \"WebMCP Evaluation Service\",\n        \"quantity\": 2,\n        \"price\": 125,\n        \"total\": 250\n      }\n    ]\n  },\n  \"ui\": \"The updated invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "t": 7728,
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EsIECr8EARFNMg8vD+t0m42y+7qR20kO0nyNeeLscJ6IK3whAXy4YOvgrkCVD1+deyEroGxaTMU5CL/7+NSkm3lvyYNR11TEKsEtnRTXLASwJN3JCk1LvWEauVISofyBj0hm0WSKnemtUsqHwnvKrru0DWtccpbNMcy6E0/gMZrnfUFwdWOH5r40oWATAsiITgPgglxmVVcxK8zswCgB2pGNuKDkAsgfisBoeYkiGbWIx9xFM+j8xKNMyOFJVNa4TSpHgp13+uedEtr5W4yklutZUH9kJSB8yKEQxty2CFCmlvW7Y9kiPLNEhEn4Y42r3mUrsb7gNO6uCovmvZOMTWCvS9jLatYNmYIn7S9btIzljzwWwgRcE7+cl4tIHJJNcJZhhYTwjwabO0dGiJWY/ZvRmYG25vBTvnBsi9z0UIAgnT8RRDMpV12x+c6OKPvuKSUmcG6w78xftOjCo7KPdz+u0+1JLFhYh5VSwO9jUyxlbb15apaE+946b5oAk+bRKho0OE/fXPrq7w69XxrcbrDzrTjStJyrVW4ZIKLkc6zUbPONLmlPzwL8G/OV4ljRuHyFW6mOAQ0xOTZRrDFQTrZH5J53g3uJW8BXKzRAV2aS0JluA51vSVe5+7TzVMcDKmJo+nXfXZ5e7HNQdDtyvagoa/Np05gU8lrvPYkAVVjfAYBJSLkZSYEVLusKLa6/fNTplK2VqQS2usZvm7Ylru/wGhJx7LrwjtBdEm7CiEuvg6rGEwpUlVNePjVxQ/vrSEQwcnw=",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Logged in successfully as admin@admin.com and recorded a payment of 100 against invoice 1/2026 with reference EVAL-100 (Payment ID: 6a86556089abad8857cdee2a). The updated outstanding balance for invoice 1/2026 is 150.",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 2467,
+            "total_input_tokens": 2237,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 2237
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 82,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 148,
+            "raw_prompt_token": 2322
+          }
+        }
+      ],
+      "final_text": "Final answer: Logged in successfully as admin@admin.com and recorded a payment of 100 against invoice 1/2026 with reference EVAL-100 (Payment ID: 6a86556089abad8857cdee2a). The updated outstanding balance for invoice 1/2026 is 150."
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "idurar-erp-crm",
+      "taskId": "id-6",
+      "tier": "act-long",
+      "method": "wm-stagehand-v4-gemini",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    },
+    {
+      "site": "idurar-erp-crm",
+      "taskId": "id-7",
+      "tier": "act-long",
+      "method": "wm-stagehand-v4-gemini",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}

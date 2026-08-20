@@ -100,6 +100,7 @@ export function writeReport({ rows, verdicts, options, capsules = [], outputRoot
     all.set(key, (all.get(key) ?? 0) + 1); return all;
   }, new Map());
   if (excluded.size) report += `\n## Infrastructure exclusions\n\n${[...excluded].map(([key, count]) => `- ${count} attempts excluded: ${key}`).join("\n")}\n`;
+  if (options.aborted) report = `> ⛔ **ABORTED FLIGHT — INCOMPLETE.** ${options.aborted}. This artifact measures an outage, not the model; it must not enter the canonical set.\n\n` + report;
   if (verdicts.some(({ attempts }) => attempts === 0)) report = `> ⚠️ **TRUNCATED RUN.** One or more task×method verdicts had zero valid attempts.\n\n${report}`;
   fs.writeFileSync(path.join(outputDir, "report.md"), report);
   // Per-run explorer: the same Nekuda template as results/explorer.html, scoped

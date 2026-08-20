@@ -1,78 +1,71 @@
 #!/usr/bin/env node
-// Renders the reference and paired-model charts (infrastructure rows excluded)
+// Renders the leaderboard and paired-model charts (infrastructure rows excluded)
 // as self-contained SVGs. Same semantics as the explorer: median over valid
-// attempts, tokens = total processed (uncached + cached + output).
-// Usage: node scripts/readme-charts.mjs [resultsDir]  (default: newest *-reference)
+// attempts, tokens = total processed (uncached + cached + cache writes + output).
+// Usage: node scripts/readme-charts.mjs   (reads results/canonical)
 import fs from "node:fs";
 import path from "node:path";
 import { isInfraRow } from "../harness/lib.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const RES = path.join(ROOT, "results");
-const dir = process.argv[2] ?? fs.readdirSync(RES).filter((d) => d.endsWith("-reference")).sort().at(-1);
 const loadRows = (runDir) => JSON.parse(fs.readFileSync(path.join(RES, runDir, "run.json"), "utf8")).rows.filter((r) => !isInfraRow(r));
-const rows = loadRows(dir);
 
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const isWm = (a) => a.webmcp ?? a.m.startsWith("wm");
-const methods = [...new Set(rows.map((r) => r.arm))];
 const aggregate = (rs, m, webmcp = m.startsWith("wm")) => ({
   m,
   webmcp,
   success: 100 * rs.filter((r) => r.pass === true || r.pass === "true").length / rs.length,
   cost: median(rs.map((r) => +r.est_cost_usd || 0)),
-  tokens: median(rs.map((r) => (+r.input_tokens || 0) + (+r.cached_tokens || 0) + (+r.output_tokens || 0))),
-  agent: median(rs.map((r) => +r.agent_s || +r.wall_clock_s || 0)),
+  tokens: median(rs.map((r) => (+r.input_tokens || 0) + (+r.cached_tokens || 0) + (+r.cache_write_tokens || 0) + (+r.output_tokens || 0))),
+  // agent_s only. The `|| wall_clock_s` fallback silently swapped in wall-clock
+  // (which includes capsule boot and reset) for the handful of rows reporting
+  // agent_s = 0, moving SOL computer use from 27.3s to 29.3s and putting this
+  // chart in disagreement with the README table printed beside it.
+  agent: median(rs.map((r) => +r.agent_s || 0)),
 });
-const referenceAgg = methods.map((m) => {
-  const rs = rows.filter((r) => r.arm === m);
-  return aggregate(rs, m);
-});
+// The consolidated leaderboard reads results/canonical — the same artifact the
+// site and the paper use. It previously stitched named run dirs together and
+// re-applied the SOL 300s timeout replacements by hand, which silently went
+// stale the moment canonical was rebuilt (and still listed retired models).
+const CANON = "canonical";
+const canonRows = loadRows(CANON);
+const MODEL_LABEL = {
+  "claude-sonnet-5": "Sonnet 5", "claude-opus-5": "Opus 5",
+  "gpt-5.6-luna": "Luna", "gpt-5.6-sol": "SOL", "gemini-3.6-flash": "Gemini 3.6",
+};
+const ARM_LABEL = {
+  "wm-claude": "WebMCP", "wm-gpt": "WebMCP", "wm-gemini": "WebMCP",
+  "wm-stagehand-v4": "WebMCP/Stagehand v4", "wm-stagehand-v4-gemini": "WebMCP/Stagehand v4",
+  "cu-claude": "CU", "cu-openai": "CU", "cu-gemini": "CU",
+  "a11y-stagehand": "accessibility tree", "dom-browseruse": "DOM + vision",
+};
+const KIND = (arm) => arm.startsWith("wm") ? "webmcp"
+  : arm.startsWith("cu") ? "cu" : "structured";
 
-const canonicalSolRows = (() => {
-  const replacements = new Map();
-  for (const row of loadRows("2026-08-17-sol-600-timeouts")) {
-    const key = `${row.site}\0${row.task_id}`;
-    if (!replacements.has(key)) replacements.set(key, []);
-    replacements.get(key).push(row);
-  }
-  let replaced = 0;
-  const canonical = loadRows("2026-08-17-sol-full").map((row) => {
-    if (!String(row.failure_category).includes("attempt timeout: 300s agent budget")) return row;
-    const replacement = replacements.get(`${row.site}\0${row.task_id}`)?.shift();
-    if (!replacement) throw new Error(`missing SOL timeout replacement for ${row.site}/${row.task_id}`);
-    replaced += 1;
-    return replacement;
-  });
-  if (replaced !== 26 || [...replacements.values()].some((queued) => queued.length)) {
-    throw new Error(`expected exactly 26 SOL timeout replacements, applied ${replaced}`);
-  }
-  return canonical;
-})();
-
-const expansionRuns = [
-  ["GPT-5.5", "2026-07-27-reference", "cu-openai", "wm-gpt"],
-  ["Luna", "2026-08-16-luna-full", "cu-openai", "wm-gpt"],
-  ["SOL", "2026-08-17-sol-full", "cu-openai", "wm-gpt"],
-  ["Gemini", "2026-08-17-gemini-full", "cu-gemini", "wm-gemini"],
-  ["Opus", "2026-08-17-opus5-full", "cu-claude", "wm-claude"],
-];
-const expansionAgg = expansionRuns.flatMap(([model, runDir, cu, wm]) => {
-  const runRows = model === "SOL" ? canonicalSolRows : loadRows(runDir);
+// Model-matched pairs: each model's NATIVE WebMCP run against its own
+// computer-use run, so the comparison never crosses models.
+const NATIVE_WM = { "claude-sonnet-5": "wm-claude", "claude-opus-5": "wm-claude",
+  "gpt-5.6-luna": "wm-gpt", "gpt-5.6-sol": "wm-gpt", "gemini-3.6-flash": "wm-gemini" };
+const NATIVE_CU = { "claude-sonnet-5": "cu-claude", "claude-opus-5": "cu-claude",
+  "gpt-5.6-luna": "cu-openai", "gpt-5.6-sol": "cu-openai", "gemini-3.6-flash": "cu-gemini" };
+const expansionAgg = Object.keys(NATIVE_WM).flatMap((model) => {
+  const label = MODEL_LABEL[model] ?? model;
+  const pick = (arm) => canonRows.filter((r) => r.arm === arm && r.model === model);
   return [
-    aggregate(runRows.filter((r) => r.arm === cu), `${model} · CU`, false),
-    aggregate(runRows.filter((r) => r.arm === wm), `${model} · WebMCP`, true),
+    aggregate(pick(NATIVE_CU[model]), `${label} \u00b7 CU`, false),
+    aggregate(pick(NATIVE_WM[model]), `${label} \u00b7 WebMCP`, true),
   ];
 });
 
-const consolidatedAgg = [
-  ...expansionAgg.map((item) => ({ ...item, kind: item.webmcp ? "webmcp" : "cu" })),
-  { ...aggregate(rows.filter((r) => r.arm === "wm-claude"), "Sonnet 4.6 · WebMCP", true), kind: "webmcp" },
-  { ...aggregate(loadRows("2026-08-13-stagehand-v4-native-full"), "Sonnet 4.6 · WebMCP/Stagehand v4", true), kind: "webmcp" },
-  { ...aggregate(rows.filter((r) => r.arm === "cu-claude"), "Sonnet 4.6 · CU", false), kind: "cu" },
-  { ...aggregate(rows.filter((r) => r.arm === "dom-browseruse"), "Sonnet 4.6 · DOM + vision", false), kind: "structured" },
-  { ...aggregate(rows.filter((r) => r.arm === "a11y-stagehand"), "Sonnet 4.6 · accessibility tree", false), kind: "structured" },
-];
+const canonKeys = [...new Set(canonRows.map((r) => `${r.arm}\u0000${r.model}`))];
+const consolidatedAgg = canonKeys.map((key) => {
+  const [arm, model] = key.split("\u0000");
+  const rs = canonRows.filter((r) => r.arm === arm && r.model === model);
+  const label = `${MODEL_LABEL[model] ?? model} \u00b7 ${ARM_LABEL[arm] ?? arm}`;
+  return { ...aggregate(rs, label, arm.startsWith("wm")), kind: KIND(arm) };
+});
 
 const normalize = (values, value, log = false) => {
   const projected = values.map((v) => log ? Math.log(v) : v);
@@ -88,7 +81,7 @@ const balancedAgg = consolidatedAgg.map((item) => ({
     + 0.2 * (1 - normalize(consolidatedAgg.map((a) => a.agent), item.agent, true))
   ),
 })).sort((a, b) => b.score - a.score);
-if (balancedAgg.length !== 15) throw new Error(`expected 15 consolidated model/interface cells, got ${balancedAgg.length}`);
+if (balancedAgg.length !== canonKeys.length) throw new Error(`expected ${canonKeys.length} consolidated cells, got ${balancedAgg.length}`);
 
 // --- combined 2x2 panel, one file per theme -------------------------------
 // Four stacked full-width charts with a hardcoded white background read as
@@ -155,8 +148,19 @@ ${legend}
 
 function leaderboard(themeName) {
   const t = THEMES[themeName];
-  const W = 1040, PAD = 18, TOP = 98, ROW = 38, H = TOP + balancedAgg.length * ROW + 42;
-  const BAR_X = 260, BAR_W = 270, SCORE_X = 580, PASS_X = 700, COST_X = 835, TIME_X = 1005;
+  const W = 1120, PAD = 18, TOP = 98, ROW = 38, H = TOP + balancedAgg.length * ROW + 42;
+  const BAR_X = 330, BAR_W = 250, SCORE_X = 630, PASS_X = 762, COST_X = 922, TIME_X = W - PAD;
+  // Configuration labels are right-open text in a fixed column; a long one
+  // (e.g. "Gemini 3.6 · WebMCP/Stagehand v4") silently ran under the score bar
+  // in the previous chart. Fail the build instead of shipping overlapping text.
+  const LABEL_X = PAD + 24, AVG_CH = 7.05; // 13px system-ui at weight 600
+  const overflow = balancedAgg
+    .map((a) => ({ m: a.m, w: a.m.length * AVG_CH }))
+    .filter((a) => LABEL_X + a.w > BAR_X - 10);
+  if (overflow.length) {
+    throw new Error(`leaderboard labels overflow the ${BAR_X - 10 - LABEL_X}px column: `
+      + overflow.map((a) => `${a.m} (~${Math.round(a.w)}px)`).join(", "));
+  }
   const fill = (a) => a.kind === "webmcp" ? t.wm : a.kind === "structured" ? t.structured : t.dim;
   const rows = balancedAgg.map((a, i) => {
     const y = TOP + i * ROW;
@@ -194,14 +198,9 @@ const out = path.join(ROOT, "assets", "charts");
 fs.mkdirSync(out, { recursive: true });
 for (const theme of Object.keys(THEMES)) {
   const suffix = theme === "dark" ? "-dark" : "";
-  fs.writeFileSync(path.join(out, `summary${suffix}.svg`), panel(theme, referenceAgg, {
-    title: "WindTunnel — WebMCP vs. browser-agent interfaces",
-    subtitle: `49 tasks × 8 sites · 7 methods × 3 attempts · reference run ${dir.slice(0, 10)}`,
-    otherLabel: "browser interfaces",
-  }));
   fs.writeFileSync(path.join(out, `model-comparison${suffix}.svg`), panel(theme, expansionAgg, {
     title: "WindTunnel — model expansion: WebMCP vs. computer use",
-    subtitle: "49 tasks × 8 sites × 3 attempts · 600s per-attempt agent cap",
+    subtitle: `49 tasks × 8 sites × 3 attempts · 600s per-attempt agent cap · ${canonRows.length.toLocaleString("en-US")} attempts`,
     otherLabel: "computer use",
     labelWidth: 142,
     quadrantWidth: 500,
@@ -209,4 +208,4 @@ for (const theme of Object.keys(THEMES)) {
   }));
   fs.writeFileSync(path.join(out, `balanced-leaderboard${suffix}.svg`), leaderboard(theme));
 }
-console.log(`wrote the reference, model-comparison, and leaderboard panels (light + dark) to assets/charts/`);
+console.log(`wrote the model-comparison and leaderboard panels (light + dark) from results/${CANON}`);

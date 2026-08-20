@@ -1,0 +1,1430 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "idurar-erp-crm",
+    "arms": [
+      "wm-gpt"
+    ],
+    "seed": 1,
+    "budget": 8,
+    "perturbed": false,
+    "models": {
+      "wm-gpt": "gpt-5.6-luna"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "id-6",
+      "id-7"
+    ],
+    "n": 3,
+    "label": "rerun-wm-gpt-gpt-56-luna-idurar-erp-crm",
+    "fake": false,
+    "model": "gpt-5.6-luna",
+    "armModels": {
+      "wm-gpt": "gpt-5.6-luna"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "idurar-erp-crm",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "id-6_wm-gpt_a2f92fa9-f298-4dcb-9020-2d06695f66b2",
+      "task_id": "id-6",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "46.932",
+      "reset_s": "35.449",
+      "setup_s": "0.193",
+      "agent_s": "11.290",
+      "ms": 46932,
+      "model_turns": 4,
+      "actions_or_tool_calls": 9,
+      "input_tokens": 2283,
+      "output_tokens": 193,
+      "cached_tokens": 2801,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 2476,
+      "est_cost_usd": 0.0037210999999999998,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:38:40.052Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "sign_in",
+            "create_invoice"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_00641d410d1895f1006a865a976cd087d1a48483d45f887b3f",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlqYoIz2A1fYIWM368NkIED-AflXhvOPgPHZpEqpaRt-4-Qhc1qhcGJpFytmfCnHgCmB5JbzwNYwxV3OkLCh4P2vn2SQEZEz8b_FVzex9lO8x7ezlwFPR6VOoY_b3c2YOVEPvD0CaD9wURNk-khqAZBNqMsyPYofsQwqjAIPPkZJxK0_A7Ix6NvQAFPUqX_ek0F42hh3E4XrIaEPkROl3FKSRNQ5Btz_-yC9jv8g7qFDSplaGLHRR0oDW53u0gSUX5lK79w87QHdje664NiICpcrwkdOPD9ORuw2nzVa5OZZCbbcCMWRH1oHTk14ZpgqsJBdjXUfXmN68y9DMTQkKmP1tNVWe9j8E9mCo3r2jnn5bZ6R2fknhVKVr29WjNk91BN-ycPl4JiS8f211oI8bgOlQcAMT5i4Jp0ONp_LsX3ZvLXpNBlzyaF6rhCMbvvQd3Wb0Ibs3mzlecKozMafB9_phatn2Mh_U1pH8iYn5iV8qIwMgb4dbxQ6uiv6Q0Fgw6YUPRzCe5DPRoOUSZ8svVzLKMjmug6HT9hxdLVidPU98c4ignkCpv-EHWd9qXEoOmfbbnMNzS51xkJImcE0VluYR-VCEirDfM0mOpAy1PFaUa24GhAe5IIUXrqE5_z5CA1zZY8z2g9HP_FhwJcDhuRGS0oQ8EZJYFEYmhUGNWDcvz0fBsBQWVomXHjMLlOuPk-wtNCLluBV-hILt2K_7nut7PB5KYm4g6pXX6vxi1LmW44O9nNWlBAP-Ag8MO4IGDrrsvUyi33nLs7rzGvLc--0xZZnbuaf_V4k2mksTKrl40QDmUz6ztcn6K5j73OfeAvP1DH96xL4_Y8zzf4g5TefLIA-vUnlH3iluSdhA289X_vpieW1aR4Mlvs4lbjXnvMnOjCPphvWzYJv6J4V41NT2lD7pdKJ9a5hVV16ZtxBu2Kgahphp-ihDdwIg5ykFUUhPTGFSut1Ny0HZziH2tGK-BWeMP2wzzi-srA4qSy4FVP_f2ClsdPK8zbw7-phyFcVdwLf-neW5l9MBisxxQ68lF-dlV7eNKY4fcO0Eg9ARsLHyXKtUqSg-Czd4ONAgLJ9-KHhzO3IK4cT7NnCPz6Em6JKwXuFLjV_M8lRwHlTGWzLaNlasX2KuclNJPTyygnFsP_tBUnh2_sjJu8_Sd_tRwvcA_Hm7jYORLkrJBR_2GVlOq7j2eXDJYrzWXXp8aFgivyIwHlPSpYuRjNd9_a3p6AO82K9FG-N-PBFvmWGMfvMScdrKIFQHZEjHgdm0m0YgFyYi6oDgpTNgKCo8ZJpUux_vPuIw1EjGq-V0QXNr91yN8MdIdY92L_CQulgxwT3Op3qi6Hq96dhMKQxWZZWNqEnpzFy0WO8fevlAEBuHs4=",
+              "summary": []
+            },
+            {
+              "id": "fc_00641d410d1895f1006a865a97f45087d1a37d5397677f9c84",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+              "call_id": "call_lN0sWjRmeiTnaF4LoejZH2HL",
+              "name": "sign_in"
+            }
+          ],
+          "usage": {
+            "input_tokens": 503,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 62,
+            "output_tokens_details": {
+              "reasoning_tokens": 34
+            },
+            "total_tokens": 565
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "sign_in",
+          "input": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "list_invoices",
+            "record_payment",
+            "get_financial_summary"
+          ]
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_00641d410d1895f1006a865a9a36e087d1be8180b6ce8f3dd1",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlqbR_OSOkTb7TWCGmZL93YPqe0xs90fHS-hj7HSpWT1qOY8vewxL1IhxT448TtTSv-2jZESzrlDo_o5syJOxFLquawfKBOb2PXIfonrAHL1RAngQOxg1-ORyFtNklhI0U0LRWBxBZF61TCQ_2qwDYu3zYADXXDa7x6gvyKvUlRsB0B2Bh2h3QrALxMiTEwb2RhHHUzaaQKSYtxCuE9PzpLNHdo9DuGEIWlc0jfWgUG-BipI2ENu44DB5Ak02n1h8HdWSxnvCdhjqNQg3-l8Wgl3jwcM9qLjarHnB2x5E_SBakiv1pGG8PzXGGQylCVuzSkbyB7ClgMluF__M5thItbFniST3F3yUVMnVlZgTdMDiP7htNqYwnHREbU0arM8sgJ9jPg6aMX2hNdGR-8OnNypZYSU8WhNYR_PzvyFBxB4rOUEP8g1cRkhBOVauakfH9U27Yt5GDqu8NxhSlE18TljUcbuewsqMzN6vzu_kffhpx3ln9VRT564rwK3c-PXJo7BCqXsVkQLAcAaZ-daurQMQBb5J7U4xCB11qpJIrPN6UxMZTGxrV59u1Tzge8d0Qe9vQGTPWB4zh29t1gJ95DVlp4SL2ALNcLr1Utz_mTfnzwNo2Gh2Q6TTHXMK0IyYpBabsoPGmO49LrDHUkVepbk58CQeMaByYESGy_isxOfU88op1bLstgIAznNazL4oXMtOl8oXVSdXQmYAoF63hFQ__CwSK4B3Tn1Wh2hgxvzbY7M6pTrXStF3bnTEga_Yo_-qVBQKCF6JE_bwq0pljQJGZhBWq2SLcYx9jDEHH8J1PGgT6xWKngRTRfXQ3IE361-7C_CotFb0RfTlVrfG0AY8Vtq1OJPxihHVcqWKqA5FRKhgH_Evc3-8tdb0gJUJQlC1dnjaztHl87iG60Xd03gCWYYeQOd-sPjVPFaFps-245d_C7r5O5js24YNDuQLMekRYlXiCo4xbope2nPgHDphMFsp1Eqb89RyadyZr4TRdF3x2HDtkfev6cp5dU3MblxQRpyqD66mypjYX-5gyolTxBAU6HD2DLVZwY9N89HBN70yl3HlVjFsnBbmHsLuX9tquHdRrCdSzoKZhDMU7HOFNMzMPa9YeqStp9O4r8hIlLMM7Q-QAn4Wb6o-UuIJqQYt40yEfSxqvwUI3obkC3oC4zd7BPcb1edZH4gD1wkO4k1_3o0YEnobc7wtEDpb4c33CAeS4kjEy3Dcx39X8W6eYGI6VZ05QeF_boelYUEs0dDSNP8vJkXLYfwfDqauaOIaobuQRPbExPIY9Wa6IDDyA==",
+              "summary": []
+            },
+            {
+              "id": "fc_00641d410d1895f1006a865a9a94cc87d18e8446c0db41a07b",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"query\":\"Acme Evaluation\"}",
+              "call_id": "call_K6OxrOAmBtk2KWbghZTaY1d1",
+              "name": "find_clients"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1322,
+            "input_tokens_details": {
+              "cache_write_tokens": 1319,
+              "cached_tokens": 0
+            },
+            "output_tokens": 45,
+            "output_tokens_details": {
+              "reasoning_tokens": 23
+            },
+            "total_tokens": 1367
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "find_clients",
+          "input": "{\"query\":\"Acme Evaluation\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"clients\": [\n    {\n      \"id\": \"6a865a5fd5528e7d23aeada6\",\n      \"name\": \"Acme Evaluation\",\n      \"email\": \"billing@acme.example.test\",\n      \"phone\": \"+1 555 0100\",\n      \"country\": \"United States\"\n    }\n  ]\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_00641d410d1895f1006a865a9cd58087d1978bf499cd902722",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"client\":\"Acme Evaluation\",\"items\":[{\"name\":\"Quarterly Retainer\",\"quantity\":1,\"price\":400}],\"status\":\"draft\"}",
+              "call_id": "call_o6I5lVCIFt2BOp8trs7firAG",
+              "name": "create_invoice"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1485,
+            "input_tokens_details": {
+              "cache_write_tokens": 163,
+              "cached_tokens": 1319
+            },
+            "output_tokens": 43,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1528
+          }
+        },
+        {
+          "turn": 3,
+          "tool": "create_invoice",
+          "input": "{\"client\":\"Acme Evaluation\",\"items\":[{\"name\":\"Quarterly Retainer\",\"quantity\":1,\"price\":400}],\"status\":\"draft\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"invoice\": {\n    \"id\": \"6a865a9d7aac7eff86fa3168\",\n    \"number\": 2,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-20T01:38:37.335Z\",\n    \"due_date\": \"2026-09-19T01:38:37.335Z\",\n    \"total\": 400,\n    \"paid\": 0,\n    \"balance\": 400,\n    \"status\": \"draft\",\n    \"payment_status\": \"unpaid\",\n    \"items\": [\n      {\n        \"name\": \"Quarterly Retainer\",\n        \"quantity\": 1,\n        \"price\": 400,\n        \"total\": 400\n      }\n    ]\n  },\n  \"ui\": \"The created invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_00641d410d1895f1006a865a9f0e8087d1b1daf4515e95a091",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Created draft invoice #2/2026 for Acme Evaluation with one line item, “Quarterly Retainer” — quantity 1 at $400. Total: $400."
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1774,
+            "input_tokens_details": {
+              "cache_write_tokens": 289,
+              "cached_tokens": 1482
+            },
+            "output_tokens": 43,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1817
+          }
+        }
+      ],
+      "final_text": "Final answer: Created draft invoice #2/2026 for Acme Evaluation with one line item, “Quarterly Retainer” — quantity 1 at $400. Total: $400."
+    },
+    {
+      "run_id": "id-6_wm-gpt_4772dd68-1a92-4a87-94d1-cb6c99693064",
+      "task_id": "id-6",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "48.151",
+      "reset_s": "35.332",
+      "setup_s": "0.189",
+      "agent_s": "12.630",
+      "ms": 48151,
+      "model_turns": 4,
+      "actions_or_tool_calls": 9,
+      "input_tokens": 1175,
+      "output_tokens": 200,
+      "cached_tokens": 3910,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1375,
+      "est_cost_usd": 0.002766,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:39:28.551Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "sign_in",
+            "create_invoice"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0e73eb79aa527863006a865ac4ae5c87d198ffd191f7d8647b",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlrFIdQ0iZJtWBLOaBubANxgQ-hB61xa01lw0AZE-lnKifNjT7In3lxGoMQgBn4Hti0JVSNS4wc03wuEWx7E1GywI8A8ST3Opt-wCxXQtttImY6VluwO4dnZGKnf0daYmBBSq0Se0baruhZUoJP8xqFidnuSQ8B3bYhiV0piAo5zD1gK2hn-FKO6mYLZNXCQ3cvGDVICUO4CbDMIt2kzZonrl6R-wFbUGxizcB-fCg8wGt1oM27tBkt8PGzMXGgnSgp0JDDVCY6q-qEhuYZzJkJggO4Adj7bt3yq6SC2A1aP7vtbYkPFblpyBJT2tshO0i2FdQCv0GPSzJ4DuTs28jOt46IrbFTrURDKWs-rrNO0xNUHVLAMwh-QWl1qDCfVT4Z6D7RerA50xKtfyZJ3vcovl_mEzaKF6Z2Rt08hnclGIgPKDKGquVA0BVGkRVqTTGNfnpXwpmQ37ntgOW3myDvqUZ8WjFY3mQOcHeY7cMViqJBRndqtA7L0yNHiNIspiey2VXHsTntX6rbBSRMt1zfRdJQHukiKHZ_Vb9GQ2fZr6HtJYJp27CO9IhrpJNDbL7PqR_5EEDXbmtXHLWwD_89J-4QXjxOxb8QMOe4lXauU4_4K4qoHh1yhOuqj9MdxUBNww9t-YK8vpLo7PN87aZkD1FGVFM-ZklD4U5axmE4BM_B6av1nA_QjN_xmP7AyUVZVKvOtrTKZrNK5WZCFMEJdJzkXh2LJPJdhLaZUCWGWk8kmykQcEQcWybbGDh9lt9XBHLE9rmDlHHzmDcz0avU0VF6vHhXSgs6j7aIsUBkGLBT-fe269f1UKClzoKB23IJgPNXD-j3kRs4l8GZY6IQTH_iKptrfCtFl__-YvJvXt6lxsJyQZWIPHpCaLf3PSGDL4JEZNlc55IeoUqgv5d_hJQx1n5eP7JyuNDhu1Df_NscuBfK43HsoD-8_uJXAVlM6qX5nfBkOM8O-X8Zu1Jq_pZS5sfLc8GfSqF9TYrJGW5eUWUeQ3iefuJr02Tn2bQSvPWtnSq1BN648ffY3YktCvbk3hlg7AU2pQ5TWIFy0ku1gfd8wAxLCF7yrTQHHpDfRuPmgkPF7LD0vInNYuZlOfZ6rqPQ3JJdTvYGwKCFI2J1DMfEvqFzzRojz_ks5h7pwX02jq5WjGh9Jo_4U9Js38RtAEww1ucCp6A3pIaWB_4etRBA234VEb9_WZZqlVcWTXPsc6Mn9CEZFu5fdgQaXudLkzwM9eOwBOh8SgvKpfYFRdOJD2kmKHIbRuXFvdE0QPHzoTI7IA54MnZ9j2DtrAB5fLUxvjseGX_8a6tcMsSQMyhSUVbcvXiYET2Q2eyBcDkB8ju_PBo-5hd5bBAYdeg==",
+              "summary": []
+            },
+            {
+              "id": "fc_0e73eb79aa527863006a865ac5318087d1b738885ded896514",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+              "call_id": "call_6SpI0685uzW2ZNGqWNrLjI5M",
+              "name": "sign_in"
+            }
+          ],
+          "usage": {
+            "input_tokens": 503,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 62,
+            "output_tokens_details": {
+              "reasoning_tokens": 34
+            },
+            "total_tokens": 565
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "sign_in",
+          "input": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "list_invoices",
+            "record_payment",
+            "get_financial_summary"
+          ]
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0e73eb79aa527863006a865acaab3c87d1be06e9f46f5a20ad",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlrLssaavyDy1z2uTEIOXVAHGEY2JPKNWGaXLHfRBucdJ0vXBzln3M-UnE9dEDxGdrJFljACMCyahSsGf834DM5HBtEegsp-ZCBcHAinMWBrnZYpqQIY6da3tmxvr4LsBPvAsUyoEuIbBMrQM9p4WHlAN_Fay3LIneSwL7Bw-v8BmUB8QVfLcztRjvlWBgr5ARr-OUh37LDcLHt14_FXUtAl5XmTDHNU5EDP90GJvMirGCAic1FPEyCZwW0iuO2OkiRO_NasA-apHUzmOFsZGCsEHJ9vbxRYzSTOURDLuDO5TjfDcsLkD5_BPlko4ILClrp7BSNvy-V703Q6yfGq2Q_wsx_DX0qoZavlOq4rlD2x081ie46vlu3nS7T7LHIlttcH4_Jq1Xpqb3wo81Or14Ano5MVvB3fim7a9Bm5ILVMFdgo7Ke3kUcx8PCFiTnKRFVFEVl51FQZWHOpIyYCLcugB-Tk9hfq_CGWaK-y9o3Q5k6xMQpQFqgy28Nv66E3-2DbT_qxyFo8lJUEDrT_aNDyHi4SwOo3zphzu97IMhUXFonPgWNiIOzTy8eooTm8-FBa2YQtbX0uyP8D0qp1FDbx8FcNK4Al_R7B91Xz14iJA1CMhI673JOy-ZVkNq8gw9SvMzvdMUsjfkw2rW6R8hLpEG0MyWkE0VK6C_UzjmYXM47p1_GlLJuPwnmFvzZgT3cIO6D2_KhUs_ZMhQiNwRndyOLG1ppjBDECN08HoKqz2O1BjvpofvAcPksxj-XRDU8hh39glRPj8d0ZVQrNDUyY1noMK0gTXvKqs_v56RO7waHWBa7Eru3PopVd9pJzZH3s7NzyYLxm55x4ZnaooJ9EUbvSre21N48u8suyk2HNG8cOLPWuKWXykGouomjosL1Z-lLFTUEULmhOjv1JfblOvmSa9ADMbgmEeiOzlvNIKm2-SyWSzr-grJmIshn3_cTBLGeH9binkAxJGsyWK84imlt7lkZjrYeEfHoydBfsI46111CkE8MyZhyLUEaQB8K9qyIM7b1gCwODygTt_KYQzwPhX7mtb2ENHF2VncTt4EuuyusUPFZxJuy0msjXOV5MXYlAI3aOcOmKNcJbOkNx5q9PEjGutK72N3PRHRSeFc94-dP_ESV---gTXfLyN-UF181pwl65dZD4Pu6qtjMg1BWQya8bcNNPXnAFDI0UskAAOIawLuyZAR93KrjeEHkvCQAmg7_OXpp_2Kh9OVmIjmpghSP8wgPOT86MplLM9Os=",
+              "summary": []
+            },
+            {
+              "id": "fc_0e73eb79aa527863006a865acb048887d1b794be14f221d43a",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"query\":\"Acme Evaluation\"}",
+              "call_id": "call_aaRNruFCbJSZPJJ0aZzc7ecT",
+              "name": "find_clients"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1322,
+            "input_tokens_details": {
+              "cache_write_tokens": 201,
+              "cached_tokens": 1118
+            },
+            "output_tokens": 36,
+            "output_tokens_details": {
+              "reasoning_tokens": 14
+            },
+            "total_tokens": 1358
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "find_clients",
+          "input": "{\"query\":\"Acme Evaluation\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"clients\": [\n    {\n      \"id\": \"6a865a5fd5528e7d23aeada6\",\n      \"name\": \"Acme Evaluation\",\n      \"email\": \"billing@acme.example.test\",\n      \"phone\": \"+1 555 0100\",\n      \"country\": \"United States\"\n    }\n  ]\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0e73eb79aa527863006a865accd09487d1abf74418919bf951",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlrNZcCuqOb4nQ9H-oogO0sANGSpQRw97fhkM8yyqHEZ4D1YoG1S5G5qt4MOp-WHTFETqoW5S1cRFDgxYfV_0H0LTxF4-1trdb5URT3nOkcU3CcnSi9ezQmkFixjIfWBHTqv8uJEIGw8raTdsvShyybP977uX1Fg_sAxLj_ag-PMSnsGvx4qF9bJMalLk8LXMHogaaAhS0SOhUZ9HfKfRl-Qs_owdYWy0I2DsZt9GzIZLT1cYrQxCI5vZLjh_nkygyuY8YtGc8CkxXif1hDGKU5FxP6XOA4xUvT5quOouECcKbo781Xe9I0rv_pfPqONisfTadmhBoq7ymTTGpTWISPx23Xsyy2V4U3T4-V5ZF7eO19u80RU8hgAA1DTXyiFLaEGbIrs2ihAIrZzsKrCb2Jnr4eH0obewLQK-YDEOqK2DTBatWfgMGjma9Xg-oM6y9gDHUunLhvvNnESGJkhQy7kwU5i24o-asaf7sRv0yehAUDenBQjxe6P6Cy5dcVR8ZnRYzgd_D9Rg2POMYMO0I4vSAGzltksD75c3GNfAZqZKsRbyuib-IiA6Z6rleSF_Qu0yKK-SJ28po13sF5rWe4fjIe-PSnVCpsZu7UKDUtwUXk4RPKzsUpP53X7eGYtBX-UejQNY1bibHJx4kmaV9g4yrOdZIVYhoIPKT9TygQPNwotGcbBwBlK0rd-zcfDSNCddL9sGn1CZiBwKV81brySUuqxTqAmw3OYVlaQMs5bq6qTwmmHvC8Y6Ed1gFspOGw6BnO-MwPQy0IEDCmCtdZpwm-UeezA_wKI4zyzBt14pkjCALy1NKkfijhz5WKOLFuXe_fa24_WwK0ueRjiS45sj26p2ldYh-n5HSVNBfAEQuyfAZmHw4VP-fcVXBH_Aa9w_2cjLG5YKyJlTo-PHdAOKx7Jy-Ptlgcm_91XZmqURG_X778O6vz1-1HTg5py968nLtTSmhGoKZdikivZ96JJ2jADw7MUSY4C51EsOyUrkMBUHpWTgwyNtQP8aI_mkI5ENWfsaoa2HhycTd6t_FiP2-s5KWsB3njVrf6j0D4PA-eaTlORnmDvfxOWaTHmMluOXA6LWEvHbDOUI0q2a_GzIUx8I5PojG-QYJ0dKhTBY-Qjn5bNyH8I7m8x5oBjLNMPV9cRR5a-AsCFVZIOrcAx5UxCGVyJ2Ggto2PXoX8K29ED9b527M5sxAcNkHfK7WplB-wI8nCHCj9v2eo02jUqmACDY1lok_pDDZO4-iQvXZo=",
+              "summary": []
+            },
+            {
+              "id": "fc_0e73eb79aa527863006a865acd2d3c87d1bcfb81e759f6f7ee",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"client\":\"Acme Evaluation\",\"items\":[{\"name\":\"Quarterly Retainer\",\"quantity\":1,\"price\":400}],\"status\":\"draft\"}",
+              "call_id": "call_i6hiYgAkBVU3S9V5amqANZ0s",
+              "name": "create_invoice"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1476,
+            "input_tokens_details": {
+              "cache_write_tokens": 154,
+              "cached_tokens": 1319
+            },
+            "output_tokens": 61,
+            "output_tokens_details": {
+              "reasoning_tokens": 16
+            },
+            "total_tokens": 1537
+          }
+        },
+        {
+          "turn": 3,
+          "tool": "create_invoice",
+          "input": "{\"client\":\"Acme Evaluation\",\"items\":[{\"name\":\"Quarterly Retainer\",\"quantity\":1,\"price\":400}],\"status\":\"draft\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"invoice\": {\n    \"id\": \"6a865acde1498e6d7b79b828\",\n    \"number\": 2,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-20T01:39:25.540Z\",\n    \"due_date\": \"2026-09-19T01:39:25.540Z\",\n    \"total\": 400,\n    \"paid\": 0,\n    \"balance\": 400,\n    \"status\": \"draft\",\n    \"payment_status\": \"unpaid\",\n    \"items\": [\n      {\n        \"name\": \"Quarterly Retainer\",\n        \"quantity\": 1,\n        \"price\": 400,\n        \"total\": 400\n      }\n    ]\n  },\n  \"ui\": \"The created invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_0e73eb79aa527863006a865acf38e087d194c303063d86fb23",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Created draft invoice #2 for Acme Evaluation with one line item, “Quarterly Retainer” (quantity 1, price $400). Total: $400."
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1784,
+            "input_tokens_details": {
+              "cache_write_tokens": 308,
+              "cached_tokens": 1473
+            },
+            "output_tokens": 41,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1825
+          }
+        }
+      ],
+      "final_text": "Final answer: Created draft invoice #2 for Acme Evaluation with one line item, “Quarterly Retainer” (quantity 1, price $400). Total: $400."
+    },
+    {
+      "run_id": "id-6_wm-gpt_72a976e5-6b34-403b-a54a-8b17464158c5",
+      "task_id": "id-6",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "45.163",
+      "reset_s": "35.308",
+      "setup_s": "0.208",
+      "agent_s": "9.647",
+      "ms": 45163,
+      "model_turns": 4,
+      "actions_or_tool_calls": 9,
+      "input_tokens": 1177,
+      "output_tokens": 209,
+      "cached_tokens": 3918,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1386,
+      "est_cost_usd": 0.0028228000000000003,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:40:14.076Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "sign_in",
+            "create_invoice"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_07c46595efaa79e8006a865af5dc4881958b602e93f15cc34d",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlr2O6yv8fSysRgg4mb9fGZaQyd-MhZ1xiSMfL95clL1F5o-3iNd_IQrN0Efb6ZnzXNGtvGUdkSK1Tai2y2nWWxdQKaqkuY4I-yGdIZfxbhOMBaTMiNhbMb2_5DUMzLq9wFzZXvhEHvllr0e97qQT9_jKULWPR8Z00OIU3tVhdCsctlQCkDOQk_dnORITZDPl8Qq87wAn0gM7EQwUK9A_L90BqcnYNz3TV6ifSofhw-3DJZi18qUCOxHg6aI8LPR8kF6iqwxS1MZ332wc_aQcO9MLS7ePz_IE1RgTVOFBdxZ487u33okdq-cTMWfc0vzhoxEtTFdjgmS1Suz5mhXd9YR7OYazimC6gk4hFhb3WnLXl0UsyFzUAaGyU91WmFdEhGlM0LLPNmgKBvs8N__fxa3t8rSRlTJPuVG0ncO5-lxyWz81SJVUgYl3f-ecRbdzxqI5MBiGP5bymP6q3xcxbVgpCQqvydUhixNGDg7oSfPNvpeMRdx_3Qs6bCmLuzVIpSfnDDMyUvyr6ZsMR3CueKgRJP__TDMCEbnoOlS8Btd_095w2LqFlsIFPfKhPyvLEGi0opgywviMiY3gibT0mi0R4ltb2CzOTXVyDBEOh-X8CHNGKj2tqlv-QBGJ1hRvj-nuzAcF-5HI3xsMrsbXjHv4WwUUDmUHlWpluo7GgVJ_0cNR1G9PWg6EZyrfRu8fdoLumeaaGkCmkoWweonDxg_s3hYE6A6Go8yFOGzXqq73XNjw9aY6S3kgEJH4wwg9lvzAUgavJHghqKBrFzVAcQGdmH5MN3dOYg2xFlaIBgSjkBy1chJkrt10ot1qg0lifkcpbaVBXwBW3-ZVj0AQYHRoES70qSRsR4T5hAiOoQ7XejTNN5YQ3cwgK99RIiUsZIcTOx5hlCbOmM7qYuvueWDhsKBzZiZNthounmWNZHU3FRbLgDVQZmf0LGcBaWRKNDjC-L747_3FM2Jr4QpabF5Qj8ZjmbPeSxSOycLTSUE69uUn1GEPT7vJvEjZa1CwS4YTn0-T2SAy6psgx1-4YPv8MHctUkGog9JqWrKn-Onag8k_XSf0ugoRX_Pr0F9Yc59ty0WbDYvNGCdD1t38JJ3BZfIQVxrHn7QKbUxdg1OfGufrE4ruSS20M7BvDPweW6gj4765BGSlLQv9eClverLzRV-XxjcMZZ9vaBYwgarJMuPNcbx-CePmf6-dw597omGN2LquQRw5-MnXG0vJRjMhCnHNJGweyPx3r8AFKivYjtEXc1DYmtqU9d5o-lsqQ1CeNZShVDeMVwlnq2xleatcJfAWcvUqGcNvoUfAV2nvzcta9FZbIlg6Q4fq8Scl0uk4AbvRy-UOyMDCzxTgtz5Fg==",
+              "summary": []
+            },
+            {
+              "id": "fc_07c46595efaa79e8006a865af670208195b2daa95e4910d628",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+              "call_id": "call_JvBLr4k55LJFjrnKmM9Beadp",
+              "name": "sign_in"
+            }
+          ],
+          "usage": {
+            "input_tokens": 503,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 60,
+            "output_tokens_details": {
+              "reasoning_tokens": 32
+            },
+            "total_tokens": 563
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "sign_in",
+          "input": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "list_invoices",
+            "record_payment",
+            "get_financial_summary"
+          ]
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_07c46595efaa79e8006a865af84350819594cc0bad0a8f6c47",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlr4Ik1wk9tFPnUXvQjanweMcZUyW5rtKZZthYKwc6klLAZrS9gvMgFzSTiIPcN62TJvuZX8T8FthB_gkHToF96sQ_7g8mZManS2R23LTXvzz3QRZI4znL6CJ1rjdJ79O-XJnrHqAylHpnxXy6QmIO88UZqtuQ70JCl-08NdK0l8KqlvsM-xZPuiZY2AWhONybod5PZo9v6J2o6L3-CkWTQD4wi4t9c0QuK4jSEZyH9hiCPZqjLepFPWh6zSXQBivKh5KydAcoT6ib0a_h6CcdeHFvNNof5jvdayIvyBETQXVeK0FZ_fBaOufaLep_awC4V6F4_fwtme7ZB5pUdLNgg0sqy98mRIykgT3QNJyfvJ50Puoxt2nBT8jjQiJ03vSZTyVx55nmrGjfhIfuk-24FgSwQKnvpsAw2N_403tw1E6EghoO1PObhi1zLwufPmUMhhx9L9iKNFpiZBCswgKvA1WLxqwhUtJLMTMUlfYmiVa5kwqi8ElYiW-18zwChp1A3okcww48ykpJ6qb-KtfD30DS5k0HqF7B9nf_HTSHykknqL2PZTIp_nLPcPtdfHXiDJaZwFiDurMdz_y7qAUGHaiGVr8fOmoZuvPejO6_3miLflR9e3mwa_GHEtiJlWdvOC7cwJF4VizV27fSMW60kIgkU6pG6LUbruwSrX5hRU0A_DN8PnsPN1Y7xMa-5FODhoSqNRtsJj64G6p9K8E-q76kdiwadfSyBML9UR-p4QVBhPE2IXcawwtaH3KqX5sdU-ScaOwy9-Yne7zs1VORA4-q_U3C-ZNqtZHh2rwB2UIsI_yC3dLfw7dIn7WAx82izNwn7eDC_i26XAZ1mpLg5mOu_6veKEkK9RaQSG-oSGfWuS3tK5lf8ILhsN7yjraCnISv_TrTwayhC8paosSkgTQMlNJUeF1ntNlwNLTayy4aTOXF8ygtZN9ybyB8LrZ5aLKhPqsk-LpLXDOE8-l8pxWv5Ih-rnIpdhxGzVVme_1j1crE14fLieIgJlD8ZAj2Y1O6LJB6V51EUSaPynxjD8o8PgRDDfAb0V5oEj_655drLFqdw1kG7lLF9CZJQjv6fuhTyt4UVytmLI2Qbzxh_xwODOnbkeLShikljccua5woxtcYZ5V-D5uRiQjsuNXR50wRWFhF3NAWFAIvHsGVTcvWh4ofm1hJtGuMdSen4wWsET90-gJukJ0V4N8VZnkkGjpiUalgmb1GDMGUI5iKLpocvYQr_fOfXbTC35ZrNHEkWyph_xX8VH_x7P8BEfljg2uLhxe_uKCWoum-1so0b-a_xutZwu0bsMTMWXvw_ycW9uT0gWrgciBOvGWIBZqEK3",
+              "summary": []
+            },
+            {
+              "id": "fc_07c46595efaa79e8006a865af8c3ac8195b2e0cb7518562e9f",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"query\":\"Acme Evaluation\"}",
+              "call_id": "call_k0AMCOpWLO323YjCItrhrjIc",
+              "name": "find_clients"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1320,
+            "input_tokens_details": {
+              "cache_write_tokens": 199,
+              "cached_tokens": 1118
+            },
+            "output_tokens": 48,
+            "output_tokens_details": {
+              "reasoning_tokens": 26
+            },
+            "total_tokens": 1368
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "find_clients",
+          "input": "{\"query\":\"Acme Evaluation\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"clients\": [\n    {\n      \"id\": \"6a865a5fd5528e7d23aeada6\",\n      \"name\": \"Acme Evaluation\",\n      \"email\": \"billing@acme.example.test\",\n      \"phone\": \"+1 555 0100\",\n      \"country\": \"United States\"\n    }\n  ]\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_07c46595efaa79e8006a865afb02bc8195acc2af4065704348",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"client\":\"6a865a5fd5528e7d23aeada6\",\"items\":[{\"name\":\"Quarterly Retainer\",\"quantity\":1,\"price\":400}],\"status\":\"draft\"}",
+              "call_id": "call_t9EDsxg7PID0OQnv5nDuHoxB",
+              "name": "create_invoice"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1486,
+            "input_tokens_details": {
+              "cache_write_tokens": 166,
+              "cached_tokens": 1317
+            },
+            "output_tokens": 55,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1541
+          }
+        },
+        {
+          "turn": 3,
+          "tool": "create_invoice",
+          "input": "{\"client\":\"6a865a5fd5528e7d23aeada6\",\"items\":[{\"name\":\"Quarterly Retainer\",\"quantity\":1,\"price\":400}],\"status\":\"draft\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"invoice\": {\n    \"id\": \"6a865afb23d22086b9c89698\",\n    \"number\": 2,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-20T01:40:11.633Z\",\n    \"due_date\": \"2026-09-19T01:40:11.633Z\",\n    \"total\": 400,\n    \"paid\": 0,\n    \"balance\": 400,\n    \"status\": \"draft\",\n    \"payment_status\": \"unpaid\",\n    \"items\": [\n      {\n        \"name\": \"Quarterly Retainer\",\n        \"quantity\": 1,\n        \"price\": 400,\n        \"total\": 400\n      }\n    ]\n  },\n  \"ui\": \"The created invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_07c46595efaa79e8006a865afd1b8c8195a6f43300a7aea4ee",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Created draft invoice #2/2026 for Acme Evaluation with one line item, “Quarterly Retainer” (quantity 1, price $400). Total: $400, unpaid."
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1786,
+            "input_tokens_details": {
+              "cache_write_tokens": 300,
+              "cached_tokens": 1483
+            },
+            "output_tokens": 46,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1832
+          }
+        }
+      ],
+      "final_text": "Final answer: Created draft invoice #2/2026 for Acme Evaluation with one line item, “Quarterly Retainer” (quantity 1, price $400). Total: $400, unpaid."
+    },
+    {
+      "run_id": "id-7_wm-gpt_bd9bd2dd-b825-4adf-9478-fe68f5e80338",
+      "task_id": "id-7",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "42.691",
+      "reset_s": "35.345",
+      "setup_s": "0.185",
+      "agent_s": "7.161",
+      "ms": 42691,
+      "model_turns": 3,
+      "actions_or_tool_calls": 7,
+      "input_tokens": 1066,
+      "output_tokens": 178,
+      "cached_tokens": 2431,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1244,
+      "est_cost_usd": 0.0023771,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:40:57.117Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "sign_in",
+            "create_invoice"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_006934ae03e28f02006a865b22ae08819799a054e33807bd2a",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlsj0WSXfk1rgBOgSy3FjoNOyPvD1FeDiSQjJXEqdf7AlOcKqUH5zQn1FFPREo0iquPd-brYbeiBUf9hVtB5jfurJ6XIhFimhZJSPL55K-DwymgmACRECq_eRVGClYNP1OGfcctmYZn3fK7m-wTZg9fQJiAoeIKD4IB451Sf9kwv58dJFvPVuHJy-Su51ppDX8fv3IcBcNqpdDpCzyn1Ty3VN4mH0UQ6Gz3WACawomBboqyz2P4SW9jDjzZBt0noPzN4BFoeG9M4CLsiVDCFww8n3N3WFITPF_Y7rQnZmBdSR8KPbOqt3UuGXjhkh8TDp0QVkmT0XxgK62KG1E1_3yO9vipklEIi8THGCPvUtDULhEk3ZwyIUjrcoiHffPNiz1xNTYI9tGzWNAPLVapTgXf33Qb5HvKrMOJ2tm0BG9tLTXWRRbKDbqkf0n-nHwlIiaMCtM68LjmZlHgGVOxdZanFknQoQNIntbgk6gMEEutswslM1o5G3P8sJPoNepIfUdt2euNuM3IOJvb_nMUrt--hLdn5Vsk1XcrVGO_BIy7sJEt3fgS4FXsiFxYhCcUfjIT6zAA2iMQDpKvYeV9fA3gn5o7z2e-nzrw4zX_yGZMTFLnC5n2du0JwVJ2QkcPbBkHHAy8dDk2af3ArFEL7vOPkEOhvYWTraz3628N2Yc1X8y85gQGZJEOmj0mqAy40WZSxalbhOGII8H87fp0xMtVmWC-12-bt4tDRx8cajbMc0DXs20im6o2lSpMDemc5zSyKSBSe-Ay4f3QAoxxQOAoYoD38giLpPyiU1HUDpyBQSATZ4naJfw60y2etV4WVQXknlEWFd21UB2l1E2y39EizZwYFLrHToxRNM3fy83_7R2O2n0d55KiT3oT33RKuCrZi45VyD1CzxBvRz5CQ4xeKPUoTp2WILfQ7UvmYk6hPZdCzXqIgDsx5VmRGRNHcxF1UODMWS1S6ug--ONnJ3ZbitCNDP8JeIfKISZuqVm898L-sXkJXILLLVjkfet2Tt8KpuFg5aZGhBmK6lyL87xPkyKknvXUsnfxAY3Q_ZBJS9xz9Zxe17km7UiFs3uy4Pk_S6iIVBb5GMVLGXtvqJb98_jJWtcwBW3avliAtoyEvzthLsmyGBnfhyXw3ypVLyMDPIQKKj8w8nfDJzCjvSDO3cL6nhRm8LljwlUsOlGHQfb9hRlVY-YhDG_ytBjmSpeJtjwPIKv_G_Msx8ICHeM_27jPBna725wGlDPVU7R8wgAUGPPnnfSiUi_h3KPRQifINbjdjDwbJYL00Z3vkIFm2uwIHgbSr8O-RYZ4tRMceSLwER5xKQVoF_Pa_ziG2NU--K3vBT7egxK_qBFZZacFVdr9N_VQz-ZsMey7vOBDgaps=",
+              "summary": []
+            },
+            {
+              "id": "fc_006934ae03e28f02006a865b233f1c81978a2ffa7c2de4968d",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+              "call_id": "call_VkW82M6apXqcKbyXVy6ykTIy",
+              "name": "sign_in"
+            }
+          ],
+          "usage": {
+            "input_tokens": 493,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 66,
+            "output_tokens_details": {
+              "reasoning_tokens": 38
+            },
+            "total_tokens": 559
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "sign_in",
+          "input": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "list_invoices",
+            "record_payment",
+            "get_financial_summary"
+          ]
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_006934ae03e28f02006a865b2521a0819793b6c91bbf66ecb7",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlsmi_gALbTyeV4JKsGJUWVKK46D0CVJkf5aGpbGHA9sKPZU45cOS2mObneU44lvSkTpPt-pUP5BWDd4Iwg-x9ZN_csk-zdwHU_BT_Cg1qV1EB_OMypOxUPaIKHw6uCpSKJ9yE0aPtlb3mJ_oHnLguC1FrLG_QhQHydZDlF98JNdW-2w17DhAfFv6wu4WvnbJo3pG92VSUABR1tXkzK824EMDOklCDPBwFffMK5JXPoOJqRinrFFXwRnZVgoGcAqQvzxI-5OAMj1y785P58OkZeCZER4D8fGWaLB1eUVUqPoVplGpblwhbi0HhjNMbPuwmP_cdtU-y2TJAYm95waJUPV6mIfUn5r5ST6JyJQdsiU9uYo0XFh9EQ0vxBZzGufrZ7N-HxjzG3rh4R1HdwtXGhoRyqiy4rKDP129yCsAuho5I1ort41cv3c608jOJJuUHylM3BzENDjiFlmuAiA7ex-7h8w8we1Je4Sj6vepAP4VP-K4k_i-RIHvtgnPiLnLufoc-Pc8spsVJnntkyLtfZCm-8BbO9clSAxeF4CEvv3I2Wx4GoFUy5woS2-fPU51deI9pLldjUwABFcLksTkYvGg8rYvnEuWD4RJY8Y77m7Gymg6zzjcmMlhwKrXsHZx7b4aLAZEfOZr3yy8ssW1B9SMTJituhzS4x4foIu2ler82wDx0HUQBXEg3xUKe2I4O58I40gmYy8wuYrpYVJXhTi1M62XUmMpDfrC4WjEa-7UQbktOodKbYJb7H4sExWtYCaKNJCwx5VKpa0qj7o6i2q2JDFtpAlMqVQ_yFzlefye0hDoArQSymdlA7e2-oku135ryH8DaYDzLUavMkCwxSuFX2kQ6Vb7sWRxzcNCsSP1yigpxFNWnhTIzMHgxFxIkfEAf7f5vR0pp2j0u8YvfcwIisn4czZCsevDKrUPCwW8aC8cJ7pv_egbHd9gOGHCrWs7KVnZZxgt2Q0atqFdTbs8XR4Q83T9Fg54DrN-2TmqKk-edBVtqqGXOk72iqzJPiKnmqygh2Y3Up7eRUoVI4EkYc_Xnp0avIwVNl8Og0CPHHIFUVBIo4BTrSo99drs6w_eyFNULI7Vj1ch1XMNDauAIy0C0kVPLU6JFCvzcESqCuhjZYVGEkz_XAAhH78sLnh8ZxHJX3zCtKGSuwZ6t_m-aj8ojT9qT1yyXyQwGuWC7m5pFsx5FXy_hKnZ9o2G7F-2EesjyIws-94bvxDIsaAwqlhKXeA8wnRyeNmhTmHHE9im_6EqRhTu8N3bPDQwR_DXJMQlc14P2qIYG7aPhBXbErPVdxfDYDxZC2DsTIn3hmTVAScIkr4kK7tX8RkZtQh",
+              "summary": []
+            },
+            {
+              "id": "fc_006934ae03e28f02006a865b25a08c81978c685e16c3badb6f",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"invoice\":\"1/2026\",\"amount\":100,\"date\":\"2026-08-20\",\"ref\":\"EVAL-100\"}",
+              "call_id": "call_ecilGatavMF9BrmIctiAEP6h",
+              "name": "record_payment"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1316,
+            "input_tokens_details": {
+              "cache_write_tokens": 195,
+              "cached_tokens": 1118
+            },
+            "output_tokens": 69,
+            "output_tokens_details": {
+              "reasoning_tokens": 26
+            },
+            "total_tokens": 1385
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "record_payment",
+          "input": "{\"invoice\":\"1/2026\",\"amount\":100,\"date\":\"2026-08-20\",\"ref\":\"EVAL-100\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"payment\": {\n    \"id\": \"6a865b261cc35cc712485799\",\n    \"number\": 1,\n    \"amount\": 100,\n    \"ref\": \"EVAL-100\"\n  },\n  \"invoice\": {\n    \"id\": \"6a865a60d5528e7d23aeadad\",\n    \"number\": 1,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-16T09:00:00.000Z\",\n    \"due_date\": \"2026-09-15T09:00:00.000Z\",\n    \"total\": 250,\n    \"paid\": 100,\n    \"balance\": 150,\n    \"status\": \"draft\",\n    \"payment_status\": \"partially\",\n    \"items\": [\n      {\n        \"name\": \"WebMCP Evaluation Service\",\n        \"quantity\": 2,\n        \"price\": 125,\n        \"total\": 250\n      }\n    ]\n  },\n  \"ui\": \"The updated invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_006934ae03e28f02006a865b280f6c81978e25d6207b70bf3a",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Logged in successfully and recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice now has 100 paid and 150 outstanding."
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1688,
+            "input_tokens_details": {
+              "cache_write_tokens": 372,
+              "cached_tokens": 1313
+            },
+            "output_tokens": 43,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1731
+          }
+        }
+      ],
+      "final_text": "Final answer: Logged in successfully and recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice now has 100 paid and 150 outstanding."
+    },
+    {
+      "run_id": "id-7_wm-gpt_ef2993c2-d22a-4350-ab9c-fe84e68ec124",
+      "task_id": "id-7",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "41.926",
+      "reset_s": "35.258",
+      "setup_s": "0.189",
+      "agent_s": "6.479",
+      "ms": 41926,
+      "model_turns": 3,
+      "actions_or_tool_calls": 7,
+      "input_tokens": 1050,
+      "output_tokens": 152,
+      "cached_tokens": 2411,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1202,
+      "est_cost_usd": 0.0022031,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:41:39.388Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "sign_in",
+            "create_invoice"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0616b5c58e533c52006a865b4d785087d19954e2de953085ef",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhltOLxCDBJVYnMWPWQiE8qVcxFFlNBJRSerAySifcAH0vAJxVmbyeIgS64eWE_Zo_Yh5FaG2m0DEnjs6LfcuuWgEcG7dBESs_afBdCUhm2HYhSlQmTpzTlWzbUs2rHpS3_8vNUltnUy9Wh-gGJgPJGwQisxTFfDeJi-IowYcfzJQ1Ri_D1Ade4d0jTrlDnp8bLBRIgJc4qp6HaD0FmuNouQ-pdM9Q2WWoc_w_8WoTEy3iMzcrage1Q2toOhBEK9Lvk6nbLCX0ROxGKfUAyO1zfsmoX90faqlJk1V4ek3DqsvdIrpM8GhXza91m1mbHCy7UA7NV113NE4UfiNijUJgZnKVf9FXo5F19xFKQxd_xQG7OzZRlj8tXqPH3RUCx2UzKq3eZjpRbK3oMQYxBso6IKvGnSAKdKL290b-XufKFeJcVq9lMJLTi8U-WKvoMdqhnRFeY-csRNRiMaW-5vsEBRu7xLBiczZn0cttN5ZYlCKvXNqafUn32Bwnj6QZzVFraISkG_BSX58VWjkNNN3sum2BioRkagCevQ8CZ1NrcGPc46JtU8zBrUqWchlXKhu7f-5mUzSNgSSybdMPBdomoHaF86P4JSEkTrns81bo7IqoXQDKd1uKoIGUjQolIHoGHellQoDBs8ro73D3REIpCbm1YThUkFRFU8HcikNUdkMffSqTu-60OHld1RjGCef-kyLoZiT8IM5wW5nSr5WJsgSVADGaa9Db9eq6fRI31t_Ac8kjl3xKRM61J9lOYyJ9xiCRNIJqV_kbrMk0oDI87E0ih7S5KVnSlHhsFOqcZpecuYOtwuFtAhp9sLxcPYekgPjSKm9uR5tVaAiJkGI9SDOto8HtUepp8jHuPBoU9nlsZD-lROnGkP9tG-OsHjoBWDDAoOXYtEfzyj1lhXCMe_G2b411iYQLUDemt4UORt_72TQWFQleSXuE-v78PdufIhKPC9eNoC42hnTR0LjosNMNIDmoZQsjLUg_DXuh6sW_vFagow0t7cyn4O-ZKCbMdHOCpXp2dJ_9Iac_Avo3ne4QAxY3NKdbkgjzR8KVW4TzeLz9TJm7r3ZXXQtxX_huBHS4Ub768LV8G4f2me6XKzyvNJJd7rBlanPIAxT0PkRejsFy82VnLW5GgC5NbZjGJdkI4XW_bEAeFmiqvvK-qDvjhyIJ1eIEVWCNAJlf975j_tf5as6dWc95-5q8A0HbBC--TwtNX19OTXFP4EEg7QE-z1AW25TK3yPT_kmG4iBPPA=",
+              "summary": []
+            },
+            {
+              "id": "fc_0616b5c58e533c52006a865b4dd8b487d196686f1c553acd7e",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+              "call_id": "call_sDdFQv08EtcbICkplLXvofQt",
+              "name": "sign_in"
+            }
+          ],
+          "usage": {
+            "input_tokens": 493,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 46,
+            "output_tokens_details": {
+              "reasoning_tokens": 18
+            },
+            "total_tokens": 539
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "sign_in",
+          "input": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "list_invoices",
+            "record_payment",
+            "get_financial_summary"
+          ]
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0616b5c58e533c52006a865b4fb5dc87d190d54dbcea6f43a7",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhltQSlcIiSQC5vfvHGGEA3k2bR09BLeuocV_EbuaGr4Khttr31BhSWe6FlEwBSAzPWe5-wtoZTVhilII0qgMlWYghRjJXRv-ZIF9fSvYZEOYgOa1AHORrsJoo7pUImhmjfAEguzHuOg9PmxS_yMY1cgrk9Us3-b25_nK6dNSMAJMLO0VZPxZrfOvaUry3YgllWCHcl4nlT-OCAfE7ZFuHk23wNqcHq-qFOiWo8meYs9RNNVuXkpxOzCVI91XSImGCfxcD29LTX7jLhI5p3gXiJtRN2RT4K7OZuz1fT26zAthQUBYpMh28p7IW2bbOJLY1nNw1t0NvpVYjAGUy_PB50PLWYLZd4hK3NWwXcFXJA_WlJ4iP0w4_OlS_SIclwXiMw9FSgQMV6ioS8PpSTGzFTF-geDMP1-m1KsVg86DcBMEF4BRz78HSTO-yw2E3WdjpxcLv4pLA-Lg-Z9XhI7hn88mXCMJOWTsoJScOh8Xo5OUvRy8KjiNBtq5mRtZrrBgnpHcc-KF5NpuUr64_mfiiyESPpPTcW_NVlp0UFVjKk9UvuQP6JIvqvqDJJTUMCQKDxpGfXzDq44zzRPV4UWPx33E2SXwLTNpiAYW_-56esDLt4PahEAO0FYqrbyU3w3-EjZwiYJrY67wb17hCj3RC6KZdU1RRlqPohcLz_7oXFurV7tSxujJE0EYBV5SQeE2_QJzqiCC4PMPzYBfo8hubH9cxD7qMv_jIKf8QTxSdJtnx2pk9IgVgj_WpcZUt1506FrJfkxqWpjpsLK3AKWAQwxz6cWyDNZxBkGU-FmXnXLVGF83l_xUBRWurS5yqpU9_9sxCtjxWd6Dups_2k5HygHbJLKXAbee7wselSUGueyQlaFJ5Ys-zgv-ur4KhTgWqUw2xUlH1q-dZJk2jjc9qmvGnFI4TYxaBQSnuZ52B7r6ltPxM9Sn2cr0uSA4FynsUKUrte2xiJnMcZdBTvtOBOHK3XJltGvTg9HM9MAx7Eq6wINAqcuHdN5Wuz6ohzKnTtU3yjgVTp7kN0P_2GI8x_HOMNBsNhIM3Kg6IA9OQg3KoelpW7W577_sa6hnTZh2dxDSTdRtpSb4ULRQJDpuWdjBoeR1Mv5xvy3NNQ8emC6uyytVl1nGyyibJw7Kuc0O9NBlMyuSDkeejn0gtbJ-NwLiBmszy6Z_tFpLJyl0uUztp0Wcgfp-TZgcrdhBXq0kBws5HzKVQ5_uKkp98hsTUAjg2LC6qj61OaIgTxPhg32o_htL-jEu1gIefkt9RX11W240SI7_BRfAOLnl9Yoci_OYqCNNJ2Saz92JDOBrskmrzH8=",
+              "summary": []
+            },
+            {
+              "id": "fc_0616b5c58e533c52006a865b5021c087d184a3b4feeb1eab12",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"invoice\":\"1/2026\",\"amount\":100,\"date\":\"2026-08-20\",\"ref\":\"EVAL-100\"}",
+              "call_id": "call_p36Zc1vYwC67U12zQ9JYXLfw",
+              "name": "record_payment"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1296,
+            "input_tokens_details": {
+              "cache_write_tokens": 175,
+              "cached_tokens": 1118
+            },
+            "output_tokens": 67,
+            "output_tokens_details": {
+              "reasoning_tokens": 24
+            },
+            "total_tokens": 1363
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "record_payment",
+          "input": "{\"invoice\":\"1/2026\",\"amount\":100,\"date\":\"2026-08-20\",\"ref\":\"EVAL-100\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"payment\": {\n    \"id\": \"6a865b50f5ebf9c4cc7d513f\",\n    \"number\": 1,\n    \"amount\": 100,\n    \"ref\": \"EVAL-100\"\n  },\n  \"invoice\": {\n    \"id\": \"6a865a60d5528e7d23aeadad\",\n    \"number\": 1,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-16T09:00:00.000Z\",\n    \"due_date\": \"2026-09-15T09:00:00.000Z\",\n    \"total\": 250,\n    \"paid\": 100,\n    \"balance\": 150,\n    \"status\": \"draft\",\n    \"payment_status\": \"partially\",\n    \"items\": [\n      {\n        \"name\": \"WebMCP Evaluation Service\",\n        \"quantity\": 2,\n        \"price\": 125,\n        \"total\": 250\n      }\n    ]\n  },\n  \"ui\": \"The updated invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_0616b5c58e533c52006a865b52568c87d1940ec59146bc70b9",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice now has 100 paid and 150 outstanding."
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1672,
+            "input_tokens_details": {
+              "cache_write_tokens": 376,
+              "cached_tokens": 1293
+            },
+            "output_tokens": 39,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1711
+          }
+        }
+      ],
+      "final_text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice now has 100 paid and 150 outstanding."
+    },
+    {
+      "run_id": "id-7_wm-gpt_6b98d743-1661-465e-9c53-6b0d721ae9ea",
+      "task_id": "id-7",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "idurar-erp-crm",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "42.911",
+      "reset_s": "35.295",
+      "setup_s": "0.196",
+      "agent_s": "7.419",
+      "ms": 42911,
+      "model_turns": 3,
+      "actions_or_tool_calls": 7,
+      "input_tokens": 1093,
+      "output_tokens": 205,
+      "cached_tokens": 2457,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1298,
+      "est_cost_usd": 0.0025686999999999997,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:42:22.634Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "sign_in",
+            "create_invoice"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_090f02cbe0ef53b6006a865b77f28c87d1b086a85e65bd3e04",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlt5Ve_q39Rgdv8264ZL1VNWXg993TgHe5d8HwKRSxuxxTja1yTU3kySMcAjqlrY52c8UQ_0tSlMDKnzhd_htwUKhncwisswnF0Fx1AN1RTXI1mzHrkWasiB6fGwnekwx800yT0hX2LIh3loqmEScceCQKxGt3thtMPorL4B8X-T5iEhKHZsDP8QlDex0h5YaAF84ZIbTygCjhZufTnjewAPeFubtwX6MMV6P8rrJhUO4KjcWOHi4c0bWAZg06owDD9w6UJXim1PwG3fAzgiVnhDND2K1zntEw7cPmZrx39JRyywULRe5aeRBUeVI2u2Dw7vQ_tbFRI5IDpattbmzigC3geTSUxZJkdD68PBAKyYko-Za8JQUwXTVOs1Y2_Pa64QXC8NT2LjyK4CEbiRdmxZIJA6OFNsVsrZmSYOlC_wrWamvgNQ9AcqeORsehAbQUkzOidx7U5HCScPJ0HnIFlcNvwtLJp_eOM8oZFTbvaQCeepAeRCqMqHb3bg9qHnZmdKoWT-CficKs5a1R_D59dH87zDeIYhpbSzPOTqBaLuL_6AOI7oiCn6kqMRum7dtmGbhbw4-ZoXj7rdIssfZ9uJ9QckmThiROsz2MPIqLS5W5zUldp4LKXAbAInrYqUIEgE6kiNekbAZK8vQjKMsrEHEj4kHxQvx4FfXtVBTV9H7GXiNtHll3FxLjDl6VaAdvn7XJ1aBgf_wmx6ZY2QT5xtBeyoCuLSeK2QT72XZt2glEDwrMxb7hRJZvb5tXv1j2OJ1eV3V9xR7QXZIRUEhSuCAlNmICBurYOP1DXNZONwBQl4EnIl8AAk8bWJnEFwxj5Tt0dggWmhf1LFMpDrAAxx5qFRusOg3QqJGDWKshONMcmv_-hTKfozi16EI5bWN-tKRpELRbL5AnHHnZ6_gPGmImai2ihZONGSr5S8V1iCZkAaDGY5QmHwcravJfagWrgoZd49IpWt_FazNiYpOiXfmsfo2mQVODbz6t-pgpRSYOOywdl_FQHYRTTFFvySxHV3mZJT7a_PD1pR3AVZ2NPlLfhqldEZ6UsbW7GhZREVhg6V6J-n6QF3As5KSMpzMxmw_251ZEPS5NQl3iii9CVyME_19Nr-Emr65LSvriV2cLV32dzVVY-MDd-bpSdSqS7r1_sSP4VcqiKmr3YXH2dy-BILeiCamoHIT0phGv7e3RWDpVW2wCsR9R_zeVFe-PCfY_BDl_ru6ZKPuO-rK8v1zMPtuk2X_lEOGST-JIo1ieCnHgueO8j_9ZVuK17t1MuZBzI51w6Rm1nGILZS4F1L4jmpAyuEOzpfjAWLISPStInRyr3mbLklTBJvMVqPro5by2MQNK_BKT8u7ipbYaLvw6GAWp6-2hgJ48kyCQohWYThfGbMQ1MWIVhkQox7tt1gCz8cSW62bbSzIFbrEVPi3FPZwTHhTkTBMEEWxwYD5u2U6TMTTnQlSZpxip6u2kjfUMmhK5okBrx520U_d6TAnA3RCI6sxNo385x0a5mL8u5bStiD0WE4WEjzlFbvbEySPW_W0bggRpKZto9nakCZzA==",
+              "summary": []
+            },
+            {
+              "id": "fc_090f02cbe0ef53b6006a865b78b99487d184406e4f04c8aefd",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+              "call_id": "call_fb9aQNyYlktPK8IO6kQLIBaG",
+              "name": "sign_in"
+            }
+          ],
+          "usage": {
+            "input_tokens": 493,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 92,
+            "output_tokens_details": {
+              "reasoning_tokens": 64
+            },
+            "total_tokens": 585
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "sign_in",
+          "input": "{\"email\":\"admin@admin.com\",\"password\":\"admin123\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"account\": {\n    \"email\": \"admin@admin.com\",\n    \"role\": \"owner\"\n  },\n  \"ui\": \"Signed in. The full CRM tool set is now registered — re-list the tools to use it.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "create_invoice",
+            "find_clients",
+            "list_invoices",
+            "record_payment",
+            "get_financial_summary"
+          ]
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_090f02cbe0ef53b6006a865b7b006887d1902be34a116513b1",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlt7rALidWQRDG3ytDjYPrDj_EpV1XjRRAr6ZIwrn23rPS5zdUMhpEf3YLN4kffnUuh7fYEa-nSyg4mLeAJPpussIvEfITvnum4F9_GdZOAga_6jvQjrtWqbEGL_xd4oTWzmGauZt0sFJV-98qvIWEfsaavEQSsI0QfoJbao3G4lfYeJ7X9erfhSBGNwq0vAXBAHWbg5gQpHGEdzh_nHR44LCjB83bE37qfeJNA3h7rF6XG2ienIID1PyqJ3uBeavFXdy1A63omDMO6aVg8yH8eKUdsRWp2KI6WV9Yyeq6D1oqTsrdMb5dbJiJvcMrX4ZlMLl7198pHGm8kYptNZpa82hxD-PW0OtdC8__4hTaYPoToiU4YEemQXkgM4uq5Y0hafD30BKh1kG9cnoVzK2rMSoSaLfjXAX6ja1DzhBKR0ndwekxqGHf7p5mN7vwqqnqxhj_LhXq7jQHesC2SHlMOvcfLSOBt0zYom3gk3vpSjLUnLibhnEnPcGHb-xt88mktshHnc3fUZK2f1qmxArvt68fQ54CZhkVHqEDrmZuOK2q4-wpldOZ8Mqc76SlMtByqPIJzxRDqJFV--VpbMB1JK84alqQMizsIA7a1GkzVjoNuZfjDpW1UW1TNE7jFIJb7PUNsFdWRGL_QUtHrRwaZkZAPf-QaxeIIJhhtf5elKJ_4DbWu7Rzv26yesOp4ZyFCBZnurHTNtDdqmd4kMIXOMzudCMgALsYNAAn5wQVUV-Jomkj64anpCTOvVidEysopSG4UXJO_9522x4pCwK3ncRCk-XkZOg6V1mnYmvd0RUjLPnbXNHyOWkwdhfksUbDS1q8U-yzL_mf6cXDzBWwHQTWAJMk-8pycTzLA0rqRjgDfc0GJ_cbLRD_oiQ3NJycqt8dvLNVyOaZ4iLav80429vOsq9Fpv0KQQQBRaj-U6b1H2qOMy80z0W-9Xs-dqfv9jUAg31VCdt3L1JD1MM-uEg8tNdaG7X7MfrIJr_4MYTW5HQlVso48-VFkjeA5ediVn9kUu0VH4TFpuVGjmAr99K3QEmA0cXpo4BS_prabCtWufD0ayfkDqY1LdQB7F5zWVbE3PqiqMcpvMVFHPD15ybJP8_TIzOHlidk1bjHFApf7Y3iaCNalCu6lY1_12SxCJL90-pA0BstVRhkGlhPfj-KG9q1FXkSoi1qv4ljPFrR-hYxVFwfZ2NKS2MvfmBhW4TVEFw8wRU7sADyT4FUGXauxzxvFuTC1Ck8urqW6xMN76hzGJmNezNEwA0l4Ha1SAm_uAy4sGxdzUwtbQcNxL5y5fZG84cHO99zI2-7gMUj43n-ZwbIegTVz5LInTU1JX6a5crH2B0TwdgZLcIRKKM4trlO3itb-TcVWC1WbzlK8=",
+              "summary": []
+            },
+            {
+              "id": "fc_090f02cbe0ef53b6006a865b7b42b887d1affacfcd9d59f3e3",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"invoice\":\"1/2026\",\"amount\":100,\"ref\":\"EVAL-100\"}",
+              "call_id": "call_ofvH1VxMM1grHHcC5d0h82yC",
+              "name": "record_payment"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1342,
+            "input_tokens_details": {
+              "cache_write_tokens": 221,
+              "cached_tokens": 1118
+            },
+            "output_tokens": 66,
+            "output_tokens_details": {
+              "reasoning_tokens": 32
+            },
+            "total_tokens": 1408
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "record_payment",
+          "input": "{\"invoice\":\"1/2026\",\"amount\":100,\"ref\":\"EVAL-100\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\n  \"success\": true,\n  \"payment\": {\n    \"id\": \"6a865b7b6f7418276549bc9f\",\n    \"number\": 1,\n    \"amount\": 100,\n    \"ref\": \"EVAL-100\"\n  },\n  \"invoice\": {\n    \"id\": \"6a865a60d5528e7d23aeadad\",\n    \"number\": 1,\n    \"year\": 2026,\n    \"client\": \"Acme Evaluation\",\n    \"date\": \"2026-08-16T09:00:00.000Z\",\n    \"due_date\": \"2026-09-15T09:00:00.000Z\",\n    \"total\": 250,\n    \"paid\": 100,\n    \"balance\": 150,\n    \"status\": \"draft\",\n    \"payment_status\": \"partially\",\n    \"items\": [\n      {\n        \"name\": \"WebMCP Evaluation Service\",\n        \"quantity\": 2,\n        \"price\": 125,\n        \"total\": 250\n      }\n    ]\n  },\n  \"ui\": \"The updated invoice is now open on the page.\"\n}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_090f02cbe0ef53b6006a865b7da19487d1a8bbfe1f550fcc37",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice now has 100 paid, 150 outstanding, and payment status “partially paid.”"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1715,
+            "input_tokens_details": {
+              "cache_write_tokens": 373,
+              "cached_tokens": 1339
+            },
+            "output_tokens": 47,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1762
+          }
+        }
+      ],
+      "final_text": "Final answer: Recorded a payment of 100 against invoice 1/2026 with reference EVAL-100. The invoice now has 100 paid, 150 outstanding, and payment status “partially paid.”"
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "idurar-erp-crm",
+      "taskId": "id-6",
+      "tier": "act-long",
+      "method": "wm-gpt",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    },
+    {
+      "site": "idurar-erp-crm",
+      "taskId": "id-7",
+      "tier": "act-long",
+      "method": "wm-gpt",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}

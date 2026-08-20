@@ -83,10 +83,28 @@ tasks:
     auth: true
     tier: act-long
     prompt: Log in to the organizer dashboard as organizer@webmcp-eval.test with password WebmcpEval123! and report the current status of the WebMCP Community Workshop event.
-    # Seeded event status is LIVE. "live" is a common word; the prompt pins
-    # the answer to the dashboard's status field to keep the match meaningful.
+    # Seeded event status is LIVE; the dashboard labels it "Published" or
+    # "On Sale" depending on the widget. The old proximity regex required the
+    # words "status" and "live" within 30 non-period characters and rejected
+    # every correct natural phrasing ("The workshop is currently LIVE.") —
+    # 32 correct answers in the 2026-08 audit. Match the status label itself,
+    # on a word boundary so "delivered" cannot satisfy it.
     max_steps: { webmcp: 10, cu: 30, structured: 24 }
-    predicate: { type: answer, matches: "status[^.]{0,30}\\blive\\b|\\blive\\b[^.]{0,30}status" }
+    predicate:
+      type: answer
+      # Anchored to the event or the status field, within one sentence: a bare
+      # \blive\b would accept "I could not determine whether the event is live"
+      # and "the live chat works". All 32 correct stored answers name the event
+      # or the status in the same sentence as the label. "on-sale" is hyphenated
+      # by some arms and `matches` runs on raw text, so allow both.
+      # Accept: the label anchored to the event/status it describes, a bare
+      # status answer, or a plain "it is currently live" style statement.
+      matches: "(status|workshop|event)[^.]{0,80}\\b(live|published|on[ -]?sale)\\b|\\b(live|published|on[ -]?sale)\\b[^.]{0,80}(status|workshop|event)|^\\W*((final )?answer:)?\\W*(live|published|on[ -]?sale)\\b[^.]{0,40}\\.?$|\\b(is|are|remains?|shows?|currently)\\b[^.]{0,25}\\b(live|published|on[ -]?sale)\\b"
+      # Hedges that name the label while admitting the agent never established
+      # it. normalizeAnswer folds curly apostrophes, so one spelling suffices.
+      not_contains: ["could not determine", "couldn't determine", "unable to determine",
+                     "could not verify", "couldn't verify",
+                     "could not log in", "couldn't log in", "unable to log in", "never reached"]
 
   - id: hev-9
     start_path: /event/1/webmcp-community-workshop

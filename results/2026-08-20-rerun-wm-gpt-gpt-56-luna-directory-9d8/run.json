@@ -1,0 +1,699 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "directory-9d8",
+    "arms": [
+      "wm-gpt"
+    ],
+    "seed": 1,
+    "budget": 3,
+    "perturbed": false,
+    "models": {
+      "wm-gpt": "gpt-5.6-luna"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "directory-filter"
+    ],
+    "n": 3,
+    "label": "rerun-wm-gpt-gpt-56-luna-directory-9d8",
+    "fake": false,
+    "model": "gpt-5.6-luna",
+    "armModels": {
+      "wm-gpt": "gpt-5.6-luna"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "directory-9d8",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "directory-filter_wm-gpt_ed27c956-db1a-431d-bd05-2c9eaea2f6fa",
+      "task_id": "directory-filter",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "directory-9d8",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "16.037",
+      "reset_s": "7.767",
+      "setup_s": "0.410",
+      "agent_s": "7.860",
+      "ms": 16037,
+      "model_turns": 3,
+      "actions_or_tool_calls": 6,
+      "input_tokens": 2097,
+      "output_tokens": 113,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 2210,
+      "est_cost_usd": 0.002775,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:44:22.774Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "search_bookmarks",
+            "subscribe_newsletter",
+            "get_bookmark"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0c9d37665d8bb920006a865beff3c887d1bec125a7e477a33d",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlvwRKIwu2qNxh83Sirt1u9nFE-p-qyA5iNgdt_o_CdZ22aQ66kJhXyl7uQMwXv5v2_SOhW4jxClD5f7-LpWZu1E_8K7USlG0-_EY1dIPHvS2VECzatLefYWlPWGy1bRjzKe3JsHvQI-FE2huber-tyxd7TFqCuZQrplAZE35kKTKRLZ4QtQek49eEN2N9XrjcWgWgdNtQ-jRJCNgtC4rYaLvqtly5wpyq1uZWL_Xm6Ur8AD6luiMMoUCLODm6sRQmWQlDgHB4ZZFU_jn3Lk2tRMWPczpUDiSmTce41mjIUZyc9j-HxWZFLS67Hgp_EYGwMVPb26HI8lz1FYFz7xWuC8SzjGCpXWPj8ZUCsuuMyGXPObFPur7uwFmy1Pc5CgrIw1wjOEeHte8iBRve-K8H7X_iZChSHszuPz3jE8aqDaPmwgRoqv9-MosijlRI2izrhqHu8eOshYOfScCb_qYTmrXYYgDimWC0NUE7XWIR0S54a5MRLYtZlORttsmBO1WtsG6skD2dl4BolGcNcvF-QS2_8e-5FlRWqcJY90LjqEDbtBMxKfujAJhXQvxHK6dXdQvWaIe3f_lqf5e7J849MZWbqqrKBX5XEwAU8UyhuLyXHeKo5cuAU9R_E3pVvltTl70Q8xjkeLkcOx4B5tNSd2Mi5qyQXFa4QPO8dhv6EGDEsMof-G5Qjw39ttGcBnnvnp-0FiFKSFHPlxMs_Ev8brTznnabkGJNMHQ6MDzhMkAfel22YsAeebSp_zd5_kb1uirhakWQ0CSct3Rs3hNC20kknF-PCoeswHJOI1Em-vdAZG1PJ53qrgQr3f4qQo5J7pf6H8nsiouegXgQrVLpihf7qHYOFzVu33YzrD9cOayh7SuWOSmWr4JU9HTkx2qISKHaXxcSFbv40IzbsHEIzBlGDTva4gIN6650XzsfCBflZoHQSP8slgA8A2lkcuBugyHw4Rx_XXJ918pz5KcEvP0RFyNYMvwIDRc1qP-aluhpuBtepoeOftVgb3mNQu3osloB8n-prU9VUw04KgS_a7FuPV6f8Df0Haiki5bGFaK2RKQzZi0fwSMk-76BSGDz1v-9Ky-ZHNNSliFJcOzSkFqyeUIFlEiLX3h2qaysHOvX_S898VERFb2jDF8fSJkGSffKNuW7cyYbCK75EATICgBXH2WmOje942eOgkrdE9gy5kvytN2BEzBXidpu5S7Fazfitl6c8SbHjF-RID_lo7Aem7d-kaOgKAjMUAoo7qCMX3iMz11lbqqmhSj2o92SK1Jd5M8CrYy8nxIaRC4Z1zbA==",
+              "summary": []
+            },
+            {
+              "id": "fc_0c9d37665d8bb920006a865bf04d2c87d18f6b3fbd7d8140f7",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"category\":\"Developer Tools\"}",
+              "call_id": "call_NUY51J7IOCqZzUUxom1uJWVN",
+              "name": "search_bookmarks"
+            }
+          ],
+          "usage": {
+            "input_tokens": 552,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 43,
+            "output_tokens_details": {
+              "reasoning_tokens": 21
+            },
+            "total_tokens": 595
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "search_bookmarks",
+          "input": "{\"category\":\"Developer Tools\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"Unknown category \\\"Developer Tools\\\".\",\"availableCategories\":[\"Development\",\"Design\",\"Productivity\",\"Learning\"]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0c9d37665d8bb920006a865bf3772087d1994db9e387a7ac9d",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlv0Qu5NmX2Zr7gpmtxkS0eUctcqT4_unMaX5HGLL17wI2hNj0MJ1KCfixP1V3JjbNjzzglldUKA7PupXX4yyuXmpO19wyWrMQ2XVRXxp_QLoD7mYvNwzxeoD1N5KY9Frv3N3bumschPU4NO7Z44MwlgNs6aJpSBIdWklDdcVjvPqPzom__EnX2GX2aWd6rCxnGTEH14ASx97z-KSe6D50X4ItOvlFUZbe7JFscTGQr2DdlewzT8-zFvaBsl-iqNf0zLhmib5dYFE-F4zp8tifmscyjgg0qfHnwQgNHBwDyWmmiEtVfaF0gkokQcDr1GJYR0GzfP1LG4MalqEUJjMySbgfCC3i1T3O2SGmSDv5d4QkjEyOGYc5cmgrkVQY9QB0FPV85cddfMYKlf3j1U9JG0wIt7hCvyL4DNqfmJxKQyjqzpehv5ROsPNsZHmLRjoZqqE8KGn0oKyv6sFNuS8wXSzemf-mTS-gU27BTL6vSWWCcFTz7P1XA9PkRGwvjm8Iplx-PpHBcrPSVd1ET-ShapN9uMElA3NyLFxFr4bOzmFE6A6j3GRBKwWTCfHfbmPisJ9DsvtFcb5-x4pZvHr50tLiec8IqYodzEfBJVTb_Lg5NFnqmurnuVDgTUoR3Btlqumi39A2vQzNk4GNeBJkAJaBo7_iWvCLHMn6K1-feWJWRp5xcKgM-m9KgVInBhrgTCpGcSWQQX_XA02Sm-HimI1u5c7_Z9-5edsOU6dY4-EnUVDhUbEegkXsJy-J0PfoPgxHFNs8DYOBnQLzu8AkOgt-6aDtUiGtkyCVxG8-HyV73EzKOGGNjub0LUb6Dm46qzZc0fBuXvweAOPSbZe_L8NuuBAD7pCXHwQxmOcWFLHuv_B1C5gbZPQ5MvCKhunKUGq1XQbHXnjhxIAnIq1sOv-koI9hbxoEgtlR_IjEkCeBuI_UixBaxK9zKyNEmvlcRfxNhHoR5GbUBv9lBjKfnN_zQOqoNDZyTYMdgBZRQrOc6dwj6oY5e4G-MBXJRd1gggchr7BHtaQCBlkvJ7zvgthAIJjoa-7Pm1gyzQoNtm9hb3KLFdB4Eh5sImTjArNO9c3YTFUWXqDX-SVqpuKj-DZLt-qCRrNTbEHUI-rhCHqFuRuWv6FAbzuuIaeeXRWeTlpgrPPfxJGtoLDpYWmAwUZGGOVUGlg-Y1FBU7uFpvgHdh2JdWBydSE4xmU0ZFq7_4d1i8LYiZ3Bdf14hFbFq2jNEDCQauMB_y0SrPb689EUOPMT8U6eC12MbnJcxehIhh8XrmM-tNX3S9TNd7hZbwiw==",
+              "summary": []
+            },
+            {
+              "id": "fc_0c9d37665d8bb920006a865bf3c1d887d1a614fb899281abd4",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"category\":\"Development\"}",
+              "call_id": "call_GmM5rXoZkHjPW5fBqs0xvrIZ",
+              "name": "search_bookmarks"
+            }
+          ],
+          "usage": {
+            "input_tokens": 648,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 39,
+            "output_tokens_details": {
+              "reasoning_tokens": 18
+            },
+            "total_tokens": 687
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "search_bookmarks",
+          "input": "{\"category\":\"Development\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"site\":{\"name\":\"9d8/directory\",\"description\":\"Use this template to display a collection of resources or bookmarks. Create a directory website in little to no time.\"},\"query\":null,\"category\":\"Development\",\"total\":2,\"results\":[{\"slug\":\"github\",\"title\":\"GitHub\",\"description\":\"Where the world builds software\",\"category\":\"Development\",\"url\":\"https://github.com\",\"page\":\"/github\"},{\"slug\":\"react\",\"title\":\"React\",\"description\":\"The library for web and native user interfaces\",\"category\":\"Development\",\"url\":\"https://react.dev\",\"page\":\"/react\"}],\"availableCategories\":[{\"name\":\"Development\",\"description\":\"Programming and development resources\"},{\"name\":\"Design\",\"description\":\"Design tools and inspiration\"},{\"name\":\"Productivity\",\"description\":\"Tools and resources for getting things done\"},{\"name\":\"Learning\",\"description\":\"Educational resources and tutorials\"}]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_0c9d37665d8bb920006a865bf5c96487d1be5d4c358e698fda",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Filtered to developer tools (Development). One result shown is **GitHub** — “Where the world builds software.”"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 897,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 31,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 928
+          }
+        }
+      ],
+      "final_text": "Final answer: Filtered to developer tools (Development). One result shown is **GitHub** — “Where the world builds software.”"
+    },
+    {
+      "run_id": "directory-filter_wm-gpt_d7bcc887-cc29-4527-999e-809101692ed1",
+      "task_id": "directory-filter",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "directory-9d8",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "15.595",
+      "reset_s": "8.767",
+      "setup_s": "0.410",
+      "agent_s": "6.418",
+      "ms": 15595,
+      "model_turns": 3,
+      "actions_or_tool_calls": 6,
+      "input_tokens": 2096,
+      "output_tokens": 102,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 2198,
+      "est_cost_usd": 0.002708,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:44:38.417Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "search_bookmarks",
+            "subscribe_newsletter",
+            "get_bookmark"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0f79c2570171f575006a865c011ce0819584dc230294849d34",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlwBwmGCmMO1JNlkzNBGzx5f3F-GDRvwsipsywS5o_O_Bc3VtMs6mUe04Wc4naxvT_S8iPoTZ2pEHx6ItiWBxZKP9TuvetcfCpP5d4LviLAFlwo9s-110uPmSo7eT-GrdmM78C5_VThWrncy_JVM24tt3mQ05dhiQokq-_1_CgyvhMUlHRxS_wFr8DbTvhlCC_3cxjVPEBQ1RgPmW63JP6elLTX18uDgGGh0ime03RfnkJ7K3GNVFAvBOx7xh6DmdYN4Lsi3zcvQoEWVZNZlVIYnd6fkEu31X628IH2CpeAePi3hRnoKtSPSBuNZFGBD2sn0zIRRbh5ozBxRO-DO9l0PZHu8tE9zs0QIMNCkuUJPqlQHKroS7adeS9S3jV9eq2iTJgvqC-huCW71ILCAWySanCB82As0o_wPhgO9s7bQvPng38cBBIKzD8Vvb4o9_uxQktDpWaQFO43MCOBpH0AgcS-Lm0bvq6yVRZJ5AJtT1cxhWwOl-B74p_WM8DFbozhjp82cF8WxCP3dIwttd_jMz9WOPlBuzH9z4QhRO2rzAR9To1SDqxdqeTdwEFA262KY5hw2mCGZLDdtVzt5XtBFJxy_qGb54LgMB0qjFQvty6pmU6y1SHDXm7rdk1SAjGCwAu7pOickXomN-13b8-HMRKYqwkl0Uy0V2C0LaRlmhRrqOVoIEhO3ScE5cmxglfw_cPb4QNq_6D4rCWUEzYrNCdTqop9kylNgXvxpteQTEP4RzEoZQ8nFvwKsFkgtL7X6koJ-lW8XSHwBaZX90BwCywU70r-G1__MhBS-RM0fUYrxOdPGIWGNsr8WkCfzwnzGD4dEGgKA5HmxnCF7RWRKme8o5OuADtfNSCMcAL5vAZqJ5u4Nd1wkwu-1iE8QIYDYj68dMJXwXaht8yeqfH1jxUZ1tfKBS3Am0jNgRKdhb65ATOsuu0iLPHU66GUUzIpAXxslDAedrbkCvlThEW9XxcYVv_KTux94yQ_DQg53N9tIgk2IVolBKRir_YLQSD-PhynquyvPmnh4grEEY2Ywm-S8N0MTv36NzrHBaEqxzhZz2AZfImAMxB_C2S3z0eofyK5vNL0fqH4-FM3RzRJ6egwrkUR4Rg-p72m30e-uLhRqbZfDMIc-HFl_AmicZgcPX9exAKLjWvpSvAZ0RZ4792OC89ikGFGfJ6lVlY-Ogbaeqe9MpqaYY_IRhXl3hZIy3-pxwt7dnRAJzXg8NOfSY-fEcAFNfi8Q2Ue-QakwJ_Jo7MQ4PtqJ64eiCsIvcFKh",
+              "summary": []
+            },
+            {
+              "id": "fc_0f79c2570171f575006a865c0187108195b334fe198b1b6970",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"category\":\"Developer Tools\"}",
+              "call_id": "call_FgWmilqTua4L1LzIejLBvOm3",
+              "name": "search_bookmarks"
+            }
+          ],
+          "usage": {
+            "input_tokens": 552,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 39,
+            "output_tokens_details": {
+              "reasoning_tokens": 17
+            },
+            "total_tokens": 591
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "search_bookmarks",
+          "input": "{\"category\":\"Developer Tools\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"Unknown category \\\"Developer Tools\\\".\",\"availableCategories\":[\"Development\",\"Design\",\"Productivity\",\"Learning\"]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0f79c2570171f575006a865c03710c8195bd8e9cd6b0d01782",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlwEQqOSUX7ueUvPnINOh_mpaVvYRuPd7R8ueyiEmGTdytDod2wog0ui_k4m6fFcmFZSKfOjjcCfyw1P8ZMW9bNZfSW04C7HgilaSr0ldOMzwN3om9BvvS6u7M9kNtXrStWywFMS7FlHMZD9DcSEbGa8edW5cN9GbVgUFgGv8G0cIVdgvUyGyZ7LD5VThqsqI5rNvhqpFiHQSvORFqyQ5H0Lv8HxjTU4eu1UdMF31PkQmLubR5jYWR142rawGPMT1oSKJsBKs0nJmqW4DJR2esJe8AbMm-tB9a9uEQHmwDF0i1gMeDRMNJtAKyK7mA9J0F27EZurKug_w3F1eld0wqFdIAvimHo54Xt3dNHOCRnIL-r80EHBhTKFFIvBFCY92Tir9Yuvi23OcZxTS1Um2Cxt_eTZrMwGtFQZOqLJKWbbTLGnOPabymVN0-xlxjJh30q5WCgEAa6vZSSANFvk2QQLP4mvBVELc5HH4hz2-XwtYAMQDx3XQKLNxecvyhwKNIIMLK8SDkgqmgD8gEgpC99CxkvNjdUXSpru2IynjlEI4HGf5u0RVVtdF1o79qx3q_bKdWGVrKP44u5H3cZE1F560LjqbHQhgpAoto6N_V8prrSxN6TEzBrlxtTYFNaVTeqzDkw0Ncglks7HaAhtl6HvOlHtyxIm2EhChuoXkwisEoXmUf2Irtb0jUtTVmmGpVoY9tn5Q8f2SHi8Ne2idONdgIbSsTc6DV4PWRt-6RuvayJkfhzhFrpX_-brwIJx9R4gooGmRRyAx4XDzUFIMbxKoJzy6R-wgqInnlFMpU5lOcFsWp42Oy3_TsqFAl5d12lfwtz3wXXYt_K-1YE5ek1LyJ-CLvtKS3eQkSNgoU_Nlcp7xDeCOhuXtk_Lo2ZbmARWUL3PsxhSjg8KJgUyMSCFcGteEiTeOqgUkprMErBXetgar3ZYp-fiO73FpGUXv73BWizef7kT_hWYOoMJynpkO5tMUopWtTXUZcESf65dP_ig9BO8uwnA68V4AM6sFlFeuK1LgWMpf397R7AYD88JRdmoMbLb4ZvA_9njBDxM4FyticX-NXdwfKI4wE43WHSeHpPCVVcxU5hDXax7-zEkp7RBwRLt9gSGcnROjT5u_O7-SzInVtyS9iM9Za2gIgtFsTveV2mYaRJ-qghbRjlCU-NZssRGOrVkB6Yag0IRAbaETM75FcqGmgITz8u6Ese2zgYoj9optYwmYpVZFbq-SIWerEcpcjboljRs_xxyB-YOmRFvsTFHM1GNrGoAhAdls62hKi8gbFXmgV6-LCzzs4uAAi7kr3aTScGjcNajngmltrx-lnehNjzUXHaM3mNwkRrQYGTTOdkgitYjaADbzw==",
+              "summary": []
+            },
+            {
+              "id": "fc_0f79c2570171f575006a865c03dbbc8195b31781a0ea7ccc05",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"category\":\"Development\"}",
+              "call_id": "call_fgsAK7c8PHeJPzMcJ5idWS6W",
+              "name": "search_bookmarks"
+            }
+          ],
+          "usage": {
+            "input_tokens": 644,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 46,
+            "output_tokens_details": {
+              "reasoning_tokens": 25
+            },
+            "total_tokens": 690
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "search_bookmarks",
+          "input": "{\"category\":\"Development\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"site\":{\"name\":\"9d8/directory\",\"description\":\"Use this template to display a collection of resources or bookmarks. Create a directory website in little to no time.\"},\"query\":null,\"category\":\"Development\",\"total\":2,\"results\":[{\"slug\":\"github\",\"title\":\"GitHub\",\"description\":\"Where the world builds software\",\"category\":\"Development\",\"url\":\"https://github.com\",\"page\":\"/github\"},{\"slug\":\"react\",\"title\":\"React\",\"description\":\"The library for web and native user interfaces\",\"category\":\"Development\",\"url\":\"https://react.dev\",\"page\":\"/react\"}],\"availableCategories\":[{\"name\":\"Development\",\"description\":\"Programming and development resources\"},{\"name\":\"Design\",\"description\":\"Design tools and inspiration\"},{\"name\":\"Productivity\",\"description\":\"Tools and resources for getting things done\"},{\"name\":\"Learning\",\"description\":\"Educational resources and tutorials\"}]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_0f79c2570171f575006a865c05fc548195bb6695e83bf498f4",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: GitHub — “Where the world builds software.”"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 900,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 17,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 917
+          }
+        }
+      ],
+      "final_text": "Final answer: GitHub — “Where the world builds software.”"
+    },
+    {
+      "run_id": "directory-filter_wm-gpt_4db6ba92-30e9-47a6-b98e-9718ffc21874",
+      "task_id": "directory-filter",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-5.6-luna",
+      "model_snapshot": "gpt-5.6-luna",
+      "tool_version": "responses-api",
+      "site": "directory-9d8",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "14.980",
+      "reset_s": "6.961",
+      "setup_s": "0.320",
+      "agent_s": "7.699",
+      "ms": 14980,
+      "model_turns": 3,
+      "actions_or_tool_calls": 6,
+      "input_tokens": 2095,
+      "output_tokens": 117,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 2212,
+      "est_cost_usd": 0.002797,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:44:53.444Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "search_bookmarks",
+            "subscribe_newsletter",
+            "get_bookmark"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0c1ad235e9d7d54f006a865c0eae0887d1a69952b42cb78ac8",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlwPz6vPKKzKpQYA92xmVOcMC9jZUxe0KDyg5qmDMUPZ1BT-5nLgGY80POR6qLFpqSCMXInRcPk_p8w9F1BpR-4OT5LrZ8jXGdvpbfmKQDS23iTY9tAf1A5rff59kjTPeD8OgSsR2r0O-Gz5GX0cLdqP798lHYWVzyLsMOQ2y_3EA4EzdosvtkGid4jzQ9c-0_eyTmS0QIQdMgXp764rbXGWCv-AsAZWZQgvZauzyx40Md8NlObrkxHRe6wJS46uxbUrHQTgbXsn1uCLtp3oxMKD3EO1bUFQUqV0IFw0NtJWJ261VPMcxt3RxiGrMz77oAZiGLZZCBrOEe_b9jqHH-yfZVVbvUPrBbL5RbFUcquMbmlLESLxjQFXChN9pxWRkjBDoZuMRlWwJD2pIBQDJvUr44oOXJDnZS7pDXiCBUAvsDoUTz-fteRs2HJIlEwstrT90gKNjDAztmhIcAbRLbRzr1XK_t3yoTSf23JAgo4ZFyg3lN050ZImypbHRSxWpbf0RVmi_DuDPTYEesiJRUlDLA2uM-oWiOqewb3veweKKNf3OuJM5MPS3HmLaQTWkQ12pjM4DtCxJ5zMusWN5ucGqm2qyQ7VeORTBCG7EVdQsh_5hagrdO-lf6pQUdVyN-H5hK6KebhWd0vFYJPDIeZGBHNI_pTR97hj2v6OOunRMnXQshI6oP3tC-LG0YgMZoEjkgA_5uyv_8v6H-kR-r0m-Z4gYhkd0896G2XxCspXmUYgzp1f9a8GsdVgOF0YO0dl9ywMrCGN_QkLLUAvDCn_Z0i55wKmjRdWNRuRLcC3saeDWVbEyP-oelgT_oL5U7nyfId9HBRfC4sXrCJaPO1Nnd4ml9_E0cT_nur7IrBQ8Nlkl3kxgnH_Vh8iCthQA7mL_dsVUDckj8J30c5LUAdgHRGg98jr6PACSUwQWK6EqDFoO5AT5jSXr99rKYZk8eppqp7_JCYVSlPXxsYOFNRDnWr_MUrwzsHRrknhobDEULbrSX0bm974HWHSEd0muI7CiXGmNmZ_JNGgUGEgyDh9RvDv9ag5z9063KfqNTXHtHyiviRRKMGvITyJIXpxqjev-5q2IGLICSctJZUjbMsQkxgPfnkdQh7aUdbzYRu-yOSYFh4rRc28vb3EPWbKpc_o5MNfMGIZF5yt_KJ-xqbFkySvCaCX9b5S5ZSk5l3UvMljr1o38SWW4w49jp6AWArdcp1MH57SozkckbfgSzztSMyUGsmGAbunZbOuMrpYwf8EXRYczKbLo8DqrQCQZC7s",
+              "summary": []
+            },
+            {
+              "id": "fc_0c1ad235e9d7d54f006a865c0eff0887d1b41864e0f83b482d",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"category\":\"Developer Tools\"}",
+              "call_id": "call_IbSBPujA7SpBpQkdDRRkvjzr",
+              "name": "search_bookmarks"
+            }
+          ],
+          "usage": {
+            "input_tokens": 552,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 39,
+            "output_tokens_details": {
+              "reasoning_tokens": 17
+            },
+            "total_tokens": 591
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "search_bookmarks",
+          "input": "{\"category\":\"Developer Tools\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"Unknown category \\\"Developer Tools\\\".\",\"availableCategories\":[\"Development\",\"Design\",\"Productivity\",\"Learning\"]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "rs_0c1ad235e9d7d54f006a865c10e3a887d1956f4c617c21db49",
+              "type": "reasoning",
+              "content": [],
+              "encrypted_content": "gAAAAABqhlwRy12FKDzLd8cDAdBxjGVNt3aMmYr5Q9SlfG8O4KubLIVLDBnWu42muEPxiwf9IaQZAyLwlDF0Jvvazg3MyRGMyq2Tr9KUQDZz6GaGuIepI4icpTE0vUq8_8hqVdaHR4XB-eiUPWjEs42-4yrOlRQ50cA14VFCJVQIs0ceX7F7V4ZUTUx4O9rg-HR2awg3JUh_5JMgU8mkSYPmySfAVB5v9IrzllBF9phsHQffuYMRujcCz7LFzLl2T-dQCuVDOFvaB4QL-shzsuOtF_AAdUU701rdq7IKzBBu6wX1Hf3o2J28v-EypCMaPo5p5_gpzjlbVL4WbzP4mV5dxE_b_WgwRF6y2wk2Z9dvhdJt8wwiCi-lJNK46z_drjD6tWJQ7CUXjc9R-pmgSFamSiJg3IMhLHvAmDRL6ZGf835cf6BwLXek96pY8MzF1Xm3TMXXGJZRozRn43hw9rRVfxaAfeVrHXmB21pCwvNFsBbWLj5O9Il4JkHH3g0WqXr8456ir-5JqTcV19jsBzW2cpA7Hh1u5TTHOyuoA3IXPi1uITtcXK6-_SSeIveib2zhZys_j6t3DjownMVq3MH0jhJeNNMHZQHU8xX2-WDBZvIInPC-e9fAhVP6yfpw7m7ZIeGxvXfYzpx_LksF_SXJ1Ry3SUO7cLWzr9O1-GSUv1I3sYk7qBG5ZY4BRMZb3PXYYuNg7jVFNq5y84sfBViSX-26EZhj9GDVzHJWIk4pWNNRV39kmDZZ0eCvKjM_QMLRM0-qp8Sq1kwB2BkG4rzSMYjDC7Bq33XjVlDvJ6Dhw7RsZoFiV6qk886HgJ70CN9Wbp_AlYa2fSHKmJz-phiF9m8ikzav9dQLohQcZuL2D8i6flwJkkXnUBtKZsN3y4rv9fbsqcO0rG8m2Nm9MzowyXQXiY27MO9A0r_t3GGAoZCvlB1SVhpQBjfsp3OATzEZDCsl2FSxoYmH-FC6NLCAySbFMPs-Yu2SApgigVYC9bAvHzky5Y_73U_vYfqd_aReUKTwR-2OPJMBFKicD8LKIbtC38_B-WrLPmmj66Xg8cAEkRZhL-v3LqM_aiS3ZlaJYvlHDldLU3ZdFvwKbeuFX8MgcY-AQ_vNi2JIHJg4ljTg3R3ybfIASiSEmsocnMrONbBnISiqA_xgyy0ffoeEpTsh5_ywl0F3z8GU_dVe50nGhOLD3dFQLSsc59R4eXMd13csuA2ig7z9tNzQz3fTAG6nKLzKzQOvqShLPlvSZ98KAePWKM77pG466weBep5FF0rGlXPO-Wn6W7Wz7E_UiVSahwnSO1SA_pKIht1yczB9I73pJg3BcEEuNOoyhA-fLVeMEKDXb2QUQcwql0-6S8p8w8vEtg==",
+              "summary": []
+            },
+            {
+              "id": "fc_0c1ad235e9d7d54f006a865c114fd487d183c1de97285b859c",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"category\":\"Development\"}",
+              "call_id": "call_FgssrvJQqgnSPQmuY1jGAuDa",
+              "name": "search_bookmarks"
+            }
+          ],
+          "usage": {
+            "input_tokens": 644,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 45,
+            "output_tokens_details": {
+              "reasoning_tokens": 24
+            },
+            "total_tokens": 689
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "search_bookmarks",
+          "input": "{\"category\":\"Development\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"site\":{\"name\":\"9d8/directory\",\"description\":\"Use this template to display a collection of resources or bookmarks. Create a directory website in little to no time.\"},\"query\":null,\"category\":\"Development\",\"total\":2,\"results\":[{\"slug\":\"github\",\"title\":\"GitHub\",\"description\":\"Where the world builds software\",\"category\":\"Development\",\"url\":\"https://github.com\",\"page\":\"/github\"},{\"slug\":\"react\",\"title\":\"React\",\"description\":\"The library for web and native user interfaces\",\"category\":\"Development\",\"url\":\"https://react.dev\",\"page\":\"/react\"}],\"availableCategories\":[{\"name\":\"Development\",\"description\":\"Programming and development resources\"},{\"name\":\"Design\",\"description\":\"Design tools and inspiration\"},{\"name\":\"Productivity\",\"description\":\"Tools and resources for getting things done\"},{\"name\":\"Learning\",\"description\":\"Educational resources and tutorials\"}]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_0c1ad235e9d7d54f006a865c12fd2887d19ad813f2d9778cc8",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Filtered to **Development** (developer tools). One result shown is **GitHub** — “Where the world builds software.”"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 899,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 33,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 932
+          }
+        }
+      ],
+      "final_text": "Final answer: Filtered to **Development** (developer tools). One result shown is **GitHub** — “Where the world builds software.”"
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "directory-9d8",
+      "taskId": "directory-filter",
+      "tier": "act-short",
+      "method": "wm-gpt",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}

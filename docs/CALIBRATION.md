@@ -2,7 +2,8 @@
 
 **Not a benchmark result.** A cost/plumbing test flight: one real site
 (directory-9d8, WebMCP golden applied, run via manual lifecycle), 5 tasks,
-N=1, two arms (wm-claude, cu-claude), both claude-sonnet-4-6. Purpose: verify
+N=1, two arms (wm-claude, cu-claude), both using the retired Anthropic
+calibration model. Purpose: verify
 the runner end-to-end and get real per-task costs before the full sweep.
 
 ## Result

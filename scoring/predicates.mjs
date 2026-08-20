@@ -21,6 +21,7 @@ function check(actual, assertion = {}) {
 export const normalizeAnswer = (value) => String(value).toLowerCase()
   .replace(/https?:\/\/\S+/g, " ")
   .replace(/[‐-―−]/g, "-")
+  .replace(/[’‘`´]/g, "'")
   .replace(/(\d)\s+to\s+(\d)/g, "$1-$2")
   .replace(/[-_]+/g, " ")
   .replace(/\s+/g, " ")

@@ -12,3 +12,8 @@ scratchpad/
 .DS_Store
 # capsule *definitions* live in capsules/ and ARE tracked; runtime instances
 # (clones, volumes) live outside the repo under CAPSULE_RUNTIME_ROOT (/tmp).
+
+# smoke runs are throwaway gate checks, not results
+results/*smoke*/
+.watchdog-ledger.jsonl
+watchdog-status.json

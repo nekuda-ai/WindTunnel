@@ -11,6 +11,7 @@ import { run as runWMGPT } from "../arms/wm-gpt.mjs";
 import { run as runCUOpenAI, TOOL_VERSION as CU_OPENAI_VERSION } from "../arms/cu-openai.mjs";
 import { run as runWMStagehand, TOOL_VERSION as WM_STAGEHAND_VERSION } from "../arms/wm-stagehand.mjs";
 import { run as runWMStagehandV4, TOOL_VERSION as WM_STAGEHAND_V4_VERSION } from "../arms/wm-stagehand-v4.mjs";
+import { run as runWMStagehandV4Gemini, TOOL_VERSION as WM_STAGEHAND_V4_GEMINI_VERSION } from "../arms/wm-stagehand-v4-gemini.mjs";
 import { run as runCUGemini, TOOL_VERSION as CU_GEMINI_VERSION } from "../arms/cu-gemini.mjs";
 import { run as runWMGemini, TOOL_VERSION as WM_GEMINI_VERSION } from "../arms/wm-gemini.mjs";
 import { bootCapsule } from "./capsule.mjs";
@@ -18,18 +19,25 @@ import { runBatch } from "./run.mjs";
 import { resolveProfile, loadSites } from "./sites.mjs";
 import { loadTaskFile, loadTasks, resolveTask, taskFile } from "./tasks.mjs";
 import { writeReport } from "../scoring/report.mjs";
+import { isInfraRow } from "./lib.mjs";
+import { apiKeyEnvFor } from "../arms/prompts.mjs";
 
 const PRESETS = { smoke: { n: 1 }, lite: { n: 3 }, full: { n: 3 } };
 const ARMS = {
   scripted: { id: "scripted", run: runScripted, model: "none", paid: false },
   "cu-claude": { id: "cu-claude", run: runCUClaude, model: "claude-sonnet-4-6", version: CU_CLAUDE_VERSION, key: "ANTHROPIC_API_KEY", paid: true },
   "cu-openai": { id: "cu-openai", run: runCUOpenAI, model: "gpt-5.5", version: CU_OPENAI_VERSION, key: "OPENAI_API_KEY", paid: true },
-  "dom-browseruse": { id: "dom-browseruse", run: runBrowserUse, model: "claude-sonnet-4-6", version: BROWSERUSE_VERSION, key: "ANTHROPIC_API_KEY", paid: true },
-  "a11y-stagehand": { id: "a11y-stagehand", run: runStagehand, model: "claude-sonnet-4-6", version: STAGEHAND_VERSION, key: "ANTHROPIC_API_KEY", paid: true },
+  // The two structured arms are reused across providers via --model (Luna runs
+  // through them), so their credential follows the EFFECTIVE model rather than
+  // being pinned to Anthropic — otherwise a Luna run would demand an unused
+  // ANTHROPIC_API_KEY and authenticate against the wrong provider.
+  "dom-browseruse": { id: "dom-browseruse", run: runBrowserUse, model: "claude-sonnet-4-6", version: BROWSERUSE_VERSION, key: apiKeyEnvFor, paid: true },
+  "a11y-stagehand": { id: "a11y-stagehand", run: runStagehand, model: "claude-sonnet-4-6", version: STAGEHAND_VERSION, key: apiKeyEnvFor, paid: true },
   "wm-claude": { id: "wm-claude", run: runWMClaude, model: "claude-sonnet-4-6", version: "@anthropic-ai/sdk", key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
   "wm-gpt": { id: "wm-gpt", run: runWMGPT, model: "gpt-5.5", version: "responses-api", key: "OPENAI_API_KEY", paid: true, webmcp: true },
   "wm-stagehand": { id: "wm-stagehand", run: runWMStagehand, model: "claude-sonnet-4-6", version: WM_STAGEHAND_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
   "wm-stagehand-v4": { id: "wm-stagehand-v4", run: runWMStagehandV4, model: "claude-sonnet-4-6", version: WM_STAGEHAND_V4_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
+  "wm-stagehand-v4-gemini": { id: "wm-stagehand-v4-gemini", run: runWMStagehandV4Gemini, model: "gemini-3.6-flash", version: WM_STAGEHAND_V4_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true, webmcp: true },
   "cu-gemini": { id: "cu-gemini", run: runCUGemini, model: "gemini-3.6-flash", version: CU_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true },
   "wm-gemini": { id: "wm-gemini", run: runWMGemini, model: "gemini-3.6-flash", version: WM_GEMINI_VERSION, key: "GEMINI_API_KEY", paid: true, webmcp: true },
 };
@@ -44,13 +52,15 @@ export const USAGE = `Usage: node harness/cli.mjs [options]
   --n <odd number>            Repeats per task
   --seed <number>             Fixture seed (default: 1)
   --budget <usd>              Hard spending cap
+  --max-consecutive-infra <n> Abort the flight after n consecutive infrastructure
+                              failures (default 2; 0 disables)
   --perturbed                 Enable perturbations
   --label <name>              Label this run
   --model <arm=model>         Override a method model
   --help                      Show this usage`;
 
 export function parseArgs(argv) {
-  const options = { preset: "smoke", sites: "lite", arms: ["scripted"], seed: 1, budget: Infinity, perturbed: false, models: {} };
+  const options = { preset: "smoke", sites: "lite", arms: ["scripted"], seed: 1, budget: Infinity, perturbed: false, models: {}, maxConsecutiveInfra: 2 };
   let explicitN = false;
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
@@ -67,6 +77,7 @@ export function parseArgs(argv) {
       else if (flag === "--n") { options.n = Number(value); explicitN = true; }
       else if (flag === "--seed") options.seed = Number(value);
       else if (flag === "--budget") options.budget = Number(value);
+      else if (flag === "--max-consecutive-infra") options.maxConsecutiveInfra = Number(value);
       else if (flag === "--label") options.label = value;
       else if (flag === "--model") {
         const [arm, ...model] = value.split("=");
@@ -101,9 +112,11 @@ export function planRuns(options, env = process.env, methods = ARMS) {
   for (const armId of options.arms) {
     const method = methods[armId];
     if (!method) throw new Error(`unknown arm: ${armId}`);
-    if (method.key && !env[method.key]) { notices.push(`Skipping ${armId}: ${method.key} is not set.`); continue; }
+    const model = options.models[armId] ?? method.model;
+    const key = typeof method.key === "function" ? method.key(model) : method.key;
+    if (key && !env[key]) { notices.push(`Skipping ${armId}: ${key} is not set.`); continue; }
     if (method.paid && options.budget <= 0) { notices.push(`Skipping ${armId}: budget hard stop reached.`); continue; }
-    for (const siteId of sites) runs.push({ siteId, method: { ...method, model: options.models[armId] ?? method.model } });
+    for (const siteId of sites) runs.push({ siteId, method: { ...method, model, key } });
   }
   return { runs, notices };
 }
@@ -138,6 +151,11 @@ export async function runBenchmark(argv, {
   const rows = [], verdicts = [], capsules = [];
   let cost = 0;
   let budgetExceeded = false;
+  // A provider outage produces a run of infrastructure failures. Continuing
+  // through one burns the remaining attempts and fills the artifact with cells
+  // that measure the outage, not the model — so stop the flight and let it be
+  // restarted cleanly once the provider recovers.
+  let consecutiveInfra = 0, abortedReason = "";
   // Live journal: every finished attempt is appended immediately (transcript
   // and final_text stripped — run.json carries those at the end), so a
   // 20-hour run has a mid-flight scoreboard instead of an all-or-nothing
@@ -152,6 +170,7 @@ export async function runBenchmark(argv, {
   };
   for (let index = 0; index < plan.runs.length; index++) {
     const { siteId, method } = plan.runs[index];
+    if (abortedReason) break;
     if (method.paid && budgetExceeded) {
       log(`Skipping ${method.id}: budget hard stop reached ($${cost.toFixed(4)} > $${options.budget.toFixed(2)}).`);
       continue;
@@ -176,10 +195,21 @@ export async function runBenchmark(argv, {
         boot: (id, bootOptions) => boot(id, { ...bootOptions, env: armEnv }),
         onResult: (row) => {
           streamRow(row);
+          if (isInfraRow(row)) {
+            consecutiveInfra++;
+            if (options.maxConsecutiveInfra > 0 && consecutiveInfra >= options.maxConsecutiveInfra) {
+              abortedReason = `${consecutiveInfra} consecutive infrastructure failures (last: ${row.failure_category})`;
+              log(`ABORTING FLIGHT: ${abortedReason}`);
+              return false;
+            }
+          } else {
+            consecutiveInfra = 0;
+          }
           if (!method.paid) return;
           cost += Number(row.est_cost_usd || 0);
           if (cost > options.budget) {
             budgetExceeded = true;
+            abortedReason = abortedReason || `budget hard stop after ${row.task_id} ($${cost.toFixed(4)} > $${options.budget.toFixed(2)}) — flight is incomplete`;
             log(`Budget hard stop reached after ${row.task_id} ($${cost.toFixed(4)} > $${options.budget.toFixed(2)}).`);
             return false;
           }
@@ -201,7 +231,8 @@ export async function runBenchmark(argv, {
       await browser.close();
     }
   }
-  const outputDir = writeReport({ rows, verdicts, capsules, options: { ...options, fake: env.WT_FAKE_LIFECYCLE === "1", label: options.label ?? `${options.sites}-${options.preset}`, model: [...new Set(plan.runs.map(({ method }) => method.model))].join(","), armModels: Object.fromEntries(plan.runs.map(({ method }) => [method.id, method.model])) }, outputRoot });
+  if (abortedReason) log(`Flight aborted — artifact is INCOMPLETE and must not enter the canonical set: ${abortedReason}`);
+  const outputDir = writeReport({ rows, verdicts, capsules, options: { ...options, aborted: abortedReason || undefined, fake: env.WT_FAKE_LIFECYCLE === "1", label: options.label ?? `${options.sites}-${options.preset}`, model: [...new Set(plan.runs.map(({ method }) => method.model))].join(","), armModels: Object.fromEntries(plan.runs.map(({ method }) => [method.id, method.model])) }, outputRoot });
   log(`Report: ${path.join(outputDir, "report.md")}`);
   return { rows, verdicts, capsules, outputDir, options };
 }

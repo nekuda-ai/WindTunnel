@@ -52,28 +52,43 @@ tasks:
     auth: true
     tier: act-long
     prompt: Log in at /login as admin@admin.com with password admin123, then create a new draft invoice for the client Acme Evaluation with a single line item "Quarterly Retainer", quantity 1, price 400.
-    # Probe-verified: the invoices probe returns every invoice's line items;
-    # the new item's {name, price} pair only exists if the invoice was created.
+    # Probe-verified against everything the prompt actually asks for. Checking
+    # only {name, price} let an invoice for the wrong client, in the wrong
+    # status, at the wrong quantity count as success. Both interfaces can
+    # satisfy the stricter form: the golden create_invoice takes client, status
+    # and per-item quantity, and the visible form defaults status to draft.
     max_steps: { webmcp: 10, cu: 30, structured: 24 }
     predicate:
       probe: invoices
       args: { number: 2 }
       assert:
-        # name/price live inside items[] in the oracle's normalized invoice —
+        # client/items are nested in the oracle's normalized invoice —
         # co-locating them with number in one flat object is unsatisfiable.
-        contains: { number: 2, items: { name: Quarterly Retainer, price: 400 } }
+        contains:
+          number: 2
+          status: draft
+          client: { name: Acme Evaluation }
+          items: { name: Quarterly Retainer, quantity: 1, price: 400 }
 
   - id: id-7
     auth: true
     tier: act-long
     prompt: Log in at /login as admin@admin.com with password admin123, then record a payment of 100 against invoice 1/2026 with reference EVAL-100.
-    # Probe-verified: credit 100 of 250 flips the server-computed
-    # paymentStatus on invoice 1 from unpaid to partially. IDURAR's
-    # /api/invoice/create ignores a client-supplied number and auto-assigns 1,
-    # so the task and probe must reference 1/2026 (1001 was unwinnable).
+    # paymentStatus alone is too weak: it flips to "partially" for any payment
+    # from 1 to 249 of the 250 total, so $50 with no reference passed a task
+    # asking for $100 with reference EVAL-100 — and the reference field is
+    # optional in the visible form, so skipping it was a free pass. The payments
+    # probe exposes the payment record itself. Both interfaces can satisfy this:
+    # the golden record_payment takes an optional `ref` and persists it (stored
+    # transcripts show every WebMCP arm already sent ref "EVAL-100"), and the
+    # form has a Reference field. IDURAR's /api/invoice/create ignores a
+    # client-supplied number and auto-assigns 1, so this references 1/2026.
     max_steps: { webmcp: 10, cu: 30, structured: 24 }
     predicate:
-      probe: invoices
+      probe: payments
       args: { number: 1 }
       assert:
-        contains: { number: 1, paymentStatus: partially }
+        contains:
+          number: 1
+          paymentStatus: partially
+          payments: { amount: 100, ref: EVAL-100 }
