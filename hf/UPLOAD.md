@@ -2,6 +2,20 @@
 
 Run these commands from the WindTunnel source repository root. They create exactly two public Hub repositories: one dataset and one static Space. They do not create a model repository or a submission service.
 
+## 0. Create the packaging environment (once)
+
+`/tmp` is cleared on reboot, so build the environment somewhere durable and use
+`$HFPY` throughout. This is isolated from the Node project and installs nothing
+globally.
+
+```bash
+python3 -m venv .hfenv
+./.hfenv/bin/pip install -q pyarrow pandas 'huggingface_hub[cli]'
+export HFPY="$PWD/.hfenv/bin/python"
+export HFCLI="$PWD/.hfenv/bin/hf"
+$HFCLI version   # expect 1.x
+```
+
 ## 1. Choose the Hub names
 
 The publisher must choose the namespace. The suggested repository slugs can be changed before creation.
@@ -17,8 +31,8 @@ export HF_SPACE_REPO="windtunnel-results-explorer"
 Use the pinned packaging environment; this does not modify the Node project.
 
 ```bash
-/tmp/hfenv/bin/python hf/build_dataset.py
-/tmp/hfenv/bin/python hf/verify_package.py
+$HFPY hf/build_dataset.py
+$HFPY hf/verify_package.py
 ```
 
 Do not upload unless the final line is `SUMMARY: 9 passed, 0 failed`.
@@ -32,9 +46,9 @@ Read `hf/dataset/LICENSING.md`. Confirm that the provider agreements and any org
 ## 4. Authenticate and create exactly two repositories
 
 ```bash
-/tmp/hfenv/bin/hf auth login
-/tmp/hfenv/bin/hf repos create "$HF_NAMESPACE/$HF_DATASET_REPO" --repo-type dataset --public --exist-ok
-/tmp/hfenv/bin/hf repos create "$HF_NAMESPACE/$HF_SPACE_REPO" --repo-type space --sdk static --public --exist-ok
+$HFCLI auth login
+$HFCLI repos create "$HF_NAMESPACE/$HF_DATASET_REPO" --repo-type dataset --public --exist-ok
+$HFCLI repos create "$HF_NAMESPACE/$HF_SPACE_REPO" --repo-type space --sdk static --public --exist-ok
 ```
 
 ## 5. Upload the dataset repository
@@ -42,14 +56,14 @@ Read `hf/dataset/LICENSING.md`. Confirm that the provider agreements and any org
 The first command uploads the card, licensing note, and all four Parquet files. The second places the standalone scorer at the dataset repository root, where its default `data/` lookup works.
 
 ```bash
-/tmp/hfenv/bin/hf upload "$HF_NAMESPACE/$HF_DATASET_REPO" hf/dataset . --repo-type dataset --commit-message "Publish WindTunnel canonical dataset"
-/tmp/hfenv/bin/hf upload "$HF_NAMESPACE/$HF_DATASET_REPO" hf/score_answers.py score_answers.py --repo-type dataset --commit-message "Add standalone answer scorer"
+$HFCLI upload "$HF_NAMESPACE/$HF_DATASET_REPO" hf/dataset . --repo-type dataset --commit-message "Publish WindTunnel canonical dataset"
+$HFCLI upload "$HF_NAMESPACE/$HF_DATASET_REPO" hf/score_answers.py score_answers.py --repo-type dataset --commit-message "Add standalone answer scorer"
 ```
 
 ## 6. Upload the static Space
 
 ```bash
-/tmp/hfenv/bin/hf upload "$HF_NAMESPACE/$HF_SPACE_REPO" hf/space . --repo-type space --commit-message "Publish canonical WindTunnel explorer"
+$HFCLI upload "$HF_NAMESPACE/$HF_SPACE_REPO" hf/space . --repo-type space --commit-message "Publish canonical WindTunnel explorer"
 ```
 
 There is no build command, runtime secret, API key, storage volume, or paid Space hardware requirement.
@@ -67,8 +81,8 @@ Download the published dataset into a fresh directory and repeat the scorer proo
 
 ```bash
 export HF_DOWNLOAD_DIR="$(mktemp -d)"
-/tmp/hfenv/bin/hf download "$HF_NAMESPACE/$HF_DATASET_REPO" --repo-type dataset --local-dir "$HF_DOWNLOAD_DIR"
-/tmp/hfenv/bin/python "$HF_DOWNLOAD_DIR/score_answers.py" --verify-corpus
+$HFCLI download "$HF_NAMESPACE/$HF_DATASET_REPO" --repo-type dataset --local-dir "$HF_DOWNLOAD_DIR"
+$HFPY "$HF_DOWNLOAD_DIR/score_answers.py" --verify-corpus
 ```
 
 The expected proof is:

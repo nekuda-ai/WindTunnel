@@ -17,3 +17,6 @@ scratchpad/
 results/*smoke*/
 .watchdog-ledger.jsonl
 watchdog-status.json
+
+# packaging venv for the Hugging Face release (see hf/UPLOAD.md)
+.hfenv/
