@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
-import { BASE_SYSTEM, MECHANICS, withCacheBreakpoint } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, withCacheBreakpoint, claudeSampling, maxTokensFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "stagehand@4.0.0+native-webmcp";
 const MODEL = "claude-sonnet-4-6";
@@ -67,7 +67,7 @@ export async function run({ task, capsule, model = MODEL }) {
     const page = await browser.context.activePage();
     await page.goto(startUrl(task, capsule), { waitUntil: "domcontentloaded", timeout: 30_000 });
 
-    const client = new Anthropic({ maxRetries: 2 });
+    const client = new Anthropic({ maxRetries: 6 });
     const messages = [{ role: "user", content: task.prompt }];
     const usage = { input_tokens: 0, output_tokens: 0, cached_input_tokens: 0, cache_creation_tokens: 0 };
     const transcript = [];
@@ -92,8 +92,8 @@ export async function run({ task, capsule, model = MODEL }) {
       turns++;
       const response = await client.messages.create({
         model,
-        max_tokens: 4096,
-        temperature: 0,
+        max_tokens: maxTokensFor(model),
+        ...claudeSampling(model).request,
         system: [{ type: "text", text: withToday(SYSTEM), cache_control: { type: "ephemeral" } }],
         tools: anthropicTools(liveTools),
         tool_choice: { type: "auto", disable_parallel_tool_use: true },

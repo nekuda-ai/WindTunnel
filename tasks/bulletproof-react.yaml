@@ -7,5 +7,12 @@ tasks:
   - id: react-auth-boundary
     tier: answer
     prompt: Check whether the private app is accessible while signed out; do not sign in.
-    # Score the signed-out redirect or access-denied result the agent observes.
-    predicate: { type: answer, matches: "(log ?in|sign ?in|redirect|unauthorized|denied)" }
+    # Score the OUTCOME the agent observed, not the mere presence of a login
+    # page. The previous `log ?in|sign ?in` alternation passed a stuck
+    # computer-use attempt that only said "I can see the login page. I need to
+    # find a way to access the address bar" (2026-07-27 reference run) — the
+    # agent never determined anything. Every correct stored answer, across all
+    # ten arms, states a boundary outcome: not accessible / inaccessible /
+    # redirect / restricted to signed-in members. An unqualified "accessible"
+    # matches no alternative here.
+    predicate: { type: answer, matches: "(redirect|unauthorized|denied|forbidden|inaccessible|not\\W{0,4}accessible|(cannot|can'?t|could not|couldn'?t|unable to)[^.]{0,30}(access|reach|view|open|see)|not\\W{0,4}reachable|requires? (signing|sign|log|logging|authentication)|(must|need to|have to) (log|sign) in|restricted to signed|only visible to signed|blocked)" }

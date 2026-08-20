@@ -1,7 +1,7 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import Anthropic from "@anthropic-ai/sdk";
-import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint, maxTokensFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "computer_20251124";
 const MODEL = "claude-sonnet-4-6";
@@ -87,7 +87,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   await page.goto(startUrl(task, capsule), { waitUntil: "domcontentloaded", timeout: 30_000 });
   await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
   await page.waitForTimeout(2_000);
-  const client = new Anthropic({ maxRetries: 2 });
+  const client = new Anthropic({ maxRetries: 6 });
   const sampling = claudeSampling(model);
   const messages = [{ role: "user", content: task.prompt }];
   const tools = [{ type: TOOL_VERSION, name: "computer", display_width_px: VIEWPORT.width, display_height_px: VIEWPORT.height }];
@@ -98,6 +98,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const limit = stepBudget(task, "cu", MAX_TURNS);
   let finalText = "";
   let model_snapshot = "";
+  let lastStopReason = "";
   let turns = 0;
   const setupMs = performance.now() - started;
   const deadline = performance.now() + ATTEMPT_MS;
@@ -108,7 +109,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
     pruneImages(messages);
     const response = await client.beta.messages.create({
       model,
-      max_tokens: 4096,
+      max_tokens: maxTokensFor(model),
       ...sampling.request,
       system: [{ type: "text", text: withToday(SYSTEM), cache_control: { type: "ephemeral" } }],
       tools,
@@ -116,6 +117,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
       betas: [BETA],
     });
     model_snapshot = response.model ?? model_snapshot;
+    lastStopReason = response.stop_reason ?? lastStopReason;
     usage.input_tokens += response.usage.input_tokens ?? 0;
     usage.output_tokens += response.usage.output_tokens ?? 0;
     usage.cached_input_tokens += response.usage.cache_read_input_tokens ?? 0;
@@ -143,5 +145,10 @@ export async function run({ task, capsule, page, model = MODEL }) {
     messages.push({ role: "user", content: results });
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot,
+    budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled",
+    stop_reason: lastStopReason, refusal: lastStopReason === "refusal", truncated: lastStopReason === "max_tokens",
+    // No explicit effort is sent, so the model runs at the API default
+    // (high on Sonnet 5 / Opus 5). Recorded so the artifact states it.
+    effort: "api-default" };
 }

@@ -62,7 +62,21 @@ tasks:
     tier: act-long
     prompt: Add two pairs of Medusa Sweatpants in size M and one pair of Medusa Shorts in size S to the cart, then report the cart's total item count.
     max_steps: { webmcp: 10, cu: 30, structured: 24 }
-    predicate: { type: answer, matches: "(cart|items?)[^.]{0,40}\\b(3|three)\\b|\\b(3|three)\\b[^.]{0,40}(cart|items?)" }
+    # A bare "\\b3\\b" is too weak: it also accepts "the cart contains 2 items,
+    # not the expected 3". Keep the proximity form that the correct answers
+    # already satisfy, add an anchored bare answer for the audit's "Final
+    # answer: 3" rows, and reject answers that state a different total.
+    # ponytail: this still scores a reported number, not cart state — the
+    # prompt itself reveals 2+1=3, so it cannot prove the cart was touched.
+    # Upgrade path: extend the medusa database probe to sum cart line-item
+    # quantities, which would make md-7 probe-verified like md-5.
+    predicate:
+      type: answer
+      matches: "(cart|items?)[^.]{0,40}\\b(3|three)\\b|\\b(3|three)\\b[^.]{0,40}(cart|items?)|^\\W*((final )?answer:)?\\W*(3|three)\\b\\W*$"
+      # Only actual contradictions — a correct answer may narrate "2 items of
+      # sweatpants" on the way to the right total.
+      not_contains: ["cart contains 2 items", "cart has 2 items", "cart holds 2 items", "only 2 items",
+                     "cart contains two items", "cart has two items"]
 
   - id: md-8
     tier: transaction

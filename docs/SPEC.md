@@ -178,17 +178,21 @@ N=1; `lite`/`full`: N=3).
 
 ## 6. Methods under test and how runs are configured
 
-Seven implementations across the three interface classes:
+Ten implementations across the three interface classes are represented in the
+canonical run:
 
-| id | interface class | driver | default model | status |
+| id | interface class | driver | canonical model(s) | status |
 |---|---|---|---|---|
-| `wm-claude` | WebMCP | native loop | claude-sonnet-4-6 | built · measured |
-| `dom-browseruse` | page structure (DOM) | Browser Use | claude-sonnet-4-6 | built · measured |
-| `a11y-stagehand` | page structure (a11y) | Stagehand agent | claude-sonnet-4-6 | built · measured |
-| `cu-claude` | screenshots | Anthropic computer use | claude-sonnet-4-6 | built · measured |
-| `cu-openai` | screenshots | OpenAI computer use | gpt-5.5 | built · measured |
-| `wm-gpt` | WebMCP | native loop | gpt-5.5 | built · measured |
-| `wm-stagehand` | WebMCP | Stagehand | claude-sonnet-4-6 | built · measured |
+| `wm-claude` | WebMCP | native loop | claude-sonnet-5, claude-opus-5 | built · measured |
+| `dom-browseruse` | page structure (DOM) | Browser Use | claude-sonnet-5, gpt-5.6-luna | built · measured |
+| `a11y-stagehand` | page structure (a11y) | Stagehand agent | claude-sonnet-5, gpt-5.6-luna | built · measured |
+| `cu-claude` | screenshots | Anthropic computer use | claude-sonnet-5, claude-opus-5 | built · measured |
+| `cu-openai` | screenshots | OpenAI computer use | gpt-5.6-luna, gpt-5.6-sol | built · measured |
+| `wm-gpt` | WebMCP | native loop | gpt-5.6-luna, gpt-5.6-sol | built · measured |
+| `wm-stagehand-v4` | WebMCP | Stagehand v4 | claude-sonnet-5 | built · measured |
+| `wm-stagehand-v4-gemini` | WebMCP | Stagehand v4 | gemini-3.6-flash | built · measured |
+| `cu-gemini` | screenshots | Gemini computer use | gemini-3.6-flash | built · measured |
+| `wm-gemini` | WebMCP | native loop | gemini-3.6-flash | built · measured |
 
 The headline groups these into the three interface classes; per-method numbers
 are available underneath. New methods are added by implementing one small
@@ -215,12 +219,10 @@ Practical note: containers boot in minutes, not milliseconds, so the harness
 boots each site once per (site × method) batch and `reset`s between repeats
 rather than rebooting per run.
 
-The reference run uses claude-sonnet-4-6 and gpt-5.5. Early measured rates are
-about $0.01 per task for a WebMCP method and ~9× that for computer use, which
-dominates the bill (see the README's [Cost](../README.md#cost) section). A full
-seven-method sweep at N=3 is on the order of a couple hundred dollars once the
-long transaction tiers are included — it depends on the models and task mix.
-Other models are a natural thing for submitters to bring.
+The canonical run uses Sonnet 5, Opus 5, GPT-5.6 Luna, GPT-5.6 SOL, and Gemini
+3.6 Flash. Its 16 configurations produced 2,352 attempts at a recorded total
+cost of $175.62 (see the README's [Cost](../README.md#cost) section). Other
+models are a natural thing for submitters to bring.
 
 ### 6.1 Single- vs multi-modal arms
 
@@ -230,8 +232,10 @@ attributed to *that* channel. Browser Use, by contrast, runs **multimodal by
 default** — it sends the model the DOM *and* a screenshot each step — so
 `dom-browseruse` is really a DOM+vision agent, the strongest realistic
 non-WebMCP baseline, not a DOM-only one. That is the fair comparison for
-WebMCP: in the 2026-07-27 reference run it edges the multimodal agent on
-success (96–98% vs 88%) while costing ~8× less and running ~4× faster.
+WebMCP: in the canonical run, Sonnet 5 on DOM + vision has the board's highest
+attempt success at 145/147 and ties native WebMCP at 48/49 tasks solved. Native
+WebMCP costs 23× less per median attempt, uses 12.5× fewer tokens, and runs
+4.3× faster for that same model.
 
 A set-of-marks arm (a11y marks overlaid on a screenshot, à la WebVoyager) is a
 planned addition as an even stronger combined baseline.
@@ -249,15 +253,17 @@ planned addition as an even stronger combined baseline.
   provider's cached rate**. Prompt caching is enabled for every method whose
   framework supports it, and each row records its `caching` state so an arm
   that cannot cache is visible rather than silently cheap.
-- **Tokens** — *total processed*: uncached input + cache reads + output. Cache
-  reads are real model context; the discount is a billing fact captured in the
-  cost column, so excluding them would make caching arms look an order of
-  magnitude lighter than they are. The uncached/cached split stays in
-  `results.csv` for anyone who wants it.
+- **Tokens** — *total processed*: uncached input + cache reads + cache writes +
+  output. Cache reads and writes are real model context; the discount is a
+  billing fact captured in the cost column, so excluding them would make
+  caching arms look an order of magnitude lighter than they are. The split
+  stays in `results.csv` for anyone who wants it.
 - **Leaderboard score** — a display-only composite: attempt success 60%,
-  median cost 20%, and median agent time 20%. Success is min-max normalized;
-  cost and time are log-transformed, min-max normalized, and reversed so lower
-  is better. Tokens are not scored separately because cost already reflects
+  median cost 20%, and median agent time 20%. Success enters as the raw pass
+  rate; only cost and time are log-transformed, min-max normalized across the
+  field, and reversed so lower is better. Success is deliberately NOT min-max
+  normalized: that pins the weakest arm to exactly 0 and deletes the entire
+  60% weight, so an arm passing 81% of its attempts scored 9.2/100. Tokens are not scored separately because cost already reflects
   them. The underlying metrics remain the primary results.
 - **Infrastructure exclusions** — attempts that fail on provider rate limits
   or capsule boot errors are excluded from every number and reported
@@ -278,8 +284,8 @@ every request rather than registered once at the wire level. The difference is
 the growth rate: a page-reading interface re-reads the whole page on every
 step, so its payload compounds, while a WebMCP call's payload is independent of
 page size. Measured across tiers in the five-model comparison (median cost per
-attempt, shortest tier → longest): **WebMCP $0.0077 → $0.0223 (~3×)**;
-**computer use $0.0398 → $0.2667 (~7×)**. That divergence, not a flat WebMCP
+attempt, shortest tier → longest): **WebMCP $0.0054 → $0.0241 (~4×)**;
+**computer use $0.0361 → $0.2500 (~7×)**. That divergence, not a flat WebMCP
 cost, is what widens the multiple on long journeys.
 
 **Per-interface turn budgets.** A task's YAML may set `max_steps` per interface
@@ -295,6 +301,11 @@ records `budget_exhausted` when the loop ended by hitting its limit.
 result can be re-costed later. A model absent from the table is estimated at
 Sonnet rates and its rows are flagged `cost_estimated`, rather than silently
 priced.
+
+**Model snapshots.** Native harnesses record the provider response when it
+identifies the served snapshot. Stagehand and browser-use cannot surface that
+value, so their rows use `snapshot_source: unavailable:<harness>` and the
+configured model is confirmed out of band by `scripts/verify-model.mjs`.
 
 ## 7. Leaderboard and held-out scoring
 

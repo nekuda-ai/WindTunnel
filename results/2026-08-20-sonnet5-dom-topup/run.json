@@ -1,0 +1,610 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "hi-events",
+    "arms": [
+      "dom-browseruse"
+    ],
+    "seed": 1,
+    "budget": 15,
+    "perturbed": false,
+    "models": {
+      "dom-browseruse": "claude-sonnet-5"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "hev-7",
+      "hev-8",
+      "hev-9"
+    ],
+    "n": 3,
+    "label": "sonnet5-dom-topup",
+    "fake": false,
+    "model": "claude-sonnet-5",
+    "armModels": {
+      "dom-browseruse": "claude-sonnet-5"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "hi-events",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "hev-7_dom-browseruse_60d16ab4-7c3a-49b6-9597-bfbba2c21191",
+      "task_id": "hev-7",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "97.848",
+      "reset_s": "20.818",
+      "setup_s": "0.572",
+      "agent_s": "76.458",
+      "ms": 97848,
+      "model_turns": 8,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 137765,
+      "output_tokens": 5017,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 142782,
+      "est_cost_usd": 0.48855,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:36:15.311Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 8
+        }
+      ],
+      "final_text": "Registration for the WebMCP Community Workshop was completed successfully. Order Reference: O-WWZ5KS0, placed Aug 20, 2026 3:35am GMT+3. Two General admission tickets were purchased under purchaser Jordan Baker (jordan.baker@example.com). Guests confirmed on the order summary page: 1) Jordan Baker - jordan.baker@example.com - General admission, 2) Sam Baker - sam.baker@example.com - General admission. A confirmation email was sent to jordan.baker@example.com. The confirmation page displayed 'You're going to WebMCP Community Workshop!' confirming the registration completed successfully."
+    },
+    {
+      "run_id": "hev-7_dom-browseruse_7f09f63b-c388-48aa-8586-2c91e6b5e6da",
+      "task_id": "hev-7",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "119.615",
+      "reset_s": "20.380",
+      "setup_s": "0.592",
+      "agent_s": "98.643",
+      "ms": 119615,
+      "model_turns": 10,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 195960,
+      "output_tokens": 6458,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 202418,
+      "est_cost_usd": 0.68475,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:38:15.167Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 10
+        }
+      ],
+      "final_text": "Registration completed successfully for the WebMCP Community Workshop. The order confirmation page shows:\n\n- Order Reference: O-LTNWR4S\n- Order Date: Aug 20, 2026, 3:37am GMT+3\n- Confirmation email sent to: jordan.baker@example.com\n- Purchaser: Jordan Baker, jordan.baker@example.com\n- Guests (2 General admission tickets):\n  1. Jordan Baker - jordan.baker@example.com - General admission\n  2. Sam Baker - sam.baker@example.com - General admission\n- Event Details: WebMCP Community Workshop, Friday June 15, 10:00 AM - 12:00 PM UTC, organized by WebMCP Community\n\nThe page confirms 'You're going to WebMCP Community Workshop!' which verifies the registration was completed successfully for both attendees."
+    },
+    {
+      "run_id": "hev-7_dom-browseruse_91d6c397-9c49-495d-8847-ecf894aae886",
+      "task_id": "hev-7",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "96.544",
+      "reset_s": "21.043",
+      "setup_s": "0.574",
+      "agent_s": "74.927",
+      "ms": 96544,
+      "model_turns": 8,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 151988,
+      "output_tokens": 5339,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 157327,
+      "est_cost_usd": 0.536049,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:39:51.949Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 8
+        }
+      ],
+      "final_text": "Registration for the WebMCP Community Workshop completed successfully. Two General admission tickets were purchased under order reference O-OVU8WCZ, placed by Jordan Baker (jordan.baker@example.com) on Aug 20, 2026 3:39am GMT+3. The confirmation page shows both guests registered: Jordan Baker (jordan.baker@example.com) and Sam Baker (sam.baker@example.com), each with a General admission ticket. A confirmation email was sent to jordan.baker@example.com. Event details: Friday, June 15, 10:00 AM - 12:00 PM UTC, organized by WebMCP Community. (Note: Sam Baker's email was not specified in the request, so sam.baker@example.com was used as a reasonable placeholder since the form required an email field.)"
+    },
+    {
+      "run_id": "hev-8_dom-browseruse_ef475285-9a7d-4734-8b7c-2c4bb0718bbf",
+      "task_id": "hev-8",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "61.130",
+      "reset_s": "21.353",
+      "setup_s": "0.583",
+      "agent_s": "39.194",
+      "ms": 61130,
+      "model_turns": 4,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 65540,
+      "output_tokens": 2507,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 68047,
+      "est_cost_usd": 0.234225,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:40:53.125Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 4
+        }
+      ],
+      "final_text": "Logged in to the Hi.Events organizer dashboard at http://127.0.0.1:3215 using organizer@webmcp-eval.test and viewed the WebMCP Community Workshop event status page.\n\nCurrent status of the WebMCP Community Workshop event (as of 2026-08-20):\n\n- Status: Live / On Sale (the event is published; the toggle button shows 'Live - Click to Unpublish', meaning it is currently visible and active for ticket sales)\n- Organizer: WebMCP Community\n- Event date: June 15, 2035, 10:00am (an online event, still far in the future — about 9 years from today)\n- Attendees: 0\n- Products Sold: 0\n- Gross Sales: $0.00\n- Refunded: $0.00\n- Page Views: 0\n- Completed Orders: 0\n- Ticket types: 1 ticket type configured\n\nSummary: The WebMCP Community Workshop event is live and on sale, but so far it has had no page views, no ticket/product sales, no attendees, and no revenue ($0.00 across gross sales, fees, tax, and refunds)."
+    },
+    {
+      "run_id": "hev-8_dom-browseruse_9cb587a9-a1ab-4b47-a552-73507e08be3f",
+      "task_id": "hev-8",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "58.785",
+      "reset_s": "20.948",
+      "setup_s": "0.631",
+      "agent_s": "37.206",
+      "ms": 58785,
+      "model_turns": 4,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 65586,
+      "output_tokens": 2457,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 68043,
+      "est_cost_usd": 0.233613,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:41:51.965Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 4
+        }
+      ],
+      "final_text": "Logged in to the Hi.Events organizer dashboard at http://127.0.0.1:3215/ as organizer@webmcp-eval.test and checked the WebMCP Community Workshop event. Current status:\n\n- Publish status: LIVE (published) — the toggle at the top of the event dashboard reads \"Live – Click to Unpublish\"\n- Sale status: ON SALE (shown as badge on the Organizer Dashboard event listing)\n- Event date: June 15, 2035, 10:00am (still ~9 years in the future relative to today, 2026-08-20)\n- Location: Online\n- Ticket types: 1\n\nCurrent performance stats (as of today):\n- Attendees: 0\n- Products Sold: 0\n- Gross Sales: $0.00\n- Refunded: $0.00\n- Page Views: 0\n- Completed Orders: 0\n- Total Fees: $0.00\n- Total Tax: $0.00\n\nSummary: The WebMCP Community Workshop event is currently published and live, actively on sale, scheduled for June 15, 2035, but has not yet received any orders, attendees, or revenue."
+    },
+    {
+      "run_id": "hev-8_dom-browseruse_50f07857-f753-4ce9-8661-795a25662d38",
+      "task_id": "hev-8",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "52.048",
+      "reset_s": "21.779",
+      "setup_s": "0.601",
+      "agent_s": "29.668",
+      "ms": 52048,
+      "model_turns": 3,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 43911,
+      "output_tokens": 1636,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 45547,
+      "est_cost_usd": 0.156273,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:42:44.067Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 3
+        }
+      ],
+      "final_text": "Logged in to the Hi.Events organizer dashboard at http://127.0.0.1:3215/ as organizer@webmcp-eval.test. The WebMCP Community Workshop event's current status is 'On Sale' (shown with an 'ON SALE' badge on the dashboard). Event details: scheduled for Jun 15, 2035 10:00am (in 9 years from today, 2026-08-20), held Online, has 1 ticket type, 0 attendees, and $0.00 revenue so far. The organizer page itself is set to 'Live' (published)."
+    },
+    {
+      "run_id": "hev-9_dom-browseruse_8b3b64b4-9506-48cf-b6ff-b5dc98d5c13d",
+      "task_id": "hev-9",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "349.398",
+      "reset_s": "21.221",
+      "setup_s": "0.588",
+      "agent_s": "327.588",
+      "ms": 349398,
+      "model_turns": 27,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 529408,
+      "output_tokens": 19274,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "unavailable:browser-use@0.12.7",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "provider-default",
+      "caching": "unsupported",
+      "tokens": 548682,
+      "est_cost_usd": 1.877334,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:48:33.697Z",
+      "transcript": [
+        {
+          "framework": "browser-use",
+          "steps": 27
+        }
+      ],
+      "final_text": "Registration for Riley Fox (riley.fox@example.com) for 1 General admission ticket to the WebMCP Community Workshop was completed successfully.\n\nOrder details captured:\n- Order code (starts with o_): o_um79FJnUwfm9o\n- Displayed Order Reference: O-2VEX7NS\n- Attendee: Riley Fox, riley.fox@example.com\n- Ticket: General admission (1)\n- Order Date: Aug 20, 2026 3:44am GMT+3\n- Event: WebMCP Community Workshop\n\nHowever, I was unable to locate an 'order lookup' feature on the event page (http://127.0.0.1:3215/event/1/webmcp-community-workshop) despite extensive attempts: scrolling through the entire page (top to bottom), searching page text for 'order', 'lookup', 'find', 'already have', 'my order' (no relevant matches), extracting all links via JavaScript (only found organizer link, promo code link, and footer legal/Hi.Events links - no lookup link), and trying several direct URL guesses for a Hi.Events order-lookup/status page (/event/1/webmcp-community-workshop/order-lookup, /event/1/webmcp-community-workshop/order/o_um79FJnUwfm9o, /checkout/1/o_um79FJnUwfm9o) - all returned 404 Page Not Found. Clicking the ticket selection area again only reopened the ticket purchase form, not a lookup modal.\n\nAs a result, I could not complete the final step of using the order code and email to check and report the order's status through the site's lookup feature. The order info has been saved to order_info.md for reference. This part of the task remains incomplete given the site's UI did not expose a discoverable order lookup mechanism within my step budget.\n\nAttachments:\n\norder_info.md:\n# Registration Order Info\n\n- Attendee: Riley Fox\n- Email: riley.fox@example.com\n- Ticket: General admission (1)\n- Order code (starts with o_): o_um79FJnUwfm9o\n- Displayed Order Reference: O-2VEX7NS\n- Order Date: Aug 20, 2026 3:44am GMT+3\n- Event: WebMCP Community Workshop\n\n"
+    },
+    {
+      "run_id": "hev-9_dom-browseruse_9d83a00d-8f7d-479c-8c8c-9a516629ee84",
+      "task_id": "hev-9",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": false,
+      "pass": false,
+      "failure_category": "harness-agent: browser-use returned no result",
+      "wall_clock_s": "21.163",
+      "reset_s": "21.163",
+      "setup_s": "0.000",
+      "agent_s": "0.000",
+      "ms": 21163,
+      "model_turns": 0,
+      "actions_or_tool_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "unsupported",
+      "tokens": 0,
+      "est_cost_usd": 0,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T00:54:24.927Z",
+      "transcript": [],
+      "final_text": ""
+    },
+    {
+      "run_id": "hev-9_dom-browseruse_c42aefad-cdf8-41b7-9cd8-6edb08fde480",
+      "task_id": "hev-9",
+      "arm": "dom-browseruse",
+      "method": "dom-browseruse",
+      "model": "claude-sonnet-5",
+      "model_snapshot": "",
+      "tool_version": "browser-use@0.12.7",
+      "site": "hi-events",
+      "start_url": "http://127.0.0.1:3215",
+      "success": false,
+      "pass": false,
+      "failure_category": "harness-agent: browser-use returned no result",
+      "wall_clock_s": "22.293",
+      "reset_s": "22.293",
+      "setup_s": "0.000",
+      "agent_s": "0.000",
+      "ms": 22293,
+      "model_turns": 0,
+      "actions_or_tool_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "unsupported",
+      "tokens": 0,
+      "est_cost_usd": 0,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:00:17.311Z",
+      "transcript": [],
+      "final_text": ""
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "hi-events",
+      "taskId": "hev-7",
+      "tier": "transaction",
+      "method": "dom-browseruse",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    },
+    {
+      "site": "hi-events",
+      "taskId": "hev-8",
+      "tier": "act-long",
+      "method": "dom-browseruse",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    },
+    {
+      "site": "hi-events",
+      "taskId": "hev-9",
+      "tier": "act-long",
+      "method": "dom-browseruse",
+      "solved": false,
+      "passes": 1,
+      "attempts": 3
+    }
+  ]
+}

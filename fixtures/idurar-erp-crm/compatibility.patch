@@ -1,52 +1,128 @@
-diff --git a/backend/src/setup/reset.js b/backend/src/setup/reset.js
-index 73569bd..2c2c0cc 100644
---- a/backend/src/setup/reset.js
-+++ b/backend/src/setup/reset.js
-@@ -8,13 +8,9 @@ async function deleteData() {
-   const Admin = require('../models/coreModels/Admin');
-   const AdminPassword = require('../models/coreModels/AdminPassword');
-   const Setting = require('../models/coreModels/Setting');
--  const PaymentMode = require('../models/appModels/PaymentMode');
--  const Taxes = require('../models/appModels/Taxes');
- 
-   await Admin.deleteMany();
-   await AdminPassword.deleteMany();
--  await PaymentMode.deleteMany();
--  await Taxes.deleteMany();
-   console.log('👍 Admin Deleted. To setup demo admin data, run\n\n\t npm run setup\n\n');
-   await Setting.deleteMany();
-   console.log('👍 Setting Deleted. To setup Setting data, run\n\n\t npm run setup\n\n');
-diff --git a/backend/src/setup/setup.js b/backend/src/setup/setup.js
-index 89932b6..57dc6a9 100644
---- a/backend/src/setup/setup.js
-+++ b/backend/src/setup/setup.js
-@@ -51,21 +51,6 @@ async function setupApp() {
- 
-     console.log('👍 Settings created : Done!');
- 
--    const PaymentMode = require('../models/appModels/PaymentMode');
--    const Taxes = require('../models/appModels/Taxes');
--
--    await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true }]);
--    console.log('👍 Taxes created : Done!');
--
--    await PaymentMode.insertMany([
--      {
--        name: 'Default Payment',
--        description: 'Default Payment Mode (Cash , Wire Transfer)',
--        isDefault: true,
--      },
--    ]);
--    console.log('👍 PaymentMode created : Done!');
--
-     console.log('🥳 Setup completed :Success!');
-     process.exit();
-   } catch (e) {
+Compatibility repair for an internally inconsistent pinned revision.
+
+IDURAR is pinned at 5b2cf28969dc9a720c3fca20f0d2c7606534b277, which is a
+mid-refactor commit that cannot create an invoice or record a payment through
+its own UI — by anyone, human or agent. Two independent defects combine:
+
+ 1. backend/src/models/appModels/{Taxes,PaymentMode}.js were deleted, but
+    backend/src/setup/setup.js still requires them and seeds a "Tax 0%" and a
+    "Default Payment" default. The require throws MODULE_NOT_FOUND into
+    setupApp()'s try/catch, which logs and exits — after Admin and Settings are
+    created, so setup appears to succeed while the two defaults silently never
+    exist. Worse, routes are generated from the model files present
+    (backend/src/models/utils globs appModels/ into routesList), so with the
+    models gone /api/taxes/* and /api/paymentmode/* are never registered at all.
+
+ 2. InvoiceForm.jsx's tax field was refactored from SelectAsync to Ant Design's
+    plain Select while keeping every SelectAsync-only prop (entity, outputValue,
+    displayLabels, withRedirect, urlToRedirect). antd's Select ignores them, and
+    the field has neither `options` nor children — so it renders permanently
+    empty under `required: true`. The now-unused `import SelectAsync` left at
+    the top of the file is the fingerprint of the accidental swap.
+
+Either defect alone makes the visible create-invoice flow unsubmittable; the
+record-payment flow is blocked by (1) via PaymentForm.jsx's required
+paymentMode SelectAsync. WebMCP arms are unaffected because their tools POST to
+/api/invoice/create and /api/payment/create directly, which is why the
+2026-08-18 failure audit saw every non-WebMCP configuration fail id-6 and id-7
+(48 attempts) while every WebMCP configuration passed. That was an interface-
+parity artifact, not a model-ability difference.
+
+This patch therefore:
+ - restores Taxes.js and PaymentMode.js verbatim from upstream a97c5f76, which
+   re-registers /api/taxes/* and /api/paymentmode/* through IDURAR's own
+   generic CRUD controller (no controller or route code is added), and lets
+   upstream's own setup.js seeding run as written — so setup.js and reset.js
+   are no longer patched at all;
+ - restores the invoice tax field to the SelectAsync the file still imports;
+ - keeps the /quote, /taxes and /payment/mode administration routes and
+   navigation links removed, so those admin surfaces stay out of task scope.
+
+No task, scorer, prompt or golden is changed. The repair can only raise
+non-WebMCP scores and shrink WebMCP's measured advantage.
+
+diff --git a/backend/src/models/appModels/PaymentMode.js b/backend/src/models/appModels/PaymentMode.js
+new file mode 100644
+index 0000000..e7bd852
+--- /dev/null
++++ b/backend/src/models/appModels/PaymentMode.js
+@@ -0,0 +1,34 @@
++const mongoose = require('mongoose');
++
++const paymentModeSchema = new mongoose.Schema({
++  removed: {
++    type: Boolean,
++    default: false,
++  },
++  enabled: {
++    type: Boolean,
++    default: true,
++  },
++
++  name: {
++    type: String,
++    required: true,
++  },
++  description: {
++    type: String,
++    required: true,
++  },
++  ref: {
++    type: String,
++  },
++  isDefault: {
++    type: Boolean,
++    default: false,
++  },
++  created: {
++    type: Date,
++    default: Date.now,
++  },
++});
++
++module.exports = mongoose.model('PaymentMode', paymentModeSchema);
+diff --git a/backend/src/models/appModels/Taxes.js b/backend/src/models/appModels/Taxes.js
+new file mode 100644
+index 0000000..8e600c1
+--- /dev/null
++++ b/backend/src/models/appModels/Taxes.js
+@@ -0,0 +1,31 @@
++const mongoose = require('mongoose');
++
++const schema = new mongoose.Schema({
++  removed: {
++    type: Boolean,
++    default: false,
++  },
++  enabled: {
++    type: Boolean,
++    default: true,
++  },
++
++  taxName: {
++    type: String,
++    required: true,
++  },
++  taxValue: {
++    type: Number,
++    required: true,
++  },
++  isDefault: {
++    type: Boolean,
++    default: false,
++  },
++  created: {
++    type: Date,
++    default: Date.now,
++  },
++});
++
++module.exports = mongoose.model('Taxes', schema);
 diff --git a/frontend/src/apps/Navigation/NavigationContainer.jsx b/frontend/src/apps/Navigation/NavigationContainer.jsx
-index 7d4f426..52ae9ac 100644
+index d90e5b3..5d6e4a2 100644
 --- a/frontend/src/apps/Navigation/NavigationContainer.jsx
 +++ b/frontend/src/apps/Navigation/NavigationContainer.jsx
-@@ -14,16 +14,13 @@ import {
+@@ -14,7 +14,6 @@ import {
    SettingOutlined,
    CustomerServiceOutlined,
    ContainerOutlined,
@@ -54,7 +130,7 @@ index 7d4f426..52ae9ac 100644
    DashboardOutlined,
    TagOutlined,
    TagsOutlined,
-   UserOutlined,
+@@ -22,9 +21,7 @@ import {
    CreditCardOutlined,
    MenuOutlined,
    FileOutlined,
@@ -63,7 +139,8 @@ index 7d4f426..52ae9ac 100644
 -  WalletOutlined,
    ReconciliationOutlined,
  } from '@ant-design/icons';
-@@ -65,11 +62,6 @@ function Sidebar({ collapsible, isMobile = false }) {
+ 
+@@ -65,27 +62,12 @@ function Sidebar({ collapsible, isMobile = false }) {
        icon: <ContainerOutlined />,
        label: <Link to={'/invoice'}>{translate('invoices')}</Link>,
      },
@@ -75,7 +152,7 @@ index 7d4f426..52ae9ac 100644
      {
        key: 'payment',
        icon: <CreditCardOutlined />,
-@@ -77,15 +69,5 @@ function Sidebar({ collapsible, isMobile = false }) {
+       label: <Link to={'/payment'}>{translate('payments')}</Link>,
      },
  
 -    {
@@ -91,8 +168,21 @@ index 7d4f426..52ae9ac 100644
      {
        key: 'generalSettings',
        label: <Link to={'/settings'}>{translate('settings')}</Link>,
+diff --git a/frontend/src/modules/InvoiceModule/Forms/InvoiceForm.jsx b/frontend/src/modules/InvoiceModule/Forms/InvoiceForm.jsx
+index 9ecb457..33043bb 100644
+--- a/frontend/src/modules/InvoiceModule/Forms/InvoiceForm.jsx
++++ b/frontend/src/modules/InvoiceModule/Forms/InvoiceForm.jsx
+@@ -246,7 +246,7 @@ function LoadInvoiceForm({ subTotal = 0, current = null }) {
+                 },
+               ]}
+             >
+-              <Select
++              <SelectAsync
+                 value={taxRate}
+                 onChange={handelTaxChange}
+                 entity={'taxes'}
 diff --git a/frontend/src/router/routes.jsx b/frontend/src/router/routes.jsx
-index fea8efb..7e7fda2 100644
+index f6ea58f..2782e3f 100644
 --- a/frontend/src/router/routes.jsx
 +++ b/frontend/src/router/routes.jsx
 @@ -69,22 +69,6 @@ let routes = {

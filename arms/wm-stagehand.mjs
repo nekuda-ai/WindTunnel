@@ -4,7 +4,7 @@ import { z } from "zod";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import { installModelContextBridge } from "./wm-claude.mjs";
-import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, claudeSampling } from "./prompts.mjs";
 
 export const TOOL_VERSION = "stagehand@3.6.0+webmcp";
 const DEFAULT_MODEL = "claude-sonnet-4-6";
@@ -42,7 +42,7 @@ function createStagehand(apiKey, model = DEFAULT_MODEL) {
     disablePino: true,
     verbose: 0,
     domSettleTimeout: 3000,
-    model: { modelName: `anthropic/${model}`, middleware: serialToolUse, modelClientOptions: { temperature: 0 }, ...(apiKey ? { apiKey } : {}) },
+    model: { modelName: `anthropic/${model}`, middleware: serialToolUse, modelClientOptions: { ...claudeSampling(model).request }, ...(apiKey ? { apiKey } : {}) },
     localBrowserLaunchOptions: {
       headless: true,
       executablePath: process.env.WT_CHROME || chromium.executablePath(),

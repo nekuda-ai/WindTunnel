@@ -12,9 +12,14 @@ tasks:
       contains_any: [figma, dribbble]
   - id: directory-filter
     tier: act-short
-    prompt: Filter the directory to developer tools.
-    # Development contains the seeded GitHub and React bookmarks; report one.
-    predicate: { type: answer, contains: [github] }
+    prompt: Filter the directory to developer tools, then report one result shown in the filtered list.
+    # The old prompt asked only for the action but scored an answer it never
+    # requested, and the oracle has no probe for the browser's active filter —
+    # a page probe would pass without the filter ever being applied. Asking for
+    # a result makes the action observable in the answer. The seeded
+    # Development category holds exactly GitHub and React (init-db.mjs);
+    # neither name appears in the prompt.
+    predicate: { type: answer, matches: "\\b(github|react)\\b" }
   - id: directory-detail
     tier: answer
     prompt: Open the Figma listing and report its one-line description.

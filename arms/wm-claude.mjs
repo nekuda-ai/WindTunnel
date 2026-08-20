@@ -1,7 +1,7 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import Anthropic from "@anthropic-ai/sdk";
-import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint, maxTokensFor } from "./prompts.mjs";
 
 const MODEL = "claude-sonnet-4-6";
 const MAX_TURNS = 12;
@@ -81,7 +81,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const started = performance.now();
   await prepareWebMCPPage(page, startUrl(task, capsule));
 
-  const client = new Anthropic({ maxRetries: 2 });
+  const client = new Anthropic({ maxRetries: 6 });
   const sampling = claudeSampling(model);
   const messages = [{ role: "user", content: task.prompt }];
   const usage = { input_tokens: 0, output_tokens: 0, cached_input_tokens: 0, cache_creation_tokens: 0 };
@@ -91,6 +91,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const limit = stepBudget(task, "webmcp", MAX_TURNS);
   let finalText = "";
   let model_snapshot = "";
+  let lastStopReason = "";
   let turns = 0;
   let previousTools = "";
   const setupMs = performance.now() - started;
@@ -109,7 +110,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
     turns++;
     const response = await client.messages.create({
       model,
-      max_tokens: 4096,
+      max_tokens: maxTokensFor(model),
       ...sampling.request,
       system: [{ type: "text", text: withToday(SYSTEM), cache_control: { type: "ephemeral" } }],
       tools: anthropicTools(tools),
@@ -117,6 +118,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
       messages: withCacheBreakpoint(messages),
     });
     model_snapshot = response.model ?? model_snapshot;
+    lastStopReason = response.stop_reason ?? lastStopReason;
     usage.input_tokens += response.usage.input_tokens ?? 0;
     usage.output_tokens += response.usage.output_tokens ?? 0;
     usage.cached_input_tokens += response.usage.cache_read_input_tokens ?? 0;
@@ -147,5 +149,10 @@ export async function run({ task, capsule, page, model = MODEL }) {
     await page.waitForTimeout(300);
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot,
+    budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled",
+    stop_reason: lastStopReason, refusal: lastStopReason === "refusal", truncated: lastStopReason === "max_tokens",
+    // No explicit effort is sent, so the model runs at the API default
+    // (high on Sonnet 5 / Opus 5). Recorded so the artifact states it.
+    effort: "api-default" };
 }

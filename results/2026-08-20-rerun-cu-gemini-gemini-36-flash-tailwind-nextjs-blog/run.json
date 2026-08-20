@@ -1,0 +1,414 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "tailwind-nextjs-blog",
+    "arms": [
+      "cu-gemini"
+    ],
+    "seed": 1,
+    "budget": 3,
+    "perturbed": false,
+    "models": {
+      "cu-gemini": "gemini-3.6-flash"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "blog-read-author"
+    ],
+    "n": 3,
+    "label": "rerun-cu-gemini-gemini-36-flash-tailwind-nextjs-blog",
+    "fake": false,
+    "model": "gemini-3.6-flash",
+    "armModels": {
+      "cu-gemini": "gemini-3.6-flash"
+    },
+    "git_revision": "6920088a11b8b10b8a9102c87e8ecfdee83a65c7-dirty",
+    "task_set_hash": "49431fe1886261fa6310be26a2da7814289c3a820bd0031ddc6a99e31c7ed66e",
+    "goldens_hash": "e08a88831b7968fed01f4941ce70e37b6f0cea9726fded94a994c61b1f5ba244",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "tailwind-nextjs-blog",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "blog-read-author_cu-gemini_22fcc653-5f14-47a6-b30f-942a3507845e",
+      "task_id": "blog-read-author",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "tailwind-nextjs-blog",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "20.038",
+      "reset_s": "9.732",
+      "setup_s": "5.203",
+      "agent_s": "5.103",
+      "ms": 20038,
+      "model_turns": 1,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 1172,
+      "output_tokens": 361,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1533,
+      "est_cost_usd": 0.00223275,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:36:03.512Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EvoKCvcKARFNMg8FJjB5uD5SNRo5IieOOAP6/DtQyvwOfUC+fy6J9M6fSwDOkDIUSrc5WAajd3IK3O/YsO3RCxO4URx0AxUnBEbp4ntgXh5DZirTYV4G2Nkn5whEY28m30AwGPhHQH5e/x2DzbYEKepRpobhPL474UFBaII2L/ScKtPSJbk209jCRk3Qao0TQ1vAC7ABQzQauaPUnnRJoDjqle60cgl9/NBq2URzmeeTmRuZdBa87Aa3p5edzovjNnjxtN3vvSt0G6i8GJ+CZ+gp4eB0odGPEt7TvsxmKNQFeE4Cl7e7CsnacjIFxif16UXR6SdBgrupkiVaLeZwwD9w7EAnzY0H/Q/NYdLrGfpl+i9bPnMDAM7DALAZdO92VqC5r7gXuFBDBio0ZReUDUbcvQtMN2HgKB/pZtU0+eEY1ivEFXBNXENoizixgy/GlOm7msAmV8sJXySmOkXj2CeBz7x0VH/Sg2nGXmEE35vDwzmeOaYAZgMelpfEvPKw8HyNLsPLozuJMAcEPX692lnDJmaOvdVXzg2B4j/RvDa97G+1uts9pKuva4PoRlqDT1bM0ye6JTnliIzWbcTDE9DQWl7J8s3veMg9ELOY0Ur2PDA3QjYenQ7R0EY2Yz65orsm3bj6KQsszvS6vrKMDUxyY9ql9ihN90ekFZPFpdkQroIMVoCGbs1JO1c3r2bVbxzUJgesK9IEpDQgN0uv+ZDc1XWokwovFzAFGEZnDhi69tuWWG1IfDplBhIBzt/nsyhmU7B4lNdeemT/EOyP8hjWK5TBnK21TFPq1Arr1L8Qghz7/Skd2r9xdIkyIzCeI1kgrdy4EzDQp8WArOIXbp3/zfqXiPbSjkVd8iFDFURu9wgfDU3DqtNV0MGtOFmbZ1zep3/uVE7vaiOfHhl/y/eJJeu4anTuJafmENNfjnoQ9BkN1SL9Ix86SUn3HgXA72d1KRskKllJ2o2Xl6EIKkIdrMwbrQGwlbPp9Nf3IzaC2TvnKG2vzi5Zzq2x9H9mbteSqXWzS0AxyYga5GxjkaGv2HvIPcJYcVZEaO1QzA2bY5+MFMpAFP+9A9DDsG13GwfRvFquwYApVOSBiis3W0a8ebIC5PtfWMb6pCplzdaqF34IXw+z0/ponZwHCbYBfln/rvUW+HasmjQkuIAfW/GbsnPDks1eBC4N5Quwkgi/5QQalLfG+QZsNjWmWRwuSo2l/fmqwZIaKwnItobrMYRnrTnNtHHh+LBnJnaw/34Hhtkdsexwluop427ePRe6r6Mz5kA/v1pcl/jrOEZRoXM/qpypycp8gPpXeBba4JVbXa5jncfXeosJaGtxIBKQJ5VjqJ5FOLyaJqwzyH2U2TvzJuEmXHWsfkegIQNw0eBSrZ/3m8iaKAD8N6UNhNNCGhfRQLuWPvE76wfwFa5fDJ3D12Keaqp/UJzkq3nXrprpRSUwA4LgYSEi6yTbIv0ihMO+efhDggvpFrla7KhEXIItQcoc0YWQVLH5N/E6tGPSpHcroXEkjv+roVWP9X5Og5bRL+d1AL/7CEivtw/fIuUoC0IfSH7VvyTsrNd0Bb5UpRuANNivjWWML41Ik8itmf088fF8B3w81wEZ3FCrk0tD4bB/QWer7KuDqefYGINFuD9SzJHr3x7U+sjyuJ7IuQF5GqUJcWJ8+o4/lXfAI6dRNs/nnB2tV6D92eVCt9AnzGXLkruJcmVTBseyLiB0o6IEbsFr+giyoGKRVFLhoVNoBjJTx1l3zWZsqgVcP8/7jx5XuxPf4vPU//Zjj6ylj/ZzzmQy0aGqFTGR8Nlj8xJSezZTlb0qBs3bBk2Z3dmYKhTdgoIciYUKaWc53Sdb/xBfVhXuiVIZ9pLfGA==",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Tails Azimuth",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 1533,
+            "total_input_tokens": 1172,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 80
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 6,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 355,
+            "raw_prompt_token": 5294
+          }
+        }
+      ],
+      "final_text": "Final answer: Tails Azimuth"
+    },
+    {
+      "run_id": "blog-read-author_cu-gemini_216244d3-bef2-4ff6-81af-9624fb2cd392",
+      "task_id": "blog-read-author",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "tailwind-nextjs-blog",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "19.236",
+      "reset_s": "10.141",
+      "setup_s": "5.277",
+      "agent_s": "3.818",
+      "ms": 19236,
+      "model_turns": 1,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 1172,
+      "output_tokens": 159,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1331,
+      "est_cost_usd": 0.00147525,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:36:22.805Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EuoFCucFARFNMg/nRyFlbILpy6tJwbjKTyMgTxfyBE36HE3+jV4znJWLiS7wejBdHB33ncL5GPrWSmtBytDxrF7frKez8NhwRCtT11IEtm4Q/AQizXLb8Bmi6oM5xo+w7WUuYjDeEPtfRcShI2k1KaPYYtXHsjdq9yhUQon8hRWNED+VIBiSA3ct0+rGtZrkKGSkM7buiyu5s+ULtU0CBHAG3txj8zTRv7JGVVWQ+imdm41DrD8VO9Nw8eCY8PVfdph+GlRZAgMEj1RG5wvzAwpiQf9YFxuthn582qRL8HJb2C4aAh26FmIRiHbuu20Ie4o6LUal5VlVWNgu+eQxre8+Z9zN/A07kMd+QWUj76Rn4A7hdqw7ipCGWyZCU7NwJUPi3E2fWCLSDhtdvip7cNpeQhOmHM+Ns3lR/AITH9JAaaXfi9i5wP484ppjJBG8ihQnevKLxKZLXEb3gs5BMbRtMYF2leT8IpZ2cn7rW8RqDHMhKUb7sCg5s+bdabBl6YfvuR9O0GqvhRDeG7LuKy0XymO3NfYsjVqzQot+WbrXjJcGag2xY7IqtNPkXue8Zb+Ljej1pGzCsYALzayS1WWFSkqRYO0YaeVtyEqxOP4rGHEGCxqc2CI6T1L0tpZ67EvWbujHN3OqG6J+s53btfIVaiP24Mt8D4ATLYTlUHHrz3tDb+CTMx85EZEoa5iuH0wlqfAMIUXPzL7x2rbvfjDKwnNnc58l9Aj2Wjfhf56f1vs3kVhhpV/uAXv4rEQy1vujMSgY6Y7IFiNHtRhvgS1dVjZ5rNXpVOENvY1r5KEBxWWQRzYcFWgVoLtEzOr9/ovbd2kSD7ioDRcN8CHQyfprQoVvFQhFfn5KsTSwTJgmH6IcAetweHFsWhjsbKETy8J196lS5ifpPio4VcOz/Y6JV7/DrMpxBSVq+Pxvn8xo7/piRTIz2Qb8QR6L4ZZE3yv9u4nNoluw+DvhmkElPtoApSTYrxGffGShR8E=",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Tails Azimuth",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 1331,
+            "total_input_tokens": 1172,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 80
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 6,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 153,
+            "raw_prompt_token": 5294
+          }
+        }
+      ],
+      "final_text": "Final answer: Tails Azimuth"
+    },
+    {
+      "run_id": "blog-read-author_cu-gemini_0ccfbb23-51df-4246-8019-c850e4af7ecf",
+      "task_id": "blog-read-author",
+      "arm": "cu-gemini",
+      "method": "cu-gemini",
+      "model": "gemini-3.6-flash",
+      "model_snapshot": "gemini-3.6-flash",
+      "tool_version": "computer_use@interactions-v1beta",
+      "site": "tailwind-nextjs-blog",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "19.022",
+      "reset_s": "10.161",
+      "setup_s": "5.329",
+      "agent_s": "3.532",
+      "ms": 19022,
+      "model_turns": 1,
+      "actions_or_tool_calls": 1,
+      "input_tokens": 1172,
+      "output_tokens": 102,
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "",
+      "caching": "provider-managed",
+      "tokens": 1274,
+      "est_cost_usd": 0.0012615,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-08-20T01:36:41.875Z",
+      "transcript": [
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "signature": "EtEDCs4DARFNMg/ZpBe/WyqFHmgvg0ZHRKj4R5uJk7S2hnxmQMyZNrBapJL8K9G7btF6T3Fn3ApOsGv/dzK/PShEeLxYevp/igWqQ/U4Ha8DJXkFnDNmwS76Y+WCEXmah+y5+Ululu1qc7jsuNFYrkFqq/JqTRyN+naZEHhxneQTs12Do1T5GX9VOSuzI4vkN/6CSOFygFeNLrbJuhtLk1R8EHCApn0SieTEzF62+y8qQ5bjHRV7wyxkF5Qu2F2atJ+y8v2zOH2ptuqJYJEqPoCAo0mC4UzInKmpSWimoFJGZqsSv6RcZSckK0RiCsZPmZtmHNRDMjpl1MJAMLzHbEnedaQRDPQ+cD7JHCPPU3fnjymj+HilnFv2xYDAnOuyEzTqbw5MamNeVO++wVTu052vqlqdjJ+N6wKkjcTqgGYQJfcUQ/YHgqGSqKTlIrCq823NJgaHGaWeVCKBT2L7P/Wlg/+xNH18t6M4/a7fIbanCWLc+evgQucB0K3zRkEOBwvH1KgYltuKNCE5jG8zKOMHbTPpzHmqLt/lE5/Pf48ywpAvn6qlsAssg4DZnvgzygvqNY2a588iJX/Fhb3L+Kq3N7l9gsUK3g5LwZqgqwsR5IkY",
+              "type": "thought"
+            },
+            {
+              "content": [
+                {
+                  "text": "Final answer: Tails Azimuth",
+                  "type": "text"
+                }
+              ],
+              "type": "model_output"
+            }
+          ],
+          "usage": {
+            "total_tokens": 1274,
+            "total_input_tokens": 1172,
+            "input_tokens_by_modality": [
+              {
+                "modality": "text",
+                "tokens": 80
+              },
+              {
+                "modality": "image",
+                "tokens": 1092
+              }
+            ],
+            "total_cached_tokens": 0,
+            "total_output_tokens": 6,
+            "total_tool_use_tokens": 0,
+            "total_thought_tokens": 96,
+            "raw_prompt_token": 5294
+          }
+        }
+      ],
+      "final_text": "Final answer: Tails Azimuth"
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "tailwind-nextjs-blog",
+      "taskId": "blog-read-author",
+      "tier": "answer",
+      "method": "cu-gemini",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}
