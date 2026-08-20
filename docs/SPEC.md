@@ -259,9 +259,11 @@ planned addition as an even stronger combined baseline.
   caching arms look an order of magnitude lighter than they are. The split
   stays in `results.csv` for anyone who wants it.
 - **Leaderboard score** — a display-only composite: attempt success 60%,
-  median cost 20%, and median agent time 20%. Success is min-max normalized;
-  cost and time are log-transformed, min-max normalized, and reversed so lower
-  is better. Tokens are not scored separately because cost already reflects
+  median cost 20%, and median agent time 20%. Success enters as the raw pass
+  rate; only cost and time are log-transformed, min-max normalized across the
+  field, and reversed so lower is better. Success is deliberately NOT min-max
+  normalized: that pins the weakest arm to exactly 0 and deletes the entire
+  60% weight, so an arm passing 81% of its attempts scored 9.2/100. Tokens are not scored separately because cost already reflects
   them. The underlying metrics remain the primary results.
 - **Infrastructure exclusions** — attempts that fail on provider rate limits
   or capsule boot errors are excluded from every number and reported

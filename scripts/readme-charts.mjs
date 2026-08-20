@@ -76,7 +76,11 @@ const normalize = (values, value, log = false) => {
 const balancedAgg = consolidatedAgg.map((item) => ({
   ...item,
   score: 100 * (
-    0.6 * normalize(consolidatedAgg.map((a) => a.success), item.success)
+    // Attempt success enters RAW, as the caption says. Min-max normalizing it
+    // pinned the weakest arm to exactly 0, deleting the whole 60% weight: an
+    // arm passing 81% of its attempts scored 9.2/100, reading like near-total
+    // failure, and disagreeing with the same metric on webmcp.com (57.8).
+    0.6 * (item.success / 100)
     + 0.2 * (1 - normalize(consolidatedAgg.map((a) => a.cost), item.cost, true))
     + 0.2 * (1 - normalize(consolidatedAgg.map((a) => a.agent), item.agent, true))
   ),
