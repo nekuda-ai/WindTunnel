@@ -125,7 +125,19 @@ export function planRuns(options, env = process.env, methods = ARMS) {
 
 function fakePage() {
   const locator = () => ({ async fill() {}, async click() {}, async press() {}, async innerText() { return "fake page content"; } });
-  return { async goto() {}, async title() { return "fake page"; }, locator };
+  // Enough Playwright surface for every arm's setup + action path (CU mouse /
+  // keyboard, WebMCP bridge install + discovery, code-exec screenshot) so a
+  // WT_FAKE_LIFECYCLE dry run reaches the model API instead of crashing in setup.
+  const noop = async () => {};
+  const PNG_1x1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+  const context = { addInitScript: noop, browser: () => ({}) };
+  return {
+    goto: noop, async title() { return "fake page"; }, locator,
+    setViewportSize: noop, waitForLoadState: noop, waitForTimeout: noop, waitForFunction: noop,
+    async screenshot() { return PNG_1x1; }, async evaluate() { return []; }, context: () => context,
+    mouse: { click: noop, dblclick: noop, move: noop, down: noop, up: noop, wheel: noop },
+    keyboard: { type: noop, press: noop, down: noop, up: noop },
+  };
 }
 
 async function openPage(env) {
