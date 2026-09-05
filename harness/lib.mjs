@@ -57,6 +57,10 @@ export const PRICES = [
   ["claude-sonnet-4-6", [3, 15, 0.3, 3.75]],
   ["claude-sonnet-4", [3, 15, 0.3, 3.75]],
   ["claude-haiku-4", [1, 5, 0.1, 1.25]],
+  // GPT-6 Astra list rates (≤272K context; longer prompts are 2× — never
+  // reached here). Cache writes are billed at 1.25× input, so the arms must
+  // report cache_write_tokens as cache_creation_tokens for this to bind.
+  ["gpt-6-astra", [10, 50, 1, 12.5]],
   ["gpt-5.6-sol", [5, 30, 0.5, 6.25]],
   ["gpt-5.6-terra", [2.5, 15, 0.25, 3.125]],
   ["gpt-5.6-luna", [1, 6, 0.1, 1.25]],
