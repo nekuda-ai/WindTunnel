@@ -1,6 +1,6 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
-import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, samplingFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "computer";
 const MODEL = "gpt-5.5";
@@ -69,14 +69,6 @@ export async function respond(body) {
   }
 }
 
-async function respondAtZero(body) {
-  try { return { ...(await respond({ ...body, temperature: 0 })), temperature: "0" }; }
-  catch (error) {
-    if (!/^OpenAI 400:/.test(error.message)) throw error;
-    return { ...(await respond(body)), temperature: "default" };
-  }
-}
-
 async function executeAction(page, action) {
   const { x, y } = action;
   switch (action.type) {
@@ -141,7 +133,8 @@ export async function run({ task, capsule, page, model = MODEL }) {
   let failure = "";
   let model_snapshot = "";
   let turns = 0;
-  let retries = 0, retry_wait_ms = 0, temperature = "0";
+  let retries = 0, retry_wait_ms = 0, temperature = "default";
+  let effort = "", truncated = false;
   // Both screenshot arms share one context policy: the model sees only the
   // SCREENSHOT_WINDOW most recent screenshots (matches cu-claude's prune).
   // History is replayed explicitly (the OpenAI Responses docs' supported
@@ -163,21 +156,30 @@ export async function run({ task, capsule, page, model = MODEL }) {
       break;
     }
     turns++;
-    const outcome = await respondAtZero({
+    const sampling = samplingFor(model);
+    const outcome = await respond({
       model,
       instructions: withToday(SYSTEM),
       tools,
       input: windowed(),
+      ...sampling.request,
     });
     const response = outcome.response;
     model_snapshot = response.model ?? model_snapshot;
-    temperature = outcome.temperature;
+    temperature = sampling.temperature;
+    effort = response.reasoning?.effort ?? effort;
+    if (response.status === "incomplete") truncated = true;
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
     history.push(...response.output);
-    usage.input_tokens += (response.usage?.input_tokens ?? 0) - (response.usage?.input_tokens_details?.cached_tokens ?? 0);
+    const details = response.usage?.input_tokens_details ?? {};
+    const cached = details.cached_tokens ?? 0, written = details.cache_write_tokens ?? 0;
+    // OpenAI's input_tokens INCLUDES cache reads and cache writes; split them
+    // so each is priced at its own rate (Astra: $1 read, $12.50 write, $10 fresh).
+    usage.input_tokens += (response.usage?.input_tokens ?? 0) - cached - written;
+    usage.cached_input_tokens += cached;
+    usage.cache_creation_tokens += written;
     usage.output_tokens += response.usage?.output_tokens ?? 0;
-    usage.cached_input_tokens += response.usage?.input_tokens_details?.cached_tokens ?? 0;
     transcript.push({ turn: turns, role: "assistant", content: response.output, usage: response.usage });
     finalText = finalTextOf(response.output) || finalText;
 
@@ -203,5 +205,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     }
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, caching: "provider-managed" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, effort, truncated, caching: "provider-managed" };
 }
