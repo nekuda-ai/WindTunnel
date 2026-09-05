@@ -66,3 +66,22 @@ test("majority requires more than half", () => {
   assert.equal(majority([true, true, false]), true);
   assert.equal(majority([true, false, false]), false);
 });
+
+// Attempt 2 of the Astra flight: hi-events' teardown hung after its app
+// container died, runBatch rejected from `finally`, and cli.mjs dropped the
+// batch's 30 finished rows (22 valid) from run.json. Teardown trouble is an
+// infrastructure note, never a reason to lose paid, scored rows.
+test("dispatcher keeps its rows when teardown fails", async () => {
+  const capsule = {
+    baseUrl: "http://fake", meta: {},
+    async reset() {}, async observe() { return {}; },
+    async down() { throw new Error("capsule down for x timed out"); },
+  };
+  const method = { id: "fake", model: "none", run: async () => ({ finalText: "Final answer: ok", usage: {}, cost: 0, transcript: [] }) };
+  const result = await runBatch({
+    siteId: "x", method, tasks: [{ id: "t1", prompt: "p", tier: "answer", predicate: { type: "answer", contains: ["ok"] } }],
+    n: 1, seed: 1, boot: async () => capsule, page: {},
+  });
+  assert.equal(result.rows.length, 1);
+  assert.match(result.teardown_error, /timed out/);
+});
