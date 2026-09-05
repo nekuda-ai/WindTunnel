@@ -22,8 +22,23 @@ const KEY_MAP = {
 };
 const BUTTON_MAP = { left: "left", right: "right", wheel: "middle" };
 
-const toPlaywrightKey = (key) => KEY_MAP[String(key).toUpperCase()]
-  ?? (key.length === 1 ? key : key[0].toUpperCase() + key.slice(1).toLowerCase());
+const toPlaywrightKey = (raw) => {
+  const key = String(raw).trim().replace(/_[lr]$/i, "");          // xdotool Control_L / Shift_R
+  const code = /^(key)([a-z])$|^(digit)(\d)$/i.exec(key);                  // DOM codes KeyA / Digit5, valid Playwright keys
+  if (code) return code[1] ? `Key${code[2].toUpperCase()}` : `Digit${code[4]}`;
+  return KEY_MAP[key.toUpperCase()]
+    ?? (key.length === 1 ? key : key[0].toUpperCase() + key.slice(1).toLowerCase());
+};
+
+// OpenAI's `keypress` carries ONE chord — "the combination of keys" — and models
+// spell it every way: ["CTRL","a"], ["ctrl+a"], ["Control_L","a"], ["Control","KeyA"].
+// Pressing the keys one at a time (what this arm did until the Astra smoke)
+// never selects-all, and the model burns turns retrying spellings. A single
+// letter inside a chord is lowercased so "CTRL+A" is Control+a, not Shift.
+export const keyChord = (keys) => {
+  const parts = keys.flatMap((k) => String(k) === "+" ? ["+"] : String(k).split("+")).filter(Boolean).map(toPlaywrightKey);
+  return parts.map((k) => parts.length > 1 && /^[A-Z]$/.test(k) ? k.toLowerCase() : k).join("+");
+};
 
 async function withModifiers(page, keys, callback) {
   const pressed = (keys ?? []).map(toPlaywrightKey);
@@ -89,7 +104,7 @@ async function executeAction(page, action) {
       break;
     case "type": await page.keyboard.type(action.text ?? "", { delay: 10 }); break;
     case "keypress":
-      for (const key of action.keys ?? []) await page.keyboard.press(toPlaywrightKey(key));
+      if (action.keys?.length) await page.keyboard.press(keyChord(action.keys));
       break;
     case "drag": {
       const path = action.path ?? [];

@@ -46,7 +46,10 @@ for (const row of rows) {
   if (row.truncated === true || row.truncated === "true") problems.push(`${where}: response hit max_tokens — raise it before flying`);
   if (row.refusal === true || row.refusal === "true") problems.push(`${where}: provider refusal (stop_reason=refusal)`);
   if (isInfraRow(row)) problems.push(`${where}: infrastructure failure — ${row.failure_category}`);
-  if (UNSUPPORTED.test(String(row.failure_category ?? ""))) problems.push(`${where}: unsupported-parameter/request error — ${row.failure_category}`);
+  // Only HARNESS failures can be request errors; a scoring failure quotes the
+  // task's expected JSON, which may legitimately contain "400" (a price).
+  const category = String(row.failure_category ?? "");
+  if (category.startsWith("harness-") && UNSUPPORTED.test(category)) problems.push(`${where}: unsupported-parameter/request error — ${category}`);
 }
 
 const models = [...new Set(rows.map((r) => `${r.model} (served ${r.model_snapshot || "?"})`))];

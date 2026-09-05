@@ -80,3 +80,22 @@ for (const [name, run, page] of [["wm-gpt", runWM, wmPage], ["cu-openai", runCU,
     } finally { api.restore(); }
   });
 }
+
+// OpenAI's `keypress` action carries ONE chord ("the combination of keys"); models
+// spell it many ways. Astra alone sent 16 spellings of Ctrl+A on one form.
+import { keyChord } from "../arms/cu-openai.mjs";
+test("cu-openai: keypress keys are one chord in Playwright syntax, whatever the spelling", () => {
+  for (const keys of [["CTRL", "a"], ["CTRL", "A"], ["Control", "a"], ["CTRL+A"], ["ctrl+a"], ["Control+a"], ["Control_L", "a"], ["Ctrl", "a"]])
+    assert.equal(keyChord(keys), "Control+a", JSON.stringify(keys));
+  assert.equal(keyChord(["Control", "KeyA"]), "Control+KeyA", "DOM code passes through — Playwright accepts it");
+  assert.equal(keyChord(["CMD", "a"]), "Meta+a");
+  assert.equal(keyChord(["SHIFT", "END"]), "Shift+End");
+  assert.equal(keyChord(["Shift_R", "Tab"]), "Shift+Tab");
+  assert.equal(keyChord(["BackSpace"]), "Backspace");
+  assert.equal(keyChord(["ESC"]), "Escape");
+  assert.equal(keyChord(["KeyA"]), "KeyA");
+  assert.equal(keyChord(["Digit5"]), "Digit5");
+  assert.equal(keyChord(["f5"]), "F5");
+  assert.equal(keyChord(["A"]), "A", "a lone capital letter types a capital");
+  assert.equal(keyChord(["+"]), "+", "a literal plus is a key, not a separator");
+});
