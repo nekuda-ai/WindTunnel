@@ -61,6 +61,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   // the fallback when the task doesn't set one. Same rule in every arm.
   const limit = stepBudget(task, "webmcp", MAX_TURNS);
   let finalText = "";
+  let failure = "";
   let model_snapshot = "";
   let turns = 0;
   let previousTools = "";
@@ -70,7 +71,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const deadline = performance.now() + ATTEMPT_MS;
 
   while (turns < limit) {
-    if (performance.now() >= deadline) throw new Error("attempt timeout: 600s agent budget");
+    if (performance.now() >= deadline) { failure = `attempt timeout: ${ATTEMPT_MS / 1000}s agent budget`; break; }
     const tools = await listLiveTools(page);
     if (!tools.length) throw new Error("no live WebMCP tools registered");
     const toolNames = tools.map(({ name }) => name).join(",");
@@ -129,5 +130,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     await page.waitForTimeout(300);
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, budget_exhausted: turns === limit, temperature, effort, truncated, caching: "provider-managed" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, effort, truncated, caching: "provider-managed" };
 }
