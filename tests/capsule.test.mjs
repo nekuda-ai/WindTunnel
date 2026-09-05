@@ -64,3 +64,33 @@ test("manual lifecycle uses the supplied URL without shelling out", async () => 
   await assert.rejects(capsule.observe("anything"), /manual mode has no state probes/);
   await capsule.down();
 });
+
+// 2026-09-05 Astra flight: a learnhouse `prepare` failed after a 30-minute
+// image-build timeout and the harness then sat idle for 45 minutes — the
+// lifecycle call never settled, so the per-batch "Batch failed, skipping"
+// path was never reached. Every lifecycle step now has a hard ceiling.
+test("capsule: a lifecycle step that never settles is failed and torn down", async () => {
+  let downs = 0;
+  const lifecycle = {
+    prepare: () => new Promise(() => {}),        // never resolves
+    async up() { return {}; }, async status() { return "healthy"; },
+    async reset() {}, async down() { downs++; },
+  };
+  await assert.rejects(
+    bootCapsule("stuck", { lifecycle, observe: async () => null, stepTimeoutMs: { prepare: 20 } }),
+    /prepare for stuck did not finish within 20 ms/,
+  );
+  assert.equal(downs, 1);
+});
+
+test("capsule: a teardown that never settles does not hang the caller either", async () => {
+  const lifecycle = {
+    async prepare() { throw new Error("build failed"); },
+    async up() { return {}; }, async status() { return "healthy"; }, async reset() {},
+    down: () => new Promise(() => {}),
+  };
+  await assert.rejects(
+    bootCapsule("stuck", { lifecycle, observe: async () => null, stepTimeoutMs: { down: 20 } }),
+    /build failed/,
+  );
+});
