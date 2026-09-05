@@ -33,24 +33,27 @@ const CANON = "canonical";
 const canonRows = loadRows(CANON);
 const MODEL_LABEL = {
   "claude-sonnet-5": "Sonnet 5", "claude-opus-5": "Opus 5",
-  "gpt-5.6-luna": "Luna", "gpt-5.6-sol": "SOL", "gemini-3.6-flash": "Gemini 3.6",
+  "gpt-5.6-luna": "Luna", "gpt-5.6-sol": "SOL", "gpt-6-astra": "Astra", "gemini-3.6-flash": "Gemini 3.6",
 };
 const ARM_LABEL = {
   "wm-claude": "WebMCP", "wm-gpt": "WebMCP", "wm-gemini": "WebMCP",
   "wm-stagehand-v4": "WebMCP/Stagehand v4", "wm-stagehand-v4-gemini": "WebMCP/Stagehand v4",
-  "cu-claude": "CU", "cu-openai": "CU", "cu-gemini": "CU",
+  "cu-claude": "CU", "cu-openai": "CU", "cu-gemini": "CU", "code-openai": "code exec",
   "a11y-stagehand": "accessibility tree", "dom-browseruse": "DOM + vision",
 };
 const KIND = (arm) => arm.startsWith("wm") ? "webmcp"
-  : arm.startsWith("cu") ? "cu" : "structured";
+  : arm.startsWith("cu") ? "cu" : arm.startsWith("code") ? "code" : "structured";
 
 // Model-matched pairs: each model's NATIVE WebMCP run against its own
 // computer-use run, so the comparison never crosses models.
 const NATIVE_WM = { "claude-sonnet-5": "wm-claude", "claude-opus-5": "wm-claude",
-  "gpt-5.6-luna": "wm-gpt", "gpt-5.6-sol": "wm-gpt", "gemini-3.6-flash": "wm-gemini" };
+  "gpt-5.6-luna": "wm-gpt", "gpt-5.6-sol": "wm-gpt", "gpt-6-astra": "wm-gpt", "gemini-3.6-flash": "wm-gemini" };
 const NATIVE_CU = { "claude-sonnet-5": "cu-claude", "claude-opus-5": "cu-claude",
-  "gpt-5.6-luna": "cu-openai", "gpt-5.6-sol": "cu-openai", "gemini-3.6-flash": "cu-gemini" };
-const expansionAgg = Object.keys(NATIVE_WM).flatMap((model) => {
+  "gpt-5.6-luna": "cu-openai", "gpt-5.6-sol": "cu-openai", "gpt-6-astra": "cu-openai", "gemini-3.6-flash": "cu-gemini" };
+// A model mapped above but not yet measured on BOTH arms is skipped, otherwise
+// aggregate([]) puts NaN in the SVG.
+const has = (arm, model) => canonRows.some((r) => r.arm === arm && r.model === model);
+const expansionAgg = Object.keys(NATIVE_WM).filter((model) => has(NATIVE_WM[model], model) && has(NATIVE_CU[model], model)).flatMap((model) => {
   const label = MODEL_LABEL[model] ?? model;
   const pick = (arm) => canonRows.filter((r) => r.arm === arm && r.model === model);
   return [
@@ -97,8 +100,8 @@ if (balancedAgg.length !== canonKeys.length) throw new Error(`expected ${canonKe
 // glows and loses its edge, so the light theme deepens it a step. Greys are
 // cool, to sit with cyan rather than fight it.
 const THEMES = {
-  light: { title: "#1f2328", label: "#1f2328", value: "#59636e", dim: "#a8b1ba", structured: "#b06a00", wm: "#0099cc", rule: "#d0d7de", credit: "#57606a" },
-  dark: { title: "#f0f6fc", label: "#f0f6fc", value: "#9198a1", dim: "#6e7681", structured: "#d29922", wm: "#00bfff", rule: "#30363d", credit: "#8b949e" },
+  light: { title: "#1f2328", label: "#1f2328", value: "#59636e", dim: "#a8b1ba", structured: "#b06a00", code: "#1a7f37", wm: "#0099cc", rule: "#d0d7de", credit: "#57606a" },
+  dark: { title: "#f0f6fc", label: "#f0f6fc", value: "#9198a1", dim: "#6e7681", structured: "#d29922", code: "#3fb950", wm: "#00bfff", rule: "#30363d", credit: "#8b949e" },
 };
 
 const PANELS = [
@@ -165,7 +168,7 @@ function leaderboard(themeName) {
     throw new Error(`leaderboard labels overflow the ${BAR_X - 10 - LABEL_X}px column: `
       + overflow.map((a) => `${a.m} (~${Math.round(a.w)}px)`).join(", "));
   }
-  const fill = (a) => a.kind === "webmcp" ? t.wm : a.kind === "structured" ? t.structured : t.dim;
+  const fill = (a) => a.kind === "webmcp" ? t.wm : a.kind === "structured" ? t.structured : a.kind === "code" ? t.code : t.dim;
   const rows = balancedAgg.map((a, i) => {
     const y = TOP + i * ROW;
     const width = Math.max(3, a.score / 100 * BAR_W);
@@ -195,6 +198,8 @@ ${rows}
 <text x="${PAD + 98}" y="${H - 17}" font-size="11.5" fill="${t.credit}">computer use</text>
 <rect x="${PAD + 190}" y="${H - 25}" width="9" height="9" rx="2" fill="${t.structured}"/>
 <text x="${PAD + 204}" y="${H - 17}" font-size="11.5" fill="${t.credit}">DOM / accessibility tree</text>
+<rect x="${PAD + 340}" y="${H - 25}" width="9" height="9" rx="2" fill="${t.code}"/>
+<text x="${PAD + 354}" y="${H - 17}" font-size="11.5" fill="${t.credit}">code execution</text>
 </svg>`;
 }
 

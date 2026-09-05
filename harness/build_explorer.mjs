@@ -32,22 +32,31 @@ const SITE_TYPE = (() => {
 })();
 
 const METHOD_LABEL = {
-  "wm-claude": "WebMCP · Claude", "wm-gpt": "WebMCP · GPT",
+  "wm-claude": "WebMCP · Claude", "wm-gpt": "WebMCP · GPT", "code-openai": "Code execution · GPT",
   "wm-stagehand": "WebMCP · Stagehand", "cu-claude": "Computer use · Claude",
   "cu-openai": "Computer use · GPT", "dom-browseruse": "Browser Use · DOM + screenshot",
   "a11y-stagehand": "Page structure · Stagehand (a11y)", "scripted": "Scripted (no-LLM)",
 };
-const CLASS = (a) => a.startsWith("wm") ? "webmcp" : a.startsWith("cu") ? "cu" : a === "scripted" ? "scripted" : "struct";
+const CLASS = (a) => a.startsWith("wm") ? "webmcp" : a.startsWith("cu") ? "cu" : a.startsWith("code") ? "code" : a === "scripted" ? "scripted" : "struct";
+const MODEL_LABEL = {
+  "claude-sonnet-5": "Sonnet 5", "claude-opus-5": "Opus 5", "claude-sonnet-4-6": "Sonnet 4.6",
+  "gpt-5.6-luna": "Luna", "gpt-5.6-sol": "SOL", "gpt-6-astra": "Astra", "gpt-5.5": "GPT-5.5", "gemini-3.6-flash": "Gemini 3.6",
+};
+// Every aggregate is one CONFIGURATION (arm × model), never an arm: the same
+// arm runs several models (cu-openai: Luna, SOL, Astra) and pooling them hid
+// that. Styling (CLASS/IFACE) stays keyed on the arm.
+const cfgKey = (r) => `${r.arm}\u0000${r.model ?? ""}`;
+const cfgLabel = (arm, model) => `${METHOD_LABEL[arm] ?? arm}${model ? ` · ${MODEL_LABEL[model] ?? model}` : ""}`;
 const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 const median = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const passed = (r) => r.pass === true || r.pass === "true" || r.success === true || r.success === "true";
-// Total tokens PROCESSED — uncached input + cache reads + output. Cache
+// Total tokens PROCESSED — uncached input + cache reads + cache writes + output. Cache
 // reads are real model context (the discount is a billing fact, captured in
 // est_cost_usd); charting only full-price tokens would make cached arms look
 // 10x lighter than they are. The cached/uncached split stays available in
 // results.csv for appendix-level analysis. Old rows without cached_tokens
 // are unaffected.
-const tok = (r) => (+r.input_tokens || 0) + (+r.cached_tokens || 0) + (+r.output_tokens || 0);
+const tok = (r) => (+r.input_tokens || 0) + (+r.cached_tokens || 0) + (+r.cache_write_tokens || 0) + (+r.output_tokens || 0);
 // Agent time when the row carries the split (post-2026-07-27 runs); wall clock
 // as fallback for old rows. Wall clock includes identical per-attempt harness
 // overhead (DB reset + page boot) that swamps short attempts — see the audit.
@@ -79,25 +88,26 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
   const droppedCount = allRows.filter(isInfraError).length;
   const rows = allRows.filter((r) => !isInfraError(r));
   const rowsFor = (site, taskId) => rows.filter((r) => r.site === site && r.task_id === taskId);
-  const allMethods = [...new Set(rows.map((r) => r.arm))];
+  const allConfigs = [...new Set(rows.map(cfgKey))];
 
-  const methodAgg = allMethods.map((m) => {
-    const rs = rows.filter((r) => r.arm === m);
-    return { m, n: rs.length, pass: rs.filter(passed).length,
+  const methodAgg = allConfigs.map((key) => {
+    const rs = rows.filter((r) => cfgKey(r) === key);
+    const { arm, model } = rs[0];
+    return { key, arm, model, m: cfgLabel(arm, model), n: rs.length, pass: rs.filter(passed).length,
       cost: median(rs.map((r) => +r.est_cost_usd || 0)), ms: median(rs.map(secs)), tk: median(rs.map(tok)) };
   }).sort((a, b) => (b.pass / (b.n || 1)) - (a.pass / (a.n || 1)) || (a.cost - b.cost));
 
   function taskCard(site, t) {
     const rs = rowsFor(site, t.id);
     const byMethod = {};
-    for (const r of rs) (byMethod[r.arm] ??= []).push(r);
-    const methodRows = Object.entries(byMethod).map(([m, mr]) => ({ m, p: mr.filter(passed).length, n: mr.length,
+    for (const r of rs) (byMethod[cfgKey(r)] ??= []).push(r);
+    const methodRows = Object.values(byMethod).map((mr) => ({ arm: mr[0].arm, m: cfgLabel(mr[0].arm, mr[0].model), p: mr.filter(passed).length, n: mr.length,
       cost: median(mr.map((r) => +r.est_cost_usd || 0)), ms: median(mr.map(secs)), tk: median(mr.map(tok)) }))
       .sort((a, b) => (b.p / b.n - a.p / a.n) || (a.cost - b.cost));
     const solved = rs.length ? `${rs.filter(passed).length}/${rs.length} runs pass` : "not run yet";
     const pred = t.predicate ? `<div class="pred"><span class="k">check</span> ${esc(JSON.stringify(t.predicate))}</div>` : "";
     const table = methodRows.length ? `<table class="t"><thead><tr><th>method</th><th>result</th><th>time</th><th>tokens</th><th>cost</th></tr></thead><tbody>${
-      methodRows.map((x) => `<tr class="${CLASS(x.m)}"><td>${esc(METHOD_LABEL[x.m] ?? x.m)}</td><td>${x.p === x.n ? "✓" : x.p === 0 ? "✕" : "◑"} <span class="muted">${x.p}/${x.n}</span></td><td>${x.ms == null ? "—" : x.ms.toFixed(1) + "s"}</td><td>${num(x.tk)}</td><td>${money(x.cost)}</td></tr>`).join("")
+      methodRows.map((x) => `<tr class="${CLASS(x.arm)}"><td>${esc(x.m)}</td><td>${x.p === x.n ? "✓" : x.p === 0 ? "✕" : "◑"} <span class="muted">${x.p}/${x.n}</span></td><td>${x.ms == null ? "—" : x.ms.toFixed(1) + "s"}</td><td>${num(x.tk)}</td><td>${money(x.cost)}</td></tr>`).join("")
     }</tbody></table>` : `<p class="muted">No runs recorded for this task yet.</p>`;
     return `<details><summary><span class="stitle">${esc(t.id)}</span><span class="smeta">${esc(t.tier ?? "")} · ${esc(solved)}</span><span class="chev">›</span></summary>
       <div class="body"><div class="prompt"><span class="k">prompt</span>${esc(t.prompt ?? t.prompt_template ?? "")}</div>${pred}${table}</div></details>`;
@@ -130,7 +140,7 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
     }).map((a) => {
       const v = valueOf(a) || 0;
       const w = Math.max(v > 0 ? 2 : 0, (v / max) * 100);
-      return `<div class="bar-row"><span class="bar-label">${esc(a.m)}</span><div class="bar-track"><div class="bar-fill ${CLASS(a.m)}" style="width:${w.toFixed(1)}%"></div></div><span class="bar-val">${fmt(v, a)}</span></div>`;
+      return `<div class="bar-row"><span class="bar-label">${esc(a.m)}</span><div class="bar-track"><div class="bar-fill ${CLASS(a.arm)}" style="width:${w.toFixed(1)}%"></div></div><span class="bar-val">${fmt(v, a)}</span></div>`;
     }).join("")
   }</figure>`;
   const charts = `<div class="charts">
@@ -142,13 +152,14 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
 
   // Improvement table: interfaces grouped, WebMCP as the reference, others shown
   // as multiples of the WebMCP median for cost / tokens / time.
-  const aggOf = (arm) => methodAgg.find((a) => a.m === arm);
+  const aggsOf = (arm) => methodAgg.filter((a) => a.arm === arm);
   const GROUPS = [
     { label: "WebMCP", arms: ["wm-gpt", "wm-claude", "wm-stagehand"], cls: "webmcp" },
     { label: "Page structure · a11y", arms: ["a11y-stagehand"], cls: "struct" },
     { label: "DOM + vision (multimodal)", arms: ["dom-browseruse"], cls: "struct" },
     { label: "Screenshots", arms: ["cu-claude", "cu-openai"], cls: "cu" },
-  ].map((g) => ({ ...g, aggs: g.arms.map(aggOf).filter(Boolean) })).filter((g) => g.aggs.length);
+    { label: "Code execution (Playwright)", arms: ["code-openai"], cls: "code" },
+  ].map((g) => ({ ...g, aggs: g.arms.flatMap(aggsOf) })).filter((g) => g.aggs.length);
   const wmAggs = GROUPS.find((g) => g.cls === "webmcp")?.aggs ?? [];
   const wmCost = median(wmAggs.map((a) => a.cost).filter((x) => x != null));
   const wmTok = median(wmAggs.map((a) => a.tk).filter((x) => x != null));
@@ -193,10 +204,10 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
     ? [meta.date, plural(siteIds.length, "site"), plural(armIds.length, "method"), meta.n && `${meta.n} attempt${meta.n === 1 ? "" : "s"} per task`].filter(Boolean).join(" · ")
     : `${plural(runCount, "run")} aggregated · ${plural(armIds.length, "method")} · ${plural(siteIds.length, "site")}`;
   // Lead with what WindTunnel measures, for a reader with zero context.
-  const lead = "WindTunnel measures how reliably and cheaply an AI browser agent can operate real websites, comparing three ways it can “see” and act on a page.";
+  const lead = "WindTunnel measures how reliably and cheaply an AI browser agent can operate real websites, comparing four ways it can “see” and act on a page.";
   const plain = meta
-    ? `${lead} This run put <b>${plural(armIds.length, "method")}</b> through <b>${plural(taskIds.length, "task")}</b> across <b>${plural(siteIds.length, "site")}</b>${meta.n ? `, ${meta.n} attempt${meta.n === 1 ? "" : "s"} each` : ""} — <b>${nfmt(rows.length)}</b> agent runs in total, about <b>$${totalCost.toFixed(2)}</b>. The three interfaces: <b style="color:var(--webmcp)">WebMCP</b> (the site hands the agent direct tools), <b style="color:var(--cu)">computer use</b> (the agent reads screenshots), and <b style="color:var(--struct)">page structure</b> (the agent reads the DOM / accessibility tree).`
-    : `${lead} Aggregated across <b>${plural(runCount, "run")}</b>: ${plural(armIds.length, "method")}, ${plural(siteIds.length, "site")}, <b>${nfmt(rows.length)}</b> runs. <b style="color:var(--webmcp)">WebMCP</b> · <b style="color:var(--cu)">computer use</b> · <b style="color:var(--struct)">page structure</b>.`;
+    ? `${lead} This run put <b>${plural(armIds.length, "method")}</b> through <b>${plural(taskIds.length, "task")}</b> across <b>${plural(siteIds.length, "site")}</b>${meta.n ? `, ${meta.n} attempt${meta.n === 1 ? "" : "s"} each` : ""} — <b>${nfmt(rows.length)}</b> agent runs in total, about <b>$${totalCost.toFixed(2)}</b>. The four interfaces: <b style="color:var(--webmcp)">WebMCP</b> (the site hands the agent direct tools), <b style="color:var(--cu)">computer use</b> (the agent reads screenshots), <b style="color:var(--struct)">page structure</b> (the agent reads the DOM / accessibility tree), and <b style="color:var(--code)">code execution</b> (the agent writes Playwright code against the page).`
+    : `${lead} Aggregated across <b>${plural(runCount, "run")}</b>: ${plural(armIds.length, "method")}, ${plural(siteIds.length, "site")}, <b>${nfmt(rows.length)}</b> runs. <b style="color:var(--webmcp)">WebMCP</b> · <b style="color:var(--cu)">computer use</b> · <b style="color:var(--struct)">page structure</b> · <b style="color:var(--code)">code execution</b>.`;
   const droppedNote = droppedCount ? ` <span class="muted">(${plural(droppedCount, "run")} that errored on infrastructure — rate-limits, boot/registration timeouts, crashes — excluded from every number here.)</span>` : "";
   const finding = takeaway ? `<b>Headline:</b> ${takeaway}${droppedNote}` : `Per-method cost, tokens, and success are charted below.${droppedNote}`;
   // ---- how the advantage scales with journey length ----
@@ -218,7 +229,7 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
     const tasks = new Set(rs.map((r) => `${r.site}|${r.task_id}`)).size;
     const solved = (arms) => {
       const cells = {};
-      for (const r of rs.filter(arms)) (cells[`${r.site}|${r.task_id}|${r.arm}`] ??= []).push(r);
+      for (const r of rs.filter(arms)) (cells[`${r.site}|${r.task_id}|${cfgKey(r)}`] ??= []).push(r);
       const list = Object.values(cells);
       return `${list.filter((c) => c.filter(passed).length > c.length / 2).length}/${list.length}`;
     };
@@ -235,13 +246,13 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
     ${tierTable}`;
 
   // ---- flat sortable/filterable data table (spreadsheet view) ----
-  const IFACE = (a) => a.startsWith("wm") ? "WebMCP" : a.startsWith("cu") ? "Screenshots" : a === "a11y-stagehand" ? "Page structure (a11y)" : a === "dom-browseruse" ? "DOM + vision" : a;
+  const IFACE = (a) => a.startsWith("wm") ? "WebMCP" : a.startsWith("cu") ? "Screenshots" : a === "code-openai" ? "Code execution (Playwright)" : a === "a11y-stagehand" ? "Page structure (a11y)" : a === "dom-browseruse" ? "DOM + vision" : a;
   const flatCells = {};
-  for (const r of rows) { const k = `${r.site}|${r.task_id}|${r.arm}`; (flatCells[k] ??= []).push(r); }
-  const flat = Object.entries(flatCells).map(([k, rs]) => {
-    const [site, task, arm] = k.split("|");
+  for (const r of rows) { const k = `${r.site}|${r.task_id}|${cfgKey(r)}`; (flatCells[k] ??= []).push(r); }
+  const flat = Object.values(flatCells).map((rs) => {
+    const { site, task_id: task, arm, model = "" } = rs[0];
     const pass = rs.filter(passed).length;
-    return { site, type: SITE_TYPE[site] || "", task, tier: tierOf[`${site}|${task}`] || "", iface: IFACE(arm), method: arm, cls: CLASS(arm),
+    return { site, type: SITE_TYPE[site] || "", task, tier: tierOf[`${site}|${task}`] || "", iface: IFACE(arm), method: cfgLabel(arm, model), arm, model, cls: CLASS(arm),
       p: pass, n: rs.length, pct: Math.round(pass / rs.length * 100),
       cost: median(rs.map((r) => +r.est_cost_usd || 0)), tok: Math.round(median(rs.map(tok)) || 0), sec: Math.round(median(rs.map((r) => +r.wall_clock_s || 0)) || 0) };
   }).sort((a, b) => a.site.localeCompare(b.site) || a.task.localeCompare(b.task));
@@ -279,7 +290,7 @@ render();
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WindTunnel — Results Explorer</title><style>
 :root{--bg:#fafaf7;--surface:#fff;--ink:#1a1a1a;--soft:#555;--muted:#888;--line:#e5e3dc;--accent:#0b8fc4;--accent-soft:#e2f2fb;--done:#6b8e4e;--warn:#b8860b;--code:#f4f2ec;
---webmcp:#6b8e4e;--cu:#c8553d;--struct:#7c6a9c;--scripted:#888;}
+--webmcp:#6b8e4e;--cu:#c8553d;--struct:#7c6a9c;--code:#2f7d5a;--scripted:#888;}
 *{box-sizing:border-box;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);margin:0;line-height:1.55;font-size:16px;}
 .container{max-width:900px;margin:0 auto;padding:56px 32px 120px;}
 .logo{height:30px;width:auto;display:block;margin:0 0 18px auto;}
@@ -300,7 +311,7 @@ h2{font-size:14px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute
 .bar-label{flex:0 0 96px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{flex:1;background:var(--code);border-radius:4px;height:14px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:4px;min-width:2px;}
-.bar-fill.webmcp{background:var(--webmcp);}.bar-fill.cu{background:var(--cu);}.bar-fill.struct{background:var(--struct);}.bar-fill.scripted{background:var(--scripted);}
+.bar-fill.webmcp{background:var(--webmcp);}.bar-fill.cu{background:var(--cu);}.bar-fill.struct{background:var(--struct);}.bar-fill.code{background:var(--code);}.bar-fill.scripted{background:var(--scripted);}
 .bar-val{flex:0 0 62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--soft);font-weight:600;}
 table.imp{width:100%;border-collapse:collapse;font-size:13.5px;margin:0 0 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
 table.imp th,table.imp td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
@@ -308,7 +319,7 @@ table.imp th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:
 table.imp td.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;}
 table.imp tr.ref{background:var(--accent-soft);font-weight:600;}
 table.imp tr td:first-child{border-left:3px solid transparent;}
-table.imp tr.webmcp td:first-child{border-left-color:var(--webmcp);}table.imp tr.cu td:first-child{border-left-color:var(--cu);}table.imp tr.struct td:first-child{border-left-color:var(--struct);}
+table.imp tr.webmcp td:first-child{border-left-color:var(--webmcp);}table.imp tr.cu td:first-child{border-left-color:var(--cu);}table.imp tr.struct td:first-child{border-left-color:var(--struct);}table.imp tr.code td:first-child{border-left-color:var(--code);}
 .takeaway{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 16px;margin:0 0 26px;font-size:14px;color:var(--soft);}
 .note{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0 0 26px;padding:0 2px;}
 details{background:var(--surface);border:1px solid var(--line);border-radius:9px;margin-bottom:8px;overflow:hidden;}
@@ -325,7 +336,7 @@ table.t{width:100%;border-collapse:collapse;font-size:14px;}
 table.t th,table.t td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);}
 table.t th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;}
 table.t td:first-child{font-weight:500;}
-tr.webmcp td:first-child{border-left:3px solid var(--webmcp);}tr.cu td:first-child{border-left:3px solid var(--cu);}tr.struct td:first-child{border-left:3px solid var(--struct);}tr.scripted td:first-child{border-left:3px solid var(--scripted);}
+tr.webmcp td:first-child{border-left:3px solid var(--webmcp);}tr.cu td:first-child{border-left:3px solid var(--cu);}tr.struct td:first-child{border-left:3px solid var(--struct);}tr.code td:first-child{border-left:3px solid var(--code);}tr.scripted td:first-child{border-left:3px solid var(--scripted);}
 .muted{color:var(--muted);}
 .dt-controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:6px 0 12px;}
 .dt-controls select,.dt-controls input{font:inherit;font-size:13px;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--soft);}
@@ -338,7 +349,7 @@ table.dt thead th:hover{color:var(--accent);}
 table.dt tbody tr:hover{background:var(--accent-soft);}
 table.dt td.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;}
 table.dt td:nth-child(n+7){font-variant-numeric:tabular-nums;text-align:right;}
-tr.webmcp td:first-child{border-left:3px solid var(--webmcp);}tr.cu td:first-child{border-left:3px solid var(--cu);}tr.struct td:first-child{border-left:3px solid var(--struct);}tr.scripted td:first-child{border-left:3px solid var(--scripted);}
+tr.webmcp td:first-child{border-left:3px solid var(--webmcp);}tr.cu td:first-child{border-left:3px solid var(--cu);}tr.struct td:first-child{border-left:3px solid var(--struct);}tr.code td:first-child{border-left:3px solid var(--code);}tr.scripted td:first-child{border-left:3px solid var(--scripted);}
 /* ponytail: CSS-only tabs (radio + :checked ~ sibling). No JS, and arrow-key
    navigation between tabs comes free with radio semantics. */
 .tabr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}

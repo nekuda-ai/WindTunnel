@@ -157,4 +157,6 @@
 <text x="116" y="731" font-size="11.5" fill="#57606a">computer use</text>
 <rect x="208" y="723" width="9" height="9" rx="2" fill="#b06a00"/>
 <text x="222" y="731" font-size="11.5" fill="#57606a">DOM / accessibility tree</text>
+<rect x="358" y="723" width="9" height="9" rx="2" fill="#1a7f37"/>
+<text x="372" y="731" font-size="11.5" fill="#57606a">code execution</text>
 </svg>
