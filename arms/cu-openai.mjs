@@ -23,20 +23,27 @@ const KEY_MAP = {
 const BUTTON_MAP = { left: "left", right: "right", wheel: "middle" };
 
 const toPlaywrightKey = (raw) => {
-  const key = String(raw).trim().replace(/_[lr]$/i, "");          // xdotool Control_L / Shift_R
-  const code = /^(key)([a-z])$|^(digit)(\d)$/i.exec(key);                  // DOM codes KeyA / Digit5, valid Playwright keys
+  const key = String(raw).replace(/_[lr]$/i, "");                       // xdotool Control_L / Shift_R
+  if (key.length === 1) return key;                                     // "a", "A", " ", "+" — case-sensitive, as Playwright wants
+  const code = /^(key)([a-z])$|^(digit)(\d)$/i.exec(key);              // DOM codes KeyA / Digit5, valid Playwright keys
   if (code) return code[1] ? `Key${code[2].toUpperCase()}` : `Digit${code[4]}`;
-  return KEY_MAP[key.toUpperCase()]
-    ?? (key.length === 1 ? key : key[0].toUpperCase() + key.slice(1).toLowerCase());
+  // Capitalize only the first letter: ControlOrMeta / ShiftLeft / NumpadEnter
+  // are already valid Playwright names and must not be lower-cased.
+  return KEY_MAP[key.toUpperCase()] ?? key[0].toUpperCase() + key.slice(1);
 };
+
+// One "ctrl+a"-style string → its keys. A "+" that is not followed by a key
+// ("Control++", or "+" alone) is the plus key itself, not a separator.
+const splitChord = (s) => s.split("+").flatMap((t, i, all) => t ? [t] : (i > 0 && all[i - 1] === "" ? ["+"] : []));
 
 // OpenAI's `keypress` carries ONE chord — "the combination of keys" — and models
 // spell it every way: ["CTRL","a"], ["ctrl+a"], ["Control_L","a"], ["Control","KeyA"].
 // Pressing the keys one at a time (what this arm did until the Astra smoke)
-// never selects-all, and the model burns turns retrying spellings. A single
-// letter inside a chord is lowercased so "CTRL+A" is Control+a, not Shift.
+// releases Control before "a" arrives, so select-all never happens and the
+// model burns turns retrying. A lone capital letter inside a chord is lowercased
+// ("CTRL+A" → Control+a): models mean the shortcut, not a shifted character.
 export const keyChord = (keys) => {
-  const parts = keys.flatMap((k) => String(k) === "+" ? ["+"] : String(k).split("+")).filter(Boolean).map(toPlaywrightKey);
+  const parts = keys.flatMap((k) => splitChord(String(k))).map(toPlaywrightKey);
   return parts.map((k) => parts.length > 1 && /^[A-Z]$/.test(k) ? k.toLowerCase() : k).join("+");
 };
 

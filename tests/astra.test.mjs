@@ -98,4 +98,10 @@ test("cu-openai: keypress keys are one chord in Playwright syntax, whatever the 
   assert.equal(keyChord(["f5"]), "F5");
   assert.equal(keyChord(["A"]), "A", "a lone capital letter types a capital");
   assert.equal(keyChord(["+"]), "+", "a literal plus is a key, not a separator");
+  assert.equal(keyChord(["Control++"]), "Control++", "trailing plus is the key");
+  assert.equal(keyChord([" "]), " ", "space is a key, not whitespace");
+  assert.equal(keyChord(["ControlOrMeta", "a"]), "ControlOrMeta+a", "valid Playwright names pass through unchanged");
+  assert.equal(keyChord(["ShiftLeft"]), "ShiftLeft");
+  assert.equal(keyChord(["NumpadEnter"]), "NumpadEnter");
+  assert.equal(keyChord(["pagedown"]), "PageDown");
 });
