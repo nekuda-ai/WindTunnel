@@ -16,7 +16,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // an idle harness. Generous: image builds legitimately take tens of minutes.
 const STEP_TIMEOUT_MS = { prepare: 45 * 60_000, up: 10 * 60_000, status: 60_000, reset: 5 * 60_000, down: 5 * 60_000 };
 const withTimeout = (promise, ms, label) => new Promise((resolve, reject) => {
-  const timer = setTimeout(() => reject(new Error(`${label} did not finish within ${ms} ms`)), ms);
+  const timer = setTimeout(() => reject(new Error(`capsule ${label} timed out: did not finish within ${ms} ms`)), ms);
   promise.then((v) => { clearTimeout(timer); resolve(v); }, (e) => { clearTimeout(timer); reject(e); });
 });
 
@@ -31,13 +31,16 @@ function shellLifecycle(directory, env) {
   const capsuleBin = path.join(directory, "harness/bin/capsule");
   if (!fs.existsSync(capsuleBin)) throw new Error(`site-boot tooling not found at ${capsuleBin} — vendor the capsule recipes, or set WT_FAKE_LIFECYCLE=1 for a dry run`);
   const observeBin = path.join(directory, "harness/bin/observe");
-  const run = async (bin, args) => {
-    // run from the kit root so its scripts resolve ROOT/capsules correctly
-    const { stdout } = await execFileAsync(bin, args, { cwd: directory, env });
+  const run = async (bin, args, timeout) => {
+    // run from the kit root so its scripts resolve ROOT/capsules correctly.
+    // `timeout` kills the child (SIGTERM) so a stuck step cannot pile up behind
+    // the next attempt; it sits 5 s above the step ceiling so bootCapsule's
+    // own, infra-classified error is the one that surfaces.
+    const { stdout } = await execFileAsync(bin, args, { cwd: directory, env, ...(timeout ? { timeout: timeout + 5_000 } : {}) });
     const text = stdout.trim();
     try { return text ? JSON.parse(text) : undefined; } catch { return text; }
   };
-  const cap = (action, ctx) => run(capsuleBin, [ctx.siteId, action, "--run-id", ctx.runId, "--port", String(ctx.port)]);
+  const cap = (action, ctx) => run(capsuleBin, [ctx.siteId, action, "--run-id", ctx.runId, "--port", String(ctx.port)], STEP_TIMEOUT_MS[action]);
   return {
     prepare: (ctx) => cap("prepare", ctx),
     up: (ctx) => cap("up", ctx),

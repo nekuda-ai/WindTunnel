@@ -78,9 +78,14 @@ test("capsule: a lifecycle step that never settles is failed and torn down", asy
   };
   await assert.rejects(
     bootCapsule("stuck", { lifecycle, observe: async () => null, stepTimeoutMs: { prepare: 20 } }),
-    /prepare for stuck did not finish within 20 ms/,
+    /capsule prepare for stuck timed out/,
   );
   assert.equal(downs, 1);
+});
+
+test("capsule: a stuck step is classified as infrastructure, not a model failure", async () => {
+  const { classifyFailure } = await import("../harness/lib.mjs");
+  assert.equal(classifyFailure("capsule reset for hi-events timed out: did not finish within 300000 ms"), "infra");
 });
 
 test("capsule: a teardown that never settles does not hang the caller either", async () => {
