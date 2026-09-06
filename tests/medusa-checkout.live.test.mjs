@@ -20,16 +20,30 @@ test("medusa: complete_checkout places one order that the database probe sees", 
     assert.equal(before.orders, 0, `fresh capsule should have no orders: ${JSON.stringify(before)}`);
 
     const found = text(await executeBridgeTool(page, "search_products", { query: "Medusa T-Shirt" }));
+    // search_products navigates ~150 ms after it returns; a real agent thinks for
+    // seconds before the next call. Firing add_to_cart before that navigation
+    // lands makes the router drop the cart refresh, and the cart-conditioned
+    // tools never register — so wait for the store page like an agent would.
+    await page.waitForURL(/\/store/, { timeout: 10_000 });
+    await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => {});
     const product = found.products[0];
     const variant = product.variants.find((v) => /\bL\b/.test(v.title) && /black/i.test(v.title)) ?? product.variants[0];
     await executeBridgeTool(page, "add_to_cart", { variant_id: variant.variant_id, quantity: 1 });
     await page.waitForFunction(() => globalThis.__wtModelContextBridge.list().some((t) => t.name === "complete_checkout"), null, { timeout: 15_000 });
     assert.ok((await listLiveTools(page)).some((t) => t.name === "complete_checkout"), "complete_checkout must register once the cart has items");
 
-    const done = text(await executeBridgeTool(page, "complete_checkout", {
+    const buyer = {
       email: "jane.tester@example.test", first_name: "Jane", last_name: "Tester", address_1: "1 High Street",
       city: "London", postal_code: "N1 9GU", country_code: "gb", phone: "+44 20 7946 0000",
-    }));
+    };
+    let done = text(await executeBridgeTool(page, "complete_checkout", buyer));
+    // The store offers several shipping options, so the tool returns them rather
+    // than guessing; pick Standard Shipping and call again — the same two-step
+    // protocol an agent follows.
+    if (done.step === "shipping") {
+      const standard = done.choices.find((c) => /standard/i.test(c.name)) ?? done.choices[0];
+      done = text(await executeBridgeTool(page, "complete_checkout", { ...buyer, shipping_option_id: standard.id }));
+    }
     assert.ok(done.order?.order_id, `complete_checkout did not return an order: ${JSON.stringify(done)}`);
     assert.equal(done.order.items?.[0]?.quantity, 1);
 
