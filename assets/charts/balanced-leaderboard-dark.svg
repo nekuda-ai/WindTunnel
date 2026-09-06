@@ -11,72 +11,72 @@
 <text x="30" y="117" text-anchor="end" fill="#8b949e">1</text>
 <text x="42" y="117" font-weight="600" fill="#f0f6fc">Luna · WebMCP</text>
 <rect x="330" y="103" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="103" width="245.9" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="117" text-anchor="end" font-weight="700" fill="#f0f6fc">98.4</text>
-<text x="762" y="117" text-anchor="end" fill="#f0f6fc">97.3%</text>
+<rect x="330" y="103" width="249.0" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="117" text-anchor="end" font-weight="700" fill="#f0f6fc">99.6</text>
+<text x="762" y="117" text-anchor="end" fill="#f0f6fc">99.3%</text>
 <text x="922" y="117" text-anchor="end" fill="#f0f6fc">$0.002</text>
 <text x="1102" y="117" text-anchor="end" fill="#f0f6fc">5.7s</text>
 <line x1="18" y1="165" x2="1102" y2="165" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="155" text-anchor="end" fill="#8b949e">2</text>
 <text x="42" y="155" font-weight="600" fill="#f0f6fc">Gemini 3.6 · WebMCP</text>
 <rect x="330" y="141" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="141" width="235.3" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="155" text-anchor="end" font-weight="700" fill="#f0f6fc">94.1</text>
-<text x="762" y="155" text-anchor="end" fill="#f0f6fc">98.0%</text>
+<rect x="330" y="141" width="238.4" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="155" text-anchor="end" font-weight="700" fill="#f0f6fc">95.4</text>
+<text x="762" y="155" text-anchor="end" fill="#f0f6fc">100.0%</text>
 <text x="922" y="155" text-anchor="end" fill="#f0f6fc">$0.004</text>
 <text x="1102" y="155" text-anchor="end" fill="#f0f6fc">7.2s</text>
 <line x1="18" y1="203" x2="1102" y2="203" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="193" text-anchor="end" fill="#8b949e">3</text>
 <text x="42" y="193" font-weight="600" fill="#f0f6fc">Gemini 3.6 · WebMCP/Stagehand v4</text>
 <rect x="330" y="179" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="179" width="232.0" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="193" text-anchor="end" font-weight="700" fill="#f0f6fc">92.8</text>
-<text x="762" y="193" text-anchor="end" fill="#f0f6fc">97.3%</text>
+<rect x="330" y="179" width="235.0" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="193" text-anchor="end" font-weight="700" fill="#f0f6fc">94.0</text>
+<text x="762" y="193" text-anchor="end" fill="#f0f6fc">99.3%</text>
 <text x="922" y="193" text-anchor="end" fill="#f0f6fc">$0.004</text>
 <text x="1102" y="193" text-anchor="end" fill="#f0f6fc">8.0s</text>
 <line x1="18" y1="241" x2="1102" y2="241" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="231" text-anchor="end" fill="#8b949e">4</text>
 <text x="42" y="231" font-weight="600" fill="#f0f6fc">Sonnet 5 · WebMCP</text>
 <rect x="330" y="217" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="217" width="228.7" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="231" text-anchor="end" font-weight="700" fill="#f0f6fc">91.5</text>
-<text x="762" y="231" text-anchor="end" fill="#f0f6fc">98.0%</text>
+<rect x="330" y="217" width="231.8" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="231" text-anchor="end" font-weight="700" fill="#f0f6fc">92.7</text>
+<text x="762" y="231" text-anchor="end" fill="#f0f6fc">100.0%</text>
 <text x="922" y="231" text-anchor="end" fill="#f0f6fc">$0.009</text>
 <text x="1102" y="231" text-anchor="end" fill="#f0f6fc">6.8s</text>
 <line x1="18" y1="279" x2="1102" y2="279" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="269" text-anchor="end" fill="#8b949e">5</text>
 <text x="42" y="269" font-weight="600" fill="#f0f6fc">Sonnet 5 · WebMCP/Stagehand v4</text>
 <rect x="330" y="255" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="255" width="224.4" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="269" text-anchor="end" font-weight="700" fill="#f0f6fc">89.8</text>
-<text x="762" y="269" text-anchor="end" fill="#f0f6fc">98.0%</text>
+<rect x="330" y="255" width="227.5" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="269" text-anchor="end" font-weight="700" fill="#f0f6fc">91.0</text>
+<text x="762" y="269" text-anchor="end" fill="#f0f6fc">100.0%</text>
 <text x="922" y="269" text-anchor="end" fill="#f0f6fc">$0.010</text>
 <text x="1102" y="269" text-anchor="end" fill="#f0f6fc">8.1s</text>
 <line x1="18" y1="317" x2="1102" y2="317" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="307" text-anchor="end" fill="#8b949e">6</text>
 <text x="42" y="307" font-weight="600" fill="#f0f6fc">Astra · WebMCP</text>
 <rect x="330" y="293" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="293" width="222.7" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="307" text-anchor="end" font-weight="700" fill="#f0f6fc">89.1</text>
-<text x="762" y="307" text-anchor="end" fill="#f0f6fc">97.3%</text>
+<rect x="330" y="293" width="225.8" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="307" text-anchor="end" font-weight="700" fill="#f0f6fc">90.3</text>
+<text x="762" y="307" text-anchor="end" fill="#f0f6fc">99.3%</text>
 <text x="922" y="307" text-anchor="end" fill="#f0f6fc">$0.017</text>
 <text x="1102" y="307" text-anchor="end" fill="#f0f6fc">6.3s</text>
 <line x1="18" y1="355" x2="1102" y2="355" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="345" text-anchor="end" fill="#8b949e">7</text>
 <text x="42" y="345" font-weight="600" fill="#f0f6fc">SOL · WebMCP</text>
 <rect x="330" y="331" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="331" width="216.6" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="345" text-anchor="end" font-weight="700" fill="#f0f6fc">86.6</text>
-<text x="762" y="345" text-anchor="end" fill="#f0f6fc">96.6%</text>
+<rect x="330" y="331" width="219.6" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="345" text-anchor="end" font-weight="700" fill="#f0f6fc">87.9</text>
+<text x="762" y="345" text-anchor="end" fill="#f0f6fc">98.6%</text>
 <text x="922" y="345" text-anchor="end" fill="#f0f6fc">$0.012</text>
 <text x="1102" y="345" text-anchor="end" fill="#f0f6fc">9.3s</text>
 <line x1="18" y1="393" x2="1102" y2="393" stroke="#30363d" stroke-width="1"/>
 <text x="30" y="383" text-anchor="end" fill="#8b949e">8</text>
 <text x="42" y="383" font-weight="600" fill="#f0f6fc">Opus 5 · WebMCP</text>
 <rect x="330" y="369" width="250" height="18" rx="2" fill="#30363d"/>
-<rect x="330" y="369" width="215.9" height="18" rx="2" fill="#00bfff"/>
-<text x="630" y="383" text-anchor="end" font-weight="700" fill="#f0f6fc">86.4</text>
-<text x="762" y="383" text-anchor="end" fill="#f0f6fc">98.0%</text>
+<rect x="330" y="369" width="219.0" height="18" rx="2" fill="#00bfff"/>
+<text x="630" y="383" text-anchor="end" font-weight="700" fill="#f0f6fc">87.6</text>
+<text x="762" y="383" text-anchor="end" fill="#f0f6fc">100.0%</text>
 <text x="922" y="383" text-anchor="end" fill="#f0f6fc">$0.014</text>
 <text x="1102" y="383" text-anchor="end" fill="#f0f6fc">9.8s</text>
 <line x1="18" y1="431" x2="1102" y2="431" stroke="#30363d" stroke-width="1"/>
