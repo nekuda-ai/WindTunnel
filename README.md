@@ -84,7 +84,7 @@ $1.48** for native WebMCP (33.6×), while median agent time was **29.3s vs.
 
 Canonical artifacts — [CSV](results/canonical/results.csv),
 [run JSON](results/canonical/run.json),
-[provenance](results/canonical/PROVENANCE.md), and
+[provenance](results/canonical/PROVENANCE.md), [changelog](CHANGELOG.md), and
 [interactive explorer](results/canonical/explorer.html).
 
 | Configuration | Interface | Solved | Attempts | Turn-cap | Median cost | Median tokens | Median s |
@@ -142,8 +142,9 @@ rate.** Across the 12 long and sensitive-action tasks, computer use solved
 **57/60 model-task cells (95%)** vs. WebMCP's **55/60 (92%)**. WebMCP used
 **11.2× lower cost**, **5.7× less agent time**, and **13.3× fewer tokens**. The
 sensitive-action row is the deliberate coverage boundary:
-today's WebMCP tools hand guest checkout back to the page before the final
-purchase, so computer use completes that one task more often.
+until board v1.1 the store's WebMCP tools handed guest checkout back to the
+page before the final purchase (task `md-8`), so no WebMCP configuration could
+complete it while screen-driving agents could — see [CHANGELOG.md](CHANGELOG.md).
 
 <sub>How these numbers are computed: [`docs/SPEC.md`](docs/SPEC.md).</sub>
 

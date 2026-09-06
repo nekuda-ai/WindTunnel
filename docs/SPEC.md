@@ -60,7 +60,7 @@ across different tech stacks and both public and logged-in pages.
 
 | site | category | resource class | transaction flow |
 |---|---|---|---|
-| nextjs-starter-medusa | online store | medium | ✅ real checkout (test payments) |
+| nextjs-starter-medusa | online store | medium | ✅ real checkout (test payments); v1.1 adds the `complete_checkout` WebMCP tool — see CHANGELOG.md |
 | hi-events | events / ticketing | heavy | ✅ ticket checkout |
 | easyappointments | appointment booking | medium | ✅ booking |
 | directory-9d8 | business directory | light | — |
