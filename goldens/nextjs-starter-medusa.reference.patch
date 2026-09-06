@@ -304,10 +304,10 @@ index 0000000..544bd71
 +}
 diff --git a/src/lib/webmcp/provider.tsx b/src/lib/webmcp/provider.tsx
 new file mode 100644
-index 0000000..153b545
+index 0000000..9ebd088
 --- /dev/null
 +++ b/src/lib/webmcp/provider.tsx
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,126 @@
 +"use client"
 +
 +import { usePathname, useRouter } from "next/navigation"
@@ -362,7 +362,15 @@ index 0000000..153b545
 +    const ctx = getModelContext()
 +    if (!ctx?.registerTool) return
 +    const controller = new AbortController()
-+    registerAll(ctx, buildAlwaysTools(navRef.current), controller.signal)
++    // complete_checkout lives here too (v1.1): registering it with the cart-
++    // conditioned group left a gap during the begin_checkout navigation in
++    // which an agent's next call found no such tool. It fails cleanly on an
++    // empty cart, so always-on costs nothing.
++    registerAll(
++      ctx,
++      [...buildAlwaysTools(navRef.current), ...buildCheckoutTools(navRef.current)],
++      controller.signal
++    )
 +    return () => controller.abort()
 +  }, [])
 +
@@ -387,15 +395,6 @@ index 0000000..153b545
 +    registerAll(ctx, buildCartTools(navRef.current), controller.signal)
 +    return () => controller.abort()
 +  }, [hasCartItems, isCheckout])
-+
-+  // Group D — checkout, available whenever the cart has items (also inside checkout)
-+  useEffect(() => {
-+    const ctx = getModelContext()
-+    if (!ctx?.registerTool || !hasCartItems) return
-+    const controller = new AbortController()
-+    registerAll(ctx, buildCheckoutTools(navRef.current), controller.signal)
-+    return () => controller.abort()
-+  }, [hasCartItems])
 +
 +  return null
 +}
@@ -597,7 +596,7 @@ index 0000000..7849b20
 +}
 diff --git a/src/lib/webmcp/tools.ts b/src/lib/webmcp/tools.ts
 new file mode 100644
-index 0000000..3922255
+index 0000000..e563fcd
 --- /dev/null
 +++ b/src/lib/webmcp/tools.ts
 @@ -0,0 +1,793 @@
@@ -1322,9 +1321,9 @@ index 0000000..3922255
 +}
 +
 +// ---------------------------------------------------------------------------
-+// Group D — checkout (registered whenever the cart has items, including on the
-+// checkout page). v1.1: before this, the tools handed off at begin_checkout and
-+// no WebMCP agent could finish a purchase.
++// Checkout (v1.1) — registered with the always-on group so it is never absent
++// mid-navigation; before this, the tools handed off at begin_checkout and no
++// WebMCP agent could finish a purchase. Fails cleanly when the cart is empty.
 +// ---------------------------------------------------------------------------
 +
 +export function buildCheckoutTools(nav: Navigator): WebMcpTool[] {
