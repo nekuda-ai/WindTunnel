@@ -231,7 +231,13 @@ export async function runBenchmark(argv, {
       });
       rows.push(...result.rows);
       verdicts.push(...result.verdicts);
-      capsules.push(result.capsule);
+      // A failed teardown is an incident worth auditing after the flight — keep it
+      // on the run record and in the live journal, not only on the console.
+      capsules.push(result.teardown_error ? { ...result.capsule, teardown_error: result.teardown_error } : result.capsule);
+      if (result.teardown_error) {
+        log(`Teardown failed for ${method.id} × ${siteId}: ${result.teardown_error}`);
+        fs.appendFileSync(livePath, JSON.stringify({ teardown_failed: `${method.id} × ${siteId}`, error: result.teardown_error.slice(0, 300) }) + "\n");
+      }
     } catch (error) {
       // A capsule that won't boot must cost one batch, not the whole run —
       // a 20-hour flight once died at batch 31/56 (a broken seed on a cold

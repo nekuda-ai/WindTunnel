@@ -60,7 +60,10 @@ const tok = (r) => (+r.input_tokens || 0) + (+r.cached_tokens || 0) + (+r.cache_
 // Agent time when the row carries the split (post-2026-07-27 runs); wall clock
 // as fallback for old rows. Wall clock includes identical per-attempt harness
 // overhead (DB reset + page boot) that swamps short attempts — see the audit.
-const secs = (r) => +r.agent_s || +r.wall_clock_s || 0;
+// Fall back only when agent_s is ABSENT — a recorded 0 is a real (instant)
+// attempt, not a missing value; treating it as missing swapped in wall-clock
+// time for five canonical rows.
+const secs = (r) => (r.agent_s == null || r.agent_s === "") ? (+r.wall_clock_s || 0) : +r.agent_s;
 const money = (v) => v == null ? "—" : "$" + v.toFixed(3);
 const num = (v) => v == null ? "—" : Math.round(v).toLocaleString();
 

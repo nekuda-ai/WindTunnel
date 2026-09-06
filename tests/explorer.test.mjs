@@ -36,3 +36,16 @@ test("explorer files code-openai under its own class, not page structure", () =>
   assert.match(html, /Code execution \(Playwright\)/);
   assert.doesNotMatch(html, /comparing three ways/);
 });
+
+test("explorer: a recorded agent_s of 0 is a real value, not a missing one", () => {
+  // Two instant attempts (agent_s 0, long wall clock) + one 10 s attempt: the
+  // median agent time is 0 s. Treating 0 as "missing" swapped in the 500 s wall
+  // clock and reported 500 s.
+  const rs = [{ ...row("gpt-6-astra", true, 1), agent_s: 0, wall_clock_s: 500 }, { ...row("gpt-6-astra", true, 1), agent_s: 0, wall_clock_s: 500 }, row("gpt-6-astra", true, 1)];
+  const html = renderExplorerHTML({ rows: rs, tasksBySite });
+  assert.match(html, /<span class="bar-val">0s<\/span>/);
+  assert.doesNotMatch(html, /<span class="bar-val">500s<\/span>/);
+  // Legacy rows without the agent_s field still fall back to wall clock.
+  const legacy = [{ ...row("gpt-6-astra", true, 1), agent_s: undefined, wall_clock_s: 42 }];
+  assert.match(renderExplorerHTML({ rows: legacy, tasksBySite }), /<span class="bar-val">42s<\/span>/);
+});

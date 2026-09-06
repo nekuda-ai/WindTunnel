@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import os from "node:os";
 import path from "node:path";
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readdir, readFile } from "node:fs/promises";
 
 import { parseArgs, planRuns, runBenchmark } from "../harness/cli.mjs";
 
@@ -120,4 +120,25 @@ test("a batch whose capsule fails to boot is skipped, not fatal", async () => {
   assert.ok(logs.some((line) => /Batch failed, skipping fake × directory-9d8/.test(line)));
   assert.ok(result.rows.length > 0, "the healthy site's batch still produced rows");
   assert.ok(result.rows.every((row) => row.site === "tailwind-nextjs-blog"));
+});
+
+test("a failed capsule teardown is persisted on the run record, not just logged", async () => {
+  const logs = [];
+  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "windtunnel-teardown-"));
+  await runBenchmark(["--sites", "tailwind-nextjs-blog", "--arms", "fake", "--n", "1"], {
+    env: { WT_FAKE_LIFECYCLE: "1" },
+    outputRoot,
+    log: (line) => logs.push(line),
+    boot: async (siteId, opts) => {
+      const { bootCapsule } = await import("../harness/capsule.mjs");
+      const capsule = await bootCapsule(siteId, opts);
+      return { ...capsule, down: async () => { throw new Error("capsule down for blog timed out"); } };
+    },
+    methods: { fake: { id: "fake", paid: false, async run() { return { finalText: "ok" }; } } },
+  });
+  const dir = (await readdir(outputRoot)).find((d) => !d.endsWith(".jsonl"));
+  const run = JSON.parse(await readFile(path.join(outputRoot, dir, "run.json"), "utf8"));
+  assert.match(run.capsules[0].teardown_error, /timed out/);
+  assert.match(await readFile(path.join(outputRoot, "live.jsonl"), "utf8"), /teardown_failed/);
+  assert.ok(logs.some((line) => /Teardown failed for fake × tailwind-nextjs-blog/.test(line)));
 });
