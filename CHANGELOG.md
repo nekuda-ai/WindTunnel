@@ -8,7 +8,16 @@
 
 | Configuration | md-8 before | md-8 after |
 |---|---:|---:|
-| _filled in after the re-run_ | 0/3 | — |
+| wm-claude × claude-opus-5 | 0/3 | 3/3 |
+| wm-claude × claude-sonnet-5 | 0/3 | 3/3 |
+| wm-gemini × gemini-3.6-flash | 0/3 | 3/3 |
+| wm-gpt × gpt-5.6-luna | 0/3 | 3/3 |
+| wm-gpt × gpt-5.6-sol | 0/3 | 3/3 |
+| wm-gpt × gpt-6-astra | 0/3 | 3/3 |
+| wm-stagehand-v4 × claude-sonnet-5 | 0/3 | 3/3 |
+| wm-stagehand-v4-gemini × gemini-3.6-flash | 0/3 | 3/3 |
+
+All 24 attempts passed, each in 5 tool calls (`search_products → add_to_cart → complete_checkout ×2`), $0.93 in total.
 
 No other cell changed. Screen-driving rows are untouched — they never see tools and the page is unchanged.
 
