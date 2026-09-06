@@ -107,7 +107,7 @@ SCHEMAS = {
     "tasks": TASKS_SCHEMA,
     "transcripts": TRANSCRIPTS_SCHEMA,
 }
-EXPECTED_ROWS = {"attempts": 2352, "verdicts": 784, "tasks": 49, "transcripts": 2352}
+EXPECTED_ROWS = {"attempts": 2793, "verdicts": 931, "tasks": 49, "transcripts": 2793}
 
 
 def nullable(value: str | None) -> str | None:
@@ -146,6 +146,8 @@ def interface(arm: str) -> str:
         return "accessibility tree"
     if arm == "dom-browseruse":
         return "DOM + vision"
+    if arm == "code-openai":
+        return "code execution (Playwright)"
     raise ValueError(f"unknown canonical arm: {arm}")
 
 

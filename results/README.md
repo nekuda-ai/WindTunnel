@@ -11,8 +11,9 @@ every attempt including full agent transcripts.
 
 **The cross-model view is [`model-comparison.md`](model-comparison.md).** It
 compares the paired computer-use and WebMCP arms for GPT-5.5, GPT-5.6 Luna,
-GPT-5.6 SOL, Gemini 3.6 Flash, and Claude Opus 5 under the canonical
-600-second per-attempt cap.
+GPT-5.6 SOL, Gemini 3.6 Flash, Claude Opus 5, and GPT-6 Astra (plus Astra's
+code-execution arm) under the canonical 600-second per-attempt cap. Board
+versions and what changed between them: [`../CHANGELOG.md`](../CHANGELOG.md).
 
 | Run | Scope |
 |---|---|
@@ -22,6 +23,10 @@ GPT-5.6 SOL, Gemini 3.6 Flash, and Claude Opus 5 under the canonical
 | [`2026-08-17-sol-600-timeouts/`](2026-08-17-sol-600-timeouts/) | Completes the canonical SOL result at the 600s ceiling |
 | [`2026-08-17-gemini-full/`](2026-08-17-gemini-full/) | Gemini 3.6 Flash paired full run |
 | [`2026-08-17-opus5-full/`](2026-08-17-opus5-full/) | Claude Opus 5 paired full run |
+| [`2026-09-05-astra-full/`](2026-09-05-astra-full/) | GPT-6 Astra full run: `cu-openai` + `wm-gpt` + new `code-openai` |
+| [`2026-09-05-astra-rem-cu-openai/`](2026-09-05-astra-rem-cu-openai/) | Completes Astra `cu-openai` on learnhouse + hi-events |
+| [`2026-09-06-astra-rem-code-openai/`](2026-09-06-astra-rem-code-openai/) | Completes Astra `code-openai` on learnhouse |
+| `2026-09-06-v11-md8-<arm>-<model>/` (8 folders) | Board v1.1: `md-8` re-measured for every WebMCP configuration with `complete_checkout` |
 
 ## Layout
 
@@ -47,6 +52,6 @@ and understand what was tested, what won, and how to reproduce it.
 ## Reading a report
 
 The headline is **solved / total** for each access method — how many tasks each
-of the three interfaces completed. A task is "solved" when it passes on most
+of the four interfaces completed. A task is "solved" when it passes on most
 repeat attempts. Higher is better; the interesting part is the *gap* between
 the three methods on the same tasks.

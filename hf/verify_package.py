@@ -34,7 +34,11 @@ SECRET_PATTERNS = [
     ("GitHub token", re.compile(r"(?:ghp|gho)" r"_[A-Za-z0-9]{36}")),
     ("Slack token", re.compile(r"xox" r"[baprs]-[A-Za-z0-9-]{10,}")),
 ]
-USERS_PATH = re.compile(re.escape("/" + "Users/"))
+# Anchored to a path start: a site's own source tree may contain a segment
+# named "Users" (hi-events: routes/admin/Users/index.tsx), which is not a
+# home directory. A real leak looks like /Users/<name>/..., at the start of a
+# path.
+USERS_PATH = re.compile(r"(?<![A-Za-z0-9_./-])/Users/[A-Za-z0-9_.-]+/")
 PRIVATE_IP = re.compile(
     r"(?<![\d.])(?:10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})(?![\d.])"
 )
@@ -119,10 +123,10 @@ def check_dimensions() -> str:
         "configurations": len({(row["arm"], row["model"]) for row in attempts}),
         "sites": len({row["site"] for row in attempts}),
     }
-    expected = {"attempts": 2352, "verdicts": 784, "tasks": 49, "configurations": 16, "sites": 8}
+    expected = {"attempts": 2793, "verdicts": 931, "tasks": 49, "configurations": 19, "sites": 8}
     if counts != expected:
         raise AssertionError(f"dimensions {counts!r} != {expected!r}")
-    if len({(row["configuration"], row["site"], row["task_id"]) for row in verdicts}) != 784:
+    if len({(row["configuration"], row["site"], row["task_id"]) for row in verdicts}) != 931:
         raise AssertionError("duplicate verdict cell")
     return ", ".join(f"{key}={value}" for key, value in counts.items())
 
