@@ -3,11 +3,12 @@
 Finished benchmark runs live here. Each run is one folder, and each folder has
 a short Markdown report as its front page.
 
-**The current reference is [`2026-07-27-reference/`](2026-07-27-reference/)** —
-the full 7-method × 8-site × 49-task measurement — one benchmark generation (single commit), the base run plus two same-day patch flights (per-cell provenance in its
-[`PROVENANCE.md`](2026-07-27-reference/PROVENANCE.md)). Open its
+**The current reference is [`canonical/`](canonical/)** — board v1.1, 19
+configurations × 49 tasks × 3 attempts, consolidated per cell from the source
+runs listed in its [`PROVENANCE.md`](canonical/PROVENANCE.md). Open its
 `explorer.html` for the interactive view; `results.csv` / `run.json` carry
-every attempt including full agent transcripts.
+every attempt including full agent transcripts. The original seven-method run
+is [`2026-07-27-reference/`](2026-07-27-reference/).
 
 **The cross-model view is [`model-comparison.md`](model-comparison.md).** It
 compares the paired computer-use and WebMCP arms for GPT-5.5, GPT-5.6 Luna,
@@ -54,4 +55,4 @@ and understand what was tested, what won, and how to reproduce it.
 The headline is **solved / total** for each access method — how many tasks each
 of the four interfaces completed. A task is "solved" when it passes on most
 repeat attempts. Higher is better; the interesting part is the *gap* between
-the three methods on the same tasks.
+the interfaces on the same tasks.

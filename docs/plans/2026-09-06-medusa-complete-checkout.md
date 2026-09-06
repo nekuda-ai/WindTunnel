@@ -8,7 +8,7 @@
 
 **Tech Stack:** unified diff (regenerated with `git diff`, never hand-edited), Next.js server actions, Medusa JS SDK, Node 20+ `node --test`, Docker Desktop for the one live check, existing scripts `combined-explorer.mjs`, `readme-charts.mjs`, `smoke-gate.mjs`.
 
-**Branch / worktree:** continue on `bench/astra-gpt-6` at `/Users/idanlevin/In Progress/WindTunnel-astra` (the Astra work is committed; this lands in the same PR as "v1.1" — see Task 9).
+**Branch / worktree:** continue on `bench/astra-gpt-6` at `<repo>` (the Astra work is committed; this lands in the same PR as "v1.1" — see Task 9).
 
 **Decisions already made (2026-09-06, with Idan):** one `complete_checkout` tool (not stepwise); re-run `md-8` for WebMCP configurations only; existing rows stay in history; changelog in repo now, on webmcp.com afterwards.
 
@@ -35,7 +35,7 @@
 
 ```bash
 export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
-W=/private/tmp/claude-501/-Users-idanlevin-In-Progress/9a8e746e-c32c-435d-bdf2-961d64bcd033/scratchpad/medusa-storefront
+W=$(mktemp -d)/medusa-storefront
 rm -rf "$W" && git clone -q https://github.com/medusajs/nextjs-starter-medusa.git "$W" && git -C "$W" checkout -q 9818886f06e493cb2249733d114d339aa216ef00
 git -C "$W" apply --check "$PWD/goldens/nextjs-starter-medusa.reference.patch" && git -C "$W" apply "$PWD/goldens/nextjs-starter-medusa.reference.patch" && git -C "$W" add -A && git -C "$W" commit -q -m "golden v1.0 applied" && echo applied
 ```
@@ -282,8 +282,8 @@ Add `buildCheckoutTools` to the import from `./tools`, and after the Group C eff
 **Step 5: Regenerate the golden patch and verify it applies to a pristine clone**
 
 ```bash
-cd "$W" && git add -A && git diff --no-color HEAD~1 > "/Users/idanlevin/In Progress/WindTunnel-astra/goldens/nextjs-starter-medusa.reference.patch"
-cd "/Users/idanlevin/In Progress/WindTunnel-astra"
+cd "$W" && git add -A && git diff --no-color HEAD~1 > "<repo>/goldens/nextjs-starter-medusa.reference.patch"
+cd "<repo>"
 V=$(mktemp -d) && git clone -q https://github.com/medusajs/nextjs-starter-medusa.git "$V" && git -C "$V" checkout -q 9818886f06e493cb2249733d114d339aa216ef00 && git -C "$V" apply --check goldens/nextjs-starter-medusa.reference.patch && echo "golden applies cleanly" && rm -rf "$V"
 grep -c "complete_checkout" goldens/nextjs-starter-medusa.reference.patch
 ```

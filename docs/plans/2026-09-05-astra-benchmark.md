@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node 20.11+, Playwright, OpenAI Responses API via raw `fetch` (no SDK), `node --test`, Docker Desktop (site capsules), existing scripts: `verify-model.mjs`, `smoke-gate.mjs`, `watchdog.mjs`, `combined-explorer.mjs`, `readme-charts.mjs`.
 
-**Branch / worktree:** `bench/astra-gpt-6` at `/Users/idanlevin/In Progress/WindTunnel-astra`, based on `origin/main` @ `5d598fd`. `.env` (copied, git-ignored) already holds a working `OPENAI_API_KEY`.
+**Branch / worktree:** `bench/astra-gpt-6` at `<repo>`, based on `origin/main` @ `5d598fd`. `.env` (copied, git-ignored) already holds a working `OPENAI_API_KEY`.
 
 ---
 
@@ -61,7 +61,7 @@ Probed directly against the API with the repo's key unless a source is cited.
 
 **Step 1: Confirm the worktree and key**
 
-Run (from `/Users/idanlevin/In Progress/WindTunnel-astra`):
+Run (from `<repo>`):
 
 ```bash
 git status -sb && git log --oneline -1

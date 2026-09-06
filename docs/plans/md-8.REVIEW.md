@@ -1,6 +1,6 @@
 **Verdict: (b) WebMCP tool gap on the site — guest checkout is not solvable through the tools as exposed. Confidence: high.**
 
-Investigation: 2026-09-06, `/Users/idanlevin/In Progress/WindTunnel-astra`. Local source and recorded transcripts only; no git, API calls, or Docker execution. References below are repository-relative file:line locations; patch references use the patch file's actual line numbers.
+Investigation: 2026-09-06, `<repo>`. Local source and recorded transcripts only; no git, API calls, or Docker execution. References below are repository-relative file:line locations; patch references use the patch file's actual line numbers.
 
 ## Evidence
 

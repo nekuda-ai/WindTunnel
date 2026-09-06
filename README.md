@@ -114,7 +114,8 @@ Canonical artifacts — [CSV](results/canonical/results.csv),
 | Sonnet 5 | computer use | 39/49 | 119/147 | 41 | $0.070 | 57,701 | 31.7 |
 
 <sub>Attempts are successful attempts out of 147; Turn-cap counts attempts
-that exhausted their model-turn budget. Median tokens are total processed:
+that used every turn of their model-turn budget (whether or not the final turn
+produced an answer). Median tokens are total processed:
 uncached input + cache reads + cache writes + output. The table reports tasks
 solved by a majority of three attempts; infrastructure rows are excluded.</sub>
 
