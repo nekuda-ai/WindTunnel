@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1062 722" width="1062" height="722" font-family="system-ui,-apple-system,sans-serif" font-size="13">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1062 826" width="1062" height="826" font-family="system-ui,-apple-system,sans-serif" font-size="13">
 <text x="18" y="33" font-size="14" font-weight="600" fill="#1f2328">WindTunnel — model expansion: WebMCP vs. computer use</text>
-<text x="18" y="50" font-size="11.5" fill="#57606a">49 tasks × 8 sites × 3 attempts · 600s per-attempt agent cap · 2,352 attempts</text>
+<text x="18" y="50" font-size="11.5" fill="#57606a">49 tasks × 8 sites × 3 attempts · 600s per-attempt agent cap · 2,793 attempts</text>
 <line x1="18" y1="56" x2="1044" y2="56" stroke="#d0d7de" stroke-width="1"/>
 <text x="18" y="74" font-size="13.5" font-weight="600" fill="#1f2328">Success rate — attempts passed</text>
 <line x1="18" y1="82" x2="504" y2="82" stroke="#d0d7de" stroke-width="1"/>
@@ -16,122 +16,146 @@
 <text x="150" y="184" text-anchor="end" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
 <rect x="160" y="172" width="236.3" height="16" rx="2" fill="#0099cc"/>
 <text x="404.3" y="185" fill="#59636e" font-variant-numeric="tabular-nums">97%</text>
-<text x="150" y="210" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
-<rect x="160" y="198" width="234.7" height="16" rx="2" fill="#0099cc"/>
-<text x="402.7" y="211" fill="#59636e" font-variant-numeric="tabular-nums">97%</text>
-<text x="150" y="236" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
-<rect x="160" y="224" width="221.5" height="16" rx="2" fill="#a8b1ba"/>
-<text x="389.5" y="237" fill="#59636e" font-variant-numeric="tabular-nums">91%</text>
-<text x="150" y="262" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
-<rect x="160" y="250" width="221.5" height="16" rx="2" fill="#a8b1ba"/>
-<text x="389.5" y="263" fill="#59636e" font-variant-numeric="tabular-nums">91%</text>
-<text x="150" y="288" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
+<text x="150" y="210" text-anchor="end" font-weight="600" fill="#1f2328">Astra · WebMCP</text>
+<rect x="160" y="198" width="236.3" height="16" rx="2" fill="#0099cc"/>
+<text x="404.3" y="211" fill="#59636e" font-variant-numeric="tabular-nums">97%</text>
+<text x="150" y="236" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
+<rect x="160" y="224" width="234.7" height="16" rx="2" fill="#0099cc"/>
+<text x="402.7" y="237" fill="#59636e" font-variant-numeric="tabular-nums">97%</text>
+<text x="150" y="262" text-anchor="end" font-weight="400" fill="#1f2328">Astra · CU</text>
+<rect x="160" y="250" width="223.1" height="16" rx="2" fill="#a8b1ba"/>
+<text x="391.1" y="263" fill="#59636e" font-variant-numeric="tabular-nums">92%</text>
+<text x="150" y="288" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
 <rect x="160" y="276" width="221.5" height="16" rx="2" fill="#a8b1ba"/>
 <text x="389.5" y="289" fill="#59636e" font-variant-numeric="tabular-nums">91%</text>
-<text x="150" y="314" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
-<rect x="160" y="302" width="214.9" height="16" rx="2" fill="#a8b1ba"/>
-<text x="382.9" y="315" fill="#59636e" font-variant-numeric="tabular-nums">88%</text>
-<text x="150" y="340" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
-<rect x="160" y="328" width="196.7" height="16" rx="2" fill="#a8b1ba"/>
-<text x="364.7" y="341" fill="#59636e" font-variant-numeric="tabular-nums">81%</text>
+<text x="150" y="314" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
+<rect x="160" y="302" width="221.5" height="16" rx="2" fill="#a8b1ba"/>
+<text x="389.5" y="315" fill="#59636e" font-variant-numeric="tabular-nums">91%</text>
+<text x="150" y="340" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
+<rect x="160" y="328" width="221.5" height="16" rx="2" fill="#a8b1ba"/>
+<text x="389.5" y="341" fill="#59636e" font-variant-numeric="tabular-nums">91%</text>
+<text x="150" y="366" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
+<rect x="160" y="354" width="214.9" height="16" rx="2" fill="#a8b1ba"/>
+<text x="382.9" y="367" fill="#59636e" font-variant-numeric="tabular-nums">88%</text>
+<text x="150" y="392" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
+<rect x="160" y="380" width="196.7" height="16" rx="2" fill="#a8b1ba"/>
+<text x="364.7" y="393" fill="#59636e" font-variant-numeric="tabular-nums">81%</text>
 <text x="544" y="74" font-size="13.5" font-weight="600" fill="#1f2328">Median cost / task</text>
 <line x1="544" y1="82" x2="1030" y2="82" stroke="#d0d7de" stroke-width="1"/>
 <text x="676" y="106" text-anchor="end" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
-<rect x="686" y="94" width="4.2" height="16" rx="2" fill="#0099cc"/>
-<text x="698.2" y="107" fill="#59636e" font-variant-numeric="tabular-nums">$0.002</text>
+<rect x="686" y="94" width="2.2" height="16" rx="2" fill="#0099cc"/>
+<text x="696.2" y="107" fill="#59636e" font-variant-numeric="tabular-nums">$0.002</text>
 <text x="676" y="132" text-anchor="end" font-weight="600" fill="#1f2328">Gemini 3.6 · WebMCP</text>
-<rect x="686" y="120" width="7.5" height="16" rx="2" fill="#0099cc"/>
-<text x="701.5" y="133" fill="#59636e" font-variant-numeric="tabular-nums">$0.004</text>
+<rect x="686" y="120" width="4.0" height="16" rx="2" fill="#0099cc"/>
+<text x="698.0" y="133" fill="#59636e" font-variant-numeric="tabular-nums">$0.004</text>
 <text x="676" y="158" text-anchor="end" font-weight="600" fill="#1f2328">Sonnet 5 · WebMCP</text>
-<rect x="686" y="146" width="15.7" height="16" rx="2" fill="#0099cc"/>
-<text x="709.7" y="159" fill="#59636e" font-variant-numeric="tabular-nums">$0.009</text>
+<rect x="686" y="146" width="8.3" height="16" rx="2" fill="#0099cc"/>
+<text x="702.3" y="159" fill="#59636e" font-variant-numeric="tabular-nums">$0.009</text>
 <text x="676" y="184" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
-<rect x="686" y="172" width="20.7" height="16" rx="2" fill="#0099cc"/>
-<text x="714.7" y="185" fill="#59636e" font-variant-numeric="tabular-nums">$0.012</text>
+<rect x="686" y="172" width="11.0" height="16" rx="2" fill="#0099cc"/>
+<text x="705.0" y="185" fill="#59636e" font-variant-numeric="tabular-nums">$0.012</text>
 <text x="676" y="210" text-anchor="end" font-weight="600" fill="#1f2328">Opus 5 · WebMCP</text>
-<rect x="686" y="198" width="24.0" height="16" rx="2" fill="#0099cc"/>
-<text x="718.0" y="211" fill="#59636e" font-variant-numeric="tabular-nums">$0.014</text>
-<text x="676" y="236" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
-<rect x="686" y="224" width="29.8" height="16" rx="2" fill="#a8b1ba"/>
-<text x="723.8" y="237" fill="#59636e" font-variant-numeric="tabular-nums">$0.017</text>
-<text x="676" y="262" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
-<rect x="686" y="250" width="34.5" height="16" rx="2" fill="#a8b1ba"/>
-<text x="728.5" y="263" fill="#59636e" font-variant-numeric="tabular-nums">$0.020</text>
-<text x="676" y="288" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
-<rect x="686" y="276" width="107.5" height="16" rx="2" fill="#a8b1ba"/>
-<text x="801.5" y="289" fill="#59636e" font-variant-numeric="tabular-nums">$0.063</text>
-<text x="676" y="314" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
-<rect x="686" y="302" width="119.5" height="16" rx="2" fill="#a8b1ba"/>
-<text x="813.5" y="315" fill="#59636e" font-variant-numeric="tabular-nums">$0.070</text>
-<text x="676" y="340" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
-<rect x="686" y="328" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
-<text x="932.0" y="341" fill="#59636e" font-variant-numeric="tabular-nums">$0.139</text>
-<text x="18" y="400" font-size="13.5" font-weight="600" fill="#1f2328">Median tokens processed / task</text>
-<line x1="18" y1="408" x2="504" y2="408" stroke="#d0d7de" stroke-width="1"/>
-<text x="150" y="432" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
-<rect x="160" y="420" width="10.6" height="16" rx="2" fill="#0099cc"/>
-<text x="178.6" y="433" fill="#59636e" font-variant-numeric="tabular-nums">2,573</text>
-<text x="150" y="458" text-anchor="end" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
-<rect x="160" y="446" width="10.7" height="16" rx="2" fill="#0099cc"/>
-<text x="178.7" y="459" fill="#59636e" font-variant-numeric="tabular-nums">2,596</text>
-<text x="150" y="484" text-anchor="end" font-weight="600" fill="#1f2328">Gemini 3.6 · WebMCP</text>
-<rect x="160" y="472" width="18.4" height="16" rx="2" fill="#0099cc"/>
-<text x="186.4" y="485" fill="#59636e" font-variant-numeric="tabular-nums">4,453</text>
-<text x="150" y="510" text-anchor="end" font-weight="600" fill="#1f2328">Opus 5 · WebMCP</text>
-<rect x="160" y="498" width="19.7" height="16" rx="2" fill="#0099cc"/>
-<text x="187.7" y="511" fill="#59636e" font-variant-numeric="tabular-nums">4,770</text>
-<text x="150" y="536" text-anchor="end" font-weight="600" fill="#1f2328">Sonnet 5 · WebMCP</text>
-<rect x="160" y="524" width="21.3" height="16" rx="2" fill="#0099cc"/>
-<text x="189.3" y="537" fill="#59636e" font-variant-numeric="tabular-nums">5,172</text>
-<text x="150" y="562" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
-<rect x="160" y="550" width="67.0" height="16" rx="2" fill="#a8b1ba"/>
-<text x="235.0" y="563" fill="#59636e" font-variant-numeric="tabular-nums">16,235</text>
-<text x="150" y="588" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
-<rect x="160" y="576" width="86.3" height="16" rx="2" fill="#a8b1ba"/>
-<text x="254.3" y="589" fill="#59636e" font-variant-numeric="tabular-nums">20,914</text>
-<text x="150" y="614" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
-<rect x="160" y="602" width="98.4" height="16" rx="2" fill="#a8b1ba"/>
-<text x="266.4" y="615" fill="#59636e" font-variant-numeric="tabular-nums">23,857</text>
-<text x="150" y="640" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
-<rect x="160" y="628" width="194.4" height="16" rx="2" fill="#a8b1ba"/>
-<text x="362.4" y="641" fill="#59636e" font-variant-numeric="tabular-nums">47,141</text>
-<text x="150" y="666" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
-<rect x="160" y="654" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
-<text x="406.0" y="667" fill="#59636e" font-variant-numeric="tabular-nums">57,701</text>
-<text x="544" y="400" font-size="13.5" font-weight="600" fill="#1f2328">Median agent time / task</text>
-<line x1="544" y1="408" x2="1030" y2="408" stroke="#d0d7de" stroke-width="1"/>
-<text x="676" y="432" text-anchor="end" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
-<rect x="686" y="420" width="27.1" height="16" rx="2" fill="#0099cc"/>
-<text x="721.1" y="433" fill="#59636e" font-variant-numeric="tabular-nums">5.7s</text>
-<text x="676" y="458" text-anchor="end" font-weight="600" fill="#1f2328">Sonnet 5 · WebMCP</text>
-<rect x="686" y="446" width="32.4" height="16" rx="2" fill="#0099cc"/>
-<text x="726.4" y="459" fill="#59636e" font-variant-numeric="tabular-nums">6.8s</text>
-<text x="676" y="484" text-anchor="end" font-weight="600" fill="#1f2328">Gemini 3.6 · WebMCP</text>
-<rect x="686" y="472" width="34.1" height="16" rx="2" fill="#0099cc"/>
-<text x="728.1" y="485" fill="#59636e" font-variant-numeric="tabular-nums">7.2s</text>
-<text x="676" y="510" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
-<rect x="686" y="498" width="44.0" height="16" rx="2" fill="#0099cc"/>
-<text x="738.0" y="511" fill="#59636e" font-variant-numeric="tabular-nums">9.3s</text>
-<text x="676" y="536" text-anchor="end" font-weight="600" fill="#1f2328">Opus 5 · WebMCP</text>
-<rect x="686" y="524" width="46.2" height="16" rx="2" fill="#0099cc"/>
-<text x="740.2" y="537" fill="#59636e" font-variant-numeric="tabular-nums">9.8s</text>
-<text x="676" y="562" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
-<rect x="686" y="550" width="86.7" height="16" rx="2" fill="#a8b1ba"/>
-<text x="780.7" y="563" fill="#59636e" font-variant-numeric="tabular-nums">18.3s</text>
-<text x="676" y="588" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
-<rect x="686" y="576" width="128.8" height="16" rx="2" fill="#a8b1ba"/>
-<text x="822.8" y="589" fill="#59636e" font-variant-numeric="tabular-nums">27.3s</text>
-<text x="676" y="614" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
-<rect x="686" y="602" width="149.8" height="16" rx="2" fill="#a8b1ba"/>
-<text x="843.8" y="615" fill="#59636e" font-variant-numeric="tabular-nums">31.7s</text>
-<text x="676" y="640" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
-<rect x="686" y="628" width="159.1" height="16" rx="2" fill="#a8b1ba"/>
-<text x="853.1" y="641" fill="#59636e" font-variant-numeric="tabular-nums">33.7s</text>
-<text x="676" y="666" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
-<rect x="686" y="654" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
-<text x="932.0" y="667" fill="#59636e" font-variant-numeric="tabular-nums">50.4s</text>
-<rect x="18" y="692" width="9" height="9" rx="2" fill="#0099cc"/>
-<text x="32" y="700" font-size="11.5" fill="#57606a">WebMCP</text>
-<rect x="92" y="692" width="9" height="9" rx="2" fill="#a8b1ba"/>
-<text x="106" y="700" font-size="11.5" fill="#57606a">computer use</text>
+<rect x="686" y="198" width="12.8" height="16" rx="2" fill="#0099cc"/>
+<text x="706.8" y="211" fill="#59636e" font-variant-numeric="tabular-nums">$0.014</text>
+<text x="676" y="236" text-anchor="end" font-weight="600" fill="#1f2328">Astra · WebMCP</text>
+<rect x="686" y="224" width="15.6" height="16" rx="2" fill="#0099cc"/>
+<text x="709.6" y="237" fill="#59636e" font-variant-numeric="tabular-nums">$0.017</text>
+<text x="676" y="262" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
+<rect x="686" y="250" width="15.9" height="16" rx="2" fill="#a8b1ba"/>
+<text x="709.9" y="263" fill="#59636e" font-variant-numeric="tabular-nums">$0.017</text>
+<text x="676" y="288" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
+<rect x="686" y="276" width="18.4" height="16" rx="2" fill="#a8b1ba"/>
+<text x="712.4" y="289" fill="#59636e" font-variant-numeric="tabular-nums">$0.020</text>
+<text x="676" y="314" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
+<rect x="686" y="302" width="57.2" height="16" rx="2" fill="#a8b1ba"/>
+<text x="751.2" y="315" fill="#59636e" font-variant-numeric="tabular-nums">$0.063</text>
+<text x="676" y="340" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
+<rect x="686" y="328" width="63.6" height="16" rx="2" fill="#a8b1ba"/>
+<text x="757.6" y="341" fill="#59636e" font-variant-numeric="tabular-nums">$0.070</text>
+<text x="676" y="366" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
+<rect x="686" y="354" width="126.7" height="16" rx="2" fill="#a8b1ba"/>
+<text x="820.7" y="367" fill="#59636e" font-variant-numeric="tabular-nums">$0.139</text>
+<text x="676" y="392" text-anchor="end" font-weight="400" fill="#1f2328">Astra · CU</text>
+<rect x="686" y="380" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="932.0" y="393" fill="#59636e" font-variant-numeric="tabular-nums">$0.261</text>
+<text x="18" y="452" font-size="13.5" font-weight="600" fill="#1f2328">Median tokens processed / task</text>
+<line x1="18" y1="460" x2="504" y2="460" stroke="#d0d7de" stroke-width="1"/>
+<text x="150" y="484" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
+<rect x="160" y="472" width="10.6" height="16" rx="2" fill="#0099cc"/>
+<text x="178.6" y="485" fill="#59636e" font-variant-numeric="tabular-nums">2,573</text>
+<text x="150" y="510" text-anchor="end" font-weight="600" fill="#1f2328">Astra · WebMCP</text>
+<rect x="160" y="498" width="10.6" height="16" rx="2" fill="#0099cc"/>
+<text x="178.6" y="511" fill="#59636e" font-variant-numeric="tabular-nums">2,575</text>
+<text x="150" y="536" text-anchor="end" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
+<rect x="160" y="524" width="10.7" height="16" rx="2" fill="#0099cc"/>
+<text x="178.7" y="537" fill="#59636e" font-variant-numeric="tabular-nums">2,596</text>
+<text x="150" y="562" text-anchor="end" font-weight="600" fill="#1f2328">Gemini 3.6 · WebMCP</text>
+<rect x="160" y="550" width="18.4" height="16" rx="2" fill="#0099cc"/>
+<text x="186.4" y="563" fill="#59636e" font-variant-numeric="tabular-nums">4,453</text>
+<text x="150" y="588" text-anchor="end" font-weight="600" fill="#1f2328">Opus 5 · WebMCP</text>
+<rect x="160" y="576" width="19.7" height="16" rx="2" fill="#0099cc"/>
+<text x="187.7" y="589" fill="#59636e" font-variant-numeric="tabular-nums">4,770</text>
+<text x="150" y="614" text-anchor="end" font-weight="600" fill="#1f2328">Sonnet 5 · WebMCP</text>
+<rect x="160" y="602" width="21.3" height="16" rx="2" fill="#0099cc"/>
+<text x="189.3" y="615" fill="#59636e" font-variant-numeric="tabular-nums">5,172</text>
+<text x="150" y="640" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
+<rect x="160" y="628" width="67.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="235.0" y="641" fill="#59636e" font-variant-numeric="tabular-nums">16,235</text>
+<text x="150" y="666" text-anchor="end" font-weight="400" fill="#1f2328">Astra · CU</text>
+<rect x="160" y="654" width="84.8" height="16" rx="2" fill="#a8b1ba"/>
+<text x="252.8" y="667" fill="#59636e" font-variant-numeric="tabular-nums">20,560</text>
+<text x="150" y="692" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
+<rect x="160" y="680" width="86.3" height="16" rx="2" fill="#a8b1ba"/>
+<text x="254.3" y="693" fill="#59636e" font-variant-numeric="tabular-nums">20,914</text>
+<text x="150" y="718" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
+<rect x="160" y="706" width="98.4" height="16" rx="2" fill="#a8b1ba"/>
+<text x="266.4" y="719" fill="#59636e" font-variant-numeric="tabular-nums">23,857</text>
+<text x="150" y="744" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
+<rect x="160" y="732" width="194.4" height="16" rx="2" fill="#a8b1ba"/>
+<text x="362.4" y="745" fill="#59636e" font-variant-numeric="tabular-nums">47,141</text>
+<text x="150" y="770" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
+<rect x="160" y="758" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="406.0" y="771" fill="#59636e" font-variant-numeric="tabular-nums">57,701</text>
+<text x="544" y="452" font-size="13.5" font-weight="600" fill="#1f2328">Median agent time / task</text>
+<line x1="544" y1="460" x2="1030" y2="460" stroke="#d0d7de" stroke-width="1"/>
+<text x="676" y="484" text-anchor="end" font-weight="600" fill="#1f2328">Luna · WebMCP</text>
+<rect x="686" y="472" width="27.1" height="16" rx="2" fill="#0099cc"/>
+<text x="721.1" y="485" fill="#59636e" font-variant-numeric="tabular-nums">5.7s</text>
+<text x="676" y="510" text-anchor="end" font-weight="600" fill="#1f2328">Astra · WebMCP</text>
+<rect x="686" y="498" width="30.0" height="16" rx="2" fill="#0099cc"/>
+<text x="724.0" y="511" fill="#59636e" font-variant-numeric="tabular-nums">6.3s</text>
+<text x="676" y="536" text-anchor="end" font-weight="600" fill="#1f2328">Sonnet 5 · WebMCP</text>
+<rect x="686" y="524" width="32.4" height="16" rx="2" fill="#0099cc"/>
+<text x="726.4" y="537" fill="#59636e" font-variant-numeric="tabular-nums">6.8s</text>
+<text x="676" y="562" text-anchor="end" font-weight="600" fill="#1f2328">Gemini 3.6 · WebMCP</text>
+<rect x="686" y="550" width="34.1" height="16" rx="2" fill="#0099cc"/>
+<text x="728.1" y="563" fill="#59636e" font-variant-numeric="tabular-nums">7.2s</text>
+<text x="676" y="588" text-anchor="end" font-weight="600" fill="#1f2328">SOL · WebMCP</text>
+<rect x="686" y="576" width="44.0" height="16" rx="2" fill="#0099cc"/>
+<text x="738.0" y="589" fill="#59636e" font-variant-numeric="tabular-nums">9.3s</text>
+<text x="676" y="614" text-anchor="end" font-weight="600" fill="#1f2328">Opus 5 · WebMCP</text>
+<rect x="686" y="602" width="46.2" height="16" rx="2" fill="#0099cc"/>
+<text x="740.2" y="615" fill="#59636e" font-variant-numeric="tabular-nums">9.8s</text>
+<text x="676" y="640" text-anchor="end" font-weight="400" fill="#1f2328">Luna · CU</text>
+<rect x="686" y="628" width="86.7" height="16" rx="2" fill="#a8b1ba"/>
+<text x="780.7" y="641" fill="#59636e" font-variant-numeric="tabular-nums">18.3s</text>
+<text x="676" y="666" text-anchor="end" font-weight="400" fill="#1f2328">Astra · CU</text>
+<rect x="686" y="654" width="98.2" height="16" rx="2" fill="#a8b1ba"/>
+<text x="792.2" y="667" fill="#59636e" font-variant-numeric="tabular-nums">20.8s</text>
+<text x="676" y="692" text-anchor="end" font-weight="400" fill="#1f2328">SOL · CU</text>
+<rect x="686" y="680" width="128.8" height="16" rx="2" fill="#a8b1ba"/>
+<text x="822.8" y="693" fill="#59636e" font-variant-numeric="tabular-nums">27.3s</text>
+<text x="676" y="718" text-anchor="end" font-weight="400" fill="#1f2328">Sonnet 5 · CU</text>
+<rect x="686" y="706" width="149.8" height="16" rx="2" fill="#a8b1ba"/>
+<text x="843.8" y="719" fill="#59636e" font-variant-numeric="tabular-nums">31.7s</text>
+<text x="676" y="744" text-anchor="end" font-weight="400" fill="#1f2328">Gemini 3.6 · CU</text>
+<rect x="686" y="732" width="159.1" height="16" rx="2" fill="#a8b1ba"/>
+<text x="853.1" y="745" fill="#59636e" font-variant-numeric="tabular-nums">33.7s</text>
+<text x="676" y="770" text-anchor="end" font-weight="400" fill="#1f2328">Opus 5 · CU</text>
+<rect x="686" y="758" width="238.0" height="16" rx="2" fill="#a8b1ba"/>
+<text x="932.0" y="771" fill="#59636e" font-variant-numeric="tabular-nums">50.4s</text>
+<rect x="18" y="796" width="9" height="9" rx="2" fill="#0099cc"/>
+<text x="32" y="804" font-size="11.5" fill="#57606a">WebMCP</text>
+<rect x="92" y="796" width="9" height="9" rx="2" fill="#a8b1ba"/>
+<text x="106" y="804" font-size="11.5" fill="#57606a">computer use</text>
 </svg>
