@@ -81,9 +81,9 @@ tasks:
   - id: md-8
     tier: transaction
     prompt: Buy one Medusa T-Shirt, size L, color Black — add it to the cart and complete guest checkout as Jane Tester, jane.tester@example.test, 1 High Street, London, N1 9GU, United Kingdom, phone +44 20 7946 0000, using the store's test payment method. Report the order confirmation.
-    # The golden WebMCP tools hand off at begin_checkout by design — finishing
-    # checkout takes page-level interaction. That reach limit is part of what
-    # this task measures. WebMCP arms are expected to fail this by design.
+    # v1.0 tools handed off at begin_checkout, so no WebMCP configuration could
+    # finish this task while screen-driving agents could (community feedback,
+    # 2026-09-06). v1.1 adds complete_checkout; WebMCP md-8 cells re-measured.
     max_steps: { webmcp: 15, cu: 40, structured: 32 }
     predicate:
       probe: database

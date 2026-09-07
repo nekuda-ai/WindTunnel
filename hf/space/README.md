@@ -12,4 +12,4 @@ short_description: Explore the canonical WindTunnel WebMCP browser-agent benchma
 
 # WindTunnel Results Explorer
 
-Static, self-contained explorer for the canonical WindTunnel run: 16 configurations, 49 tasks, eight sites, and 2,352 attempts. `index.html` is copied byte-for-byte from `results/canonical/explorer.html`; the Space has no build step, server, secrets, analytics, or submission endpoint.
+Static, self-contained explorer for the canonical WindTunnel run: 19 configurations, 49 tasks, eight sites, and 2,793 attempts. `index.html` is copied byte-for-byte from `results/canonical/explorer.html`; the Space has no build step, server, secrets, analytics, or submission endpoint.

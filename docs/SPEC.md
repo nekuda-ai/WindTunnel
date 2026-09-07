@@ -1,8 +1,9 @@
 # WindTunnel — design spec
 
 WindTunnel is the WebMCP benchmark. It measures WebMCP against the other ways a
-browser agent operates a website — screenshots (computer use) and page
-structure (DOM / accessibility tree) — by racing all three against the **same
+browser agent operates a website — screenshots (computer use), page
+structure (DOM / accessibility tree), and model-written browser code — by
+racing all four against the **same
 tasks** on the **same real websites**, scoring each on whether the task
 actually succeeded and what it cost in time, tokens, and dollars. This document
 is the design: what it measures, how, and why
@@ -12,14 +13,16 @@ each choice was made. A plain-language overview is in the
 ## 1. Goal
 
 Answer one question with evidence instead of opinion: **does WebMCP let an
-agent operate a website more reliably and cheaply than screenshots or page
-structure — and where does it not?**
+agent operate a website more reliably and cheaply than screenshots, page
+structure, or model-written browser code — and where does it not?**
 
-The three methods (the benchmark calls them *interface classes*):
+The four methods (the benchmark calls them *interface classes*):
 
 - **Screenshots** — the agent sees rendered images and acts by coordinates
   (computer use).
 - **Page structure** — the agent reads the page's HTML / accessibility tree.
+- **Code execution** — the model writes browser-automation code (Playwright)
+  that reads and drives the page; OpenAI's recommended mode for GPT-6 Astra.
 - **WebMCP tool calls** — the site exposes direct actions
   (`add_to_cart(id)`), and the agent calls them.
 
@@ -31,9 +34,10 @@ settle the question in public.
 ## 2. Why a new benchmark
 
 Existing web-agent benchmarks (WebArena, WebVoyager, Mind2Web, and others)
-measure how well *one* agent style completes tasks. None of them race the
-**access methods against each other** on identical tasks, none include WebMCP,
-and most stop short of real checkout/booking flows. WindTunnel is built around
+measure how well an agent completes tasks, and some compare input modalities
+(WebVoyager reports text-only vs. multimodal). None include a site-exposed
+tool interface like WebMCP in a controlled comparison of access methods on
+identical tasks, and most stop short of real checkout/booking flows. WindTunnel is built around
 that head-to-head comparison.
 
 What makes the results defensible:
@@ -45,7 +49,7 @@ What makes the results defensible:
 - **Transaction-inclusive** — it scores real checkout and booking flows,
   configured so no real charge occurs (the site's sandbox/test mode, or an
   offline-payment fixture).
-- **Interface-controlled** — the same task runs through all three methods, so
+- **Interface-controlled** — the same task runs through every method, so
   differences come from the interface, not the task or the site.
 - **Real sites** — production open-source apps, not simplified pages tuned to
   flatter one method.
@@ -60,7 +64,7 @@ across different tech stacks and both public and logged-in pages.
 
 | site | category | resource class | transaction flow |
 |---|---|---|---|
-| nextjs-starter-medusa | online store | medium | ✅ real checkout (test payments) |
+| nextjs-starter-medusa | online store | medium | ✅ real checkout (test payments); v1.1 adds the `complete_checkout` WebMCP tool — see CHANGELOG.md |
 | hi-events | events / ticketing | heavy | ✅ ticket checkout |
 | easyappointments | appointment booking | medium | ✅ booking |
 | directory-9d8 | business directory | light | — |
@@ -111,23 +115,27 @@ when it shouldn't.
 
 ## 4. Keeping the comparison honest
 
-These are real open-source apps, so their code is already in every model's
-training data. WindTunnel does not try to hide the sites; instead the design
-makes memorization irrelevant to the result:
+These are real open-source apps, so their code is public and very likely in
+the models' training data. WindTunnel does not try to hide the sites; instead
+the design limits what memorization can change:
 
 1. **Paired comparison (the main defense).** Every method runs the same task on
-   the same site. If a model has memorized a site, that helps *all three*
-   methods equally — it inflates the absolute scores together but leaves the
-   *gap between methods*, which is the actual claim, intact. Memorization would
-   only distort the finding if it helped one interface more than another, and
-   nothing about knowing a site's content does that.
-2. **Held-out task sets.** The secret that rotates each leaderboard period is
-   the **tasks** — their prompts, checks, and data values — not the sites. A
-   development set is public; the scoring set is private (see §7).
+   the same site. If a model has memorized a site, that helps every method —
+   it inflates the absolute scores together and leaves the *gap between
+   methods*, which is the actual claim, largely intact. It would distort the
+   finding if it helped one interface more than another; a model that has
+   memorized a site's markup or selectors could favor page-structure and
+   code-execution agents over screenshot agents. We have not measured that
+   effect, and it is a known limitation.
+2. **Held-out task sets (planned, not yet built — see §4.1).** The secret that
+   would rotate each leaderboard period is the **tasks** — their prompts,
+   checks, and data values — not the sites. Today only the public development
+   set exists and it is what the canonical board measures.
 3. **Seeded data we control.** Catalog contents, prices, dates, and
-   availability are seeded by WindTunnel, so held-out task sets can use fresh
-   values that can't be answered from the upstream defaults.
-4. **Perturbation mode** (§6) tests reliance on unstable page details.
+   availability are seeded by WindTunnel, so task checks use values that can't
+   be answered from the upstream defaults.
+4. **Perturbation mode** (planned; `--perturbed` is currently rejected) would
+   test reliance on unstable page details.
 5. **Canary markers** on published data so training pipelines can exclude it,
    plus periodic contamination checks.
 
@@ -155,9 +163,9 @@ the published transcripts are what carry weight in the meantime.
 ## 5. Tasks
 
 Tasks are small YAML templates — each has a prompt, a success predicate, a
-difficulty tier, and any data parameters. The repo currently ships 17: 7
-benchmark tasks across the three `lite` sites, plus 10 calibration tasks. The
-design target is ~50, roughly six or seven per site. Tiers, by journey length:
+difficulty tier, and any data parameters. The repo ships 49 benchmark tasks
+across the eight sites plus 10 calibration tasks; the `lite` profile runs the 7
+tasks on the three lightweight sites. Tiers, by journey length:
 
 - **T1 — answer** (1–2 steps): "what's the price of X?"
 - **T2 — act, short** (3–5 steps): "add two of X to the cart."
@@ -178,7 +186,7 @@ N=1; `lite`/`full`: N=3).
 
 ## 6. Methods under test and how runs are configured
 
-Ten implementations across the three interface classes are represented in the
+Eleven implementations across four interface classes are represented in the
 canonical run:
 
 | id | interface class | driver | canonical model(s) | status |
@@ -187,20 +195,29 @@ canonical run:
 | `dom-browseruse` | page structure (DOM) | Browser Use | claude-sonnet-5, gpt-5.6-luna | built · measured |
 | `a11y-stagehand` | page structure (a11y) | Stagehand agent | claude-sonnet-5, gpt-5.6-luna | built · measured |
 | `cu-claude` | screenshots | Anthropic computer use | claude-sonnet-5, claude-opus-5 | built · measured |
-| `cu-openai` | screenshots | OpenAI computer use | gpt-5.6-luna, gpt-5.6-sol | built · measured |
-| `wm-gpt` | WebMCP | native loop | gpt-5.6-luna, gpt-5.6-sol | built · measured |
+| `cu-openai` | screenshots | OpenAI computer use | gpt-5.6-luna, gpt-5.6-sol, gpt-6-astra | built · measured |
+| `wm-gpt` | WebMCP | native loop | gpt-5.6-luna, gpt-5.6-sol, gpt-6-astra | built · measured |
 | `wm-stagehand-v4` | WebMCP | Stagehand v4 | claude-sonnet-5 | built · measured |
 | `wm-stagehand-v4-gemini` | WebMCP | Stagehand v4 | gemini-3.6-flash | built · measured |
 | `cu-gemini` | screenshots | Gemini computer use | gemini-3.6-flash | built · measured |
 | `wm-gemini` | WebMCP | native loop | gemini-3.6-flash | built · measured |
+| `code-openai` | code execution (Playwright) | OpenAI function tool `exec_js`: model-written JavaScript runs in the harness with Playwright `page` in scope; stdout and `display()` screenshots are returned | gpt-6-astra | built · measured |
 
-The headline groups these into the three interface classes; per-method numbers
-are available underneath. New methods are added by implementing one small
+The headline groups these into the four interface classes; per-method numbers
+are available underneath. `code-openai` is OpenAI's recommended computer-use
+path for GPT-6 Astra: the model writes Playwright code that can both query
+selectors and take screenshots, so it is neither "screenshots" nor "page
+structure" and is reported as its own class. It runs at the screen-driving
+step budget and a 1280×800 viewport; the model's code executes in the harness
+process against pinned local capsules (a `node:vm` context exposing only the
+browser objects). New methods are added by implementing one small
 interface, so outside contributors can submit their own.
 
-The WebMCP methods call the tools each site's capsule installs (the WebMCP
-reference implementations vendored under `capsules/`) — real, reviewed tool
-sets, not tools invented for the benchmark.
+The WebMCP methods call the tools each site's capsule installs — the reference
+implementations under `goldens/`, written by the benchmark's authors (nekuda)
+as a model of what each site could expose. That authorship is a disclosed
+conflict of interest (see the Hugging Face dataset card); the tools are
+published as patches so anyone can review or replace them.
 
 Run configuration:
 
@@ -212,16 +229,17 @@ Run configuration:
 - `--sites <profile|list>` picks which sites boot; `--n` sets repeats (odd,
   for majority scoring; the preset sets the default). A planned `--n auto`
   mode — run each task once, repeat only first-attempt failures — is not yet
-  implemented. `--budget <usd>` is a hard stop.
+  implemented. `--budget <usd>` stops launching further attempts once
+  accumulated spend exceeds it (the attempt in flight completes).
 - `--perturbed` is planned and currently rejected explicitly.
 
 Practical note: containers boot in minutes, not milliseconds, so the harness
 boots each site once per (site × method) batch and `reset`s between repeats
 rather than rebooting per run.
 
-The canonical run uses Sonnet 5, Opus 5, GPT-5.6 Luna, GPT-5.6 SOL, and Gemini
-3.6 Flash. Its 16 configurations produced 2,352 attempts at a recorded total
-cost of $175.62 (see the README's [Cost](../README.md#cost) section). Other
+The canonical board (v1.1) uses Sonnet 5, Opus 5, GPT-5.6 Luna, GPT-5.6 SOL,
+GPT-6 Astra, and Gemini 3.6 Flash. Its 19 configurations produced 2,793
+attempts at a recorded total cost of $281.35 (see the README's [Cost](../README.md#cost) section). Other
 models are a natural thing for submitters to bring.
 
 ### 6.1 Single- vs multi-modal arms
@@ -230,12 +248,13 @@ The `cu-*` (screenshots-only) and `a11y-stagehand` (accessibility-tree-only)
 arms are deliberate single-channel controls, so a difference can be
 attributed to *that* channel. Browser Use, by contrast, runs **multimodal by
 default** — it sends the model the DOM *and* a screenshot each step — so
-`dom-browseruse` is really a DOM+vision agent, the strongest realistic
-non-WebMCP baseline, not a DOM-only one. That is the fair comparison for
-WebMCP: in the canonical run, Sonnet 5 on DOM + vision has the board's highest
-attempt success at 145/147 and ties native WebMCP at 48/49 tasks solved. Native
-WebMCP costs 23× less per median attempt, uses 12.5× fewer tokens, and runs
-4.3× faster for that same model.
+`dom-browseruse` is really a DOM+vision agent, not a DOM-only one — the
+strongest page-structure baseline (GPT-6 Astra's code execution is the
+strongest screen-driving result overall). That is the fair page-structure
+comparison for WebMCP: on the canonical board, Sonnet 5 on DOM + vision passes 145/147
+attempts and solves 48/49 tasks; native WebMCP for the same model passes
+147/147 and solves 49/49 while costing 23× less per median attempt, using
+12.5× fewer tokens, and running 4.3× faster.
 
 A set-of-marks arm (a11y marks overlaid on a screenshot, à la WebVoyager) is a
 planned addition as an even stronger combined baseline.
@@ -246,8 +265,9 @@ planned addition as an even stronger combined baseline.
   attempts pass. Counts quoted as `x/y` are **task×method cells**, not tasks.
 - **Time** — the headline is **median agent time**: the per-attempt clock
   starts after the container reset and page boot and stops before scoring, so
-  the identical harness overhead every method pays (11–34s per attempt,
-  depending on the site) is excluded from all of them. Rows also carry
+  the harness overhead every method pays on a given site (median reset +
+  boot of roughly 4–37 s per attempt depending on the site) is excluded from
+  all of them. Rows also carry
   `reset_s`, `setup_s`, and total `wall_clock_s`.
 - **Cost** — provider list prices, with **cached input priced at each
   provider's cached rate**. Prompt caching is enabled for every method whose
@@ -271,8 +291,8 @@ planned addition as an even stronger combined baseline.
   the uniform 600s per-attempt agent cap — **count as failures**.
 - **Per-tier multiples** (the journey-length table) are the pooled native
   computer-use median ÷ the pooled native WebMCP median for that tier, with
-  each of the five paired models represented equally. The long-tier sample is
-  12 tasks: 60 model-task cells and 180 attempts per interface.
+  each of the six paired models represented equally. The long-tier sample is
+  12 tasks: 72 model-task cells and 216 attempts per interface.
 
 Report format: [`results/README.md`](../results/README.md); template:
 [`results/TEMPLATE.md`](../results/TEMPLATE.md).
@@ -283,10 +303,18 @@ arguments and its result to the conversation, and tool schemas are re-sent on
 every request rather than registered once at the wire level. The difference is
 the growth rate: a page-reading interface re-reads the whole page on every
 step, so its payload compounds, while a WebMCP call's payload is independent of
-page size. Measured across tiers in the five-model comparison (median cost per
-attempt, shortest tier → longest): **WebMCP $0.0054 → $0.0241 (~4×)**;
-**computer use $0.0361 → $0.2500 (~7×)**. That divergence, not a flat WebMCP
+page size. Measured across tiers in the six-model comparison (median cost per
+attempt, shortest tier → longest): **WebMCP $0.0067 → $0.0285 (~4×)**;
+**computer use $0.0399 → $0.3620 (~9×)**. That divergence, not a flat WebMCP
 cost, is what widens the multiple on long journeys.
+
+**OpenAI arms, v1.1 harness.** The OpenAI arms send no `temperature` (the
+GPT-5.6 and GPT-6 models measured here reject it with a 400; rows record `temperature: default` and
+the provider-reported `effort`). OpenAI reports cache writes inside
+`input_tokens`; the arms split them out and price them at the provider's
+cache-write rate (1.25× input on GPT-5.6+/Astra). `cu-openai` sends a
+`keypress` as one chord (Ctrl+A), matching OpenAI's action semantics; Luna and
+SOL rows predate that fix and are retained as measured (see PROVENANCE).
 
 **Per-interface turn budgets.** A task's YAML may set `max_steps` per interface
 class; when it doesn't, the arms fall back to their defaults — **WebMCP 12,

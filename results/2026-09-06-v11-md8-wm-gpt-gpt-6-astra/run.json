@@ -1,0 +1,981 @@
+{
+  "options": {
+    "preset": "full",
+    "sites": "nextjs-starter-medusa",
+    "arms": [
+      "wm-gpt"
+    ],
+    "seed": 1,
+    "budget": 3,
+    "perturbed": false,
+    "models": {
+      "wm-gpt": "gpt-6-astra"
+    },
+    "maxConsecutiveInfra": 2,
+    "taskIds": [
+      "md-8"
+    ],
+    "n": 3,
+    "label": "v11-md8-wm-gpt-gpt-6-astra",
+    "fake": false,
+    "model": "gpt-6-astra",
+    "armModels": {
+      "wm-gpt": "gpt-6-astra"
+    },
+    "git_revision": "1ee1dc8c2718027bede439fb68775c398683c1fb-dirty",
+    "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+    "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec",
+    "prices": [
+      [
+        "claude-fable-5",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "claude-opus-5",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-opus-4",
+        [
+          5,
+          25,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "claude-sonnet-5",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4-6",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-sonnet-4",
+        [
+          3,
+          15,
+          0.3,
+          3.75
+        ]
+      ],
+      [
+        "claude-haiku-4",
+        [
+          1,
+          5,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-6-astra",
+        [
+          10,
+          50,
+          1,
+          12.5
+        ]
+      ],
+      [
+        "gpt-5.6-sol",
+        [
+          5,
+          30,
+          0.5,
+          6.25
+        ]
+      ],
+      [
+        "gpt-5.6-terra",
+        [
+          2.5,
+          15,
+          0.25,
+          3.125
+        ]
+      ],
+      [
+        "gpt-5.6-luna",
+        [
+          1,
+          6,
+          0.1,
+          1.25
+        ]
+      ],
+      [
+        "gpt-5.5",
+        [
+          5,
+          30,
+          0.5,
+          0
+        ]
+      ],
+      [
+        "computer-use-preview",
+        [
+          1.5,
+          6,
+          0.15,
+          0
+        ]
+      ],
+      [
+        "gemini-3.6-flash",
+        [
+          0.75,
+          3.75,
+          0.075,
+          0
+        ]
+      ]
+    ]
+  },
+  "capsules": [
+    {
+      "siteId": "nextjs-starter-medusa",
+      "seed": 1,
+      "versions": {}
+    }
+  ],
+  "rows": [
+    {
+      "run_id": "md-8_wm-gpt_7bc2d8ab-090c-44c3-b852-cbe749fa31b2",
+      "task_id": "md-8",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-6-astra",
+      "model_snapshot": "gpt-6-astra",
+      "tool_version": "responses-api",
+      "site": "nextjs-starter-medusa",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "43.821",
+      "reset_s": "23.093",
+      "setup_s": "1.354",
+      "agent_s": "19.375",
+      "ms": 43821,
+      "model_turns": 5,
+      "actions_or_tool_calls": 12,
+      "input_tokens": 938,
+      "output_tokens": 362,
+      "cached_tokens": 3252,
+      "cache_write_tokens": 4190,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "medium",
+      "caching": "provider-managed",
+      "tokens": 1300,
+      "est_cost_usd": 0.083107,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-09-06T13:56:14.722Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_0b231f2c4fb6b395006a9d70ec97cc87d18a929606220d4895",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"query\":\"Medusa T-Shirt\",\"max_results\":8}",
+              "call_id": "call_0ujDFESnnVpB9n94YieDoMiC",
+              "name": "search_products"
+            }
+          ],
+          "usage": {
+            "input_tokens": 926,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 26,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 952
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "search_products",
+          "input": "{\"query\":\"Medusa T-Shirt\",\"max_results\":8}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"count\":1,\"products\":[{\"id\":\"prod_01M1VFJJ0QBG3EH35PQ1MT1ZYV\",\"title\":\"Medusa T-Shirt\",\"handle\":\"t-shirt\",\"path\":\"/gb/products/t-shirt\",\"price_from\":\"€10.00\",\"description\":\"Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.\",\"options\":{\"Size\":[\"S\",\"M\",\"L\",\"XL\"],\"Color\":[\"Black\",\"White\"]},\"variants\":[{\"variant_id\":\"variant_01M1VFJJ1TN4BYP0DE9VB51E74\",\"title\":\"S / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TQS9AATZARG5V23P4\",\"title\":\"S / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TGKH2R72YR73CNQ71\",\"title\":\"M / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1T5WQN8X0B4DBY81Y8\",\"title\":\"M / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"title\":\"L / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1T7WYWVCP702CSJC9H\",\"title\":\"L / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TSZT3S8YNC9M8KSRR\",\"title\":\"XL / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1VDBHGA0MCWE3493TH\",\"title\":\"XL / White\",\"price\":\"€10.00\",\"in_stock\":true}]}],\"viewing\":\"/gb/store\"}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_0b231f2c4fb6b395006a9d70ef644887d1be2d14f49ee2e655",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1}",
+              "call_id": "call_plmShOTc3B0ZcWSd0VHB7vBT",
+              "name": "add_to_cart"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1443,
+            "input_tokens_details": {
+              "cache_write_tokens": 1440,
+              "cached_tokens": 0
+            },
+            "output_tokens": 42,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1485
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "add_to_cart",
+          "input": "{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"added\":{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1},\"cart\":{\"item_count\":1,\"items\":[{\"line_id\":\"cali_01M1VG2AWAWNS5372XS5YHHPEP\",\"product\":\"Medusa T-Shirt\",\"variant\":\"L / Black\",\"quantity\":1,\"unit_price\":\"€10.00\",\"line_total\":\"€10.00\"}],\"subtotal\":\"€10.00\",\"total\":\"€10.00\",\"currency\":\"EUR\",\"cart_path\":\"/gb/cart\"}}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart",
+            "update_cart",
+            "begin_checkout"
+          ]
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_0b231f2c4fb6b395006a9d70f2901c87d185340b27b04c7183",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\"}",
+              "call_id": "call_7Aw0Nu9Pfhpo4QdlXO9t9erv",
+              "name": "complete_checkout"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1815,
+            "input_tokens_details": {
+              "cache_write_tokens": 1812,
+              "cached_tokens": 0
+            },
+            "output_tokens": 71,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1886
+          }
+        },
+        {
+          "turn": 3,
+          "tool": "complete_checkout",
+          "input": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"Choose a shipping option and call again with shipping_option_id.\",\"step\":\"shipping\",\"choices\":[{\"id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\",\"name\":\"Standard Shipping\",\"amount\":10},{\"id\":\"so_01M1VFJHZ9C30MA162PFDEWZZ7\",\"name\":\"Express Shipping\",\"amount\":10}]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_0b231f2c4fb6b395006a9d70f6d47887d19129960da3567bb5",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\",\"shipping_option_id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\"}",
+              "call_id": "call_8Z1i0hjpBgmDXNLl2xFacuSW",
+              "name": "complete_checkout"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1999,
+            "input_tokens_details": {
+              "cache_write_tokens": 184,
+              "cached_tokens": 1812
+            },
+            "output_tokens": 97,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2096
+          }
+        },
+        {
+          "turn": 4,
+          "tool": "complete_checkout",
+          "input": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\",\"shipping_option_id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"order\":{\"order_id\":\"order_01M1VG2K4BYMA3J2RSPZ5G80AV\",\"display_id\":1,\"total\":20,\"currency_code\":\"eur\",\"items\":[{\"title\":\"Medusa T-Shirt\",\"variant\":\"L / Black\",\"quantity\":1}],\"shipping_address\":{\"id\":\"ordaddr_01M1VG2K49ZD1NN6CT7VHM9ACM\",\"customer_id\":null,\"company\":null,\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"address_2\":\"\",\"city\":\"London\",\"country_code\":\"gb\",\"province\":\"\",\"postal_code\":\"N1 9GU\",\"phone\":\"+44 20 7946 0000\",\"metadata\":null,\"created_at\":\"2026-09-06T13:56:08.569Z\",\"updated_at\":\"2026-09-06T13:56:08.569Z\",\"deleted_at\":null},\"payment_provider\":\"pp_system_default\",\"confirmation_path\":\"/gb/order/order_01M1VG2K4BYMA3J2RSPZ5G80AV/confirmed\"},\"note\":\"Order placed. The page is navigating to the confirmation.\"}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart"
+          ]
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_0b231f2c4fb6b395006a9d70fae30887d1a35e5ba29617bf55",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Guest checkout completed successfully using the store’s test payment method.\n\n- **Order confirmation:** #1\n- **Item:** 1 × Medusa T-Shirt — L, Black\n- **Total:** €20.00 (€10.00 item + €10.00 Standard Shipping)\n- **Ship to:** Jane Tester, 1 High Street, London, N1 9GU, United Kingdom\n- **Email:** jane.tester@example.test\n- **Order ID:** `order_01M1VG2K4BYMA3J2RSPZ5G80AV`"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 2197,
+            "input_tokens_details": {
+              "cache_write_tokens": 754,
+              "cached_tokens": 1440
+            },
+            "output_tokens": 126,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2323
+          }
+        }
+      ],
+      "final_text": "Final answer: Guest checkout completed successfully using the store’s test payment method.\n\n- **Order confirmation:** #1\n- **Item:** 1 × Medusa T-Shirt — L, Black\n- **Total:** €20.00 (€10.00 item + €10.00 Standard Shipping)\n- **Ship to:** Jane Tester, 1 High Street, London, N1 9GU, United Kingdom\n- **Email:** jane.tester@example.test\n- **Order ID:** `order_01M1VG2K4BYMA3J2RSPZ5G80AV`"
+    },
+    {
+      "run_id": "md-8_wm-gpt_e1231045-04ab-458d-8459-bdb6c9af7713",
+      "task_id": "md-8",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-6-astra",
+      "model_snapshot": "gpt-6-astra",
+      "tool_version": "responses-api",
+      "site": "nextjs-starter-medusa",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "44.410",
+      "reset_s": "23.489",
+      "setup_s": "1.306",
+      "agent_s": "19.615",
+      "ms": 44410,
+      "model_turns": 5,
+      "actions_or_tool_calls": 12,
+      "input_tokens": 938,
+      "output_tokens": 380,
+      "cached_tokens": 4268,
+      "cache_write_tokens": 3154,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "medium",
+      "caching": "provider-managed",
+      "tokens": 1318,
+      "est_cost_usd": 0.072073,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-09-06T13:56:59.459Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_047ffdbe2f8b52b9006a9d711902cc87d19aff3f6e4fd61f05",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"query\":\"Medusa T-Shirt\"}",
+              "call_id": "call_pqyLkKqNsYl3vEoIJKl3krE3",
+              "name": "search_products"
+            }
+          ],
+          "usage": {
+            "input_tokens": 926,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 21,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 947
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "search_products",
+          "input": "{\"query\":\"Medusa T-Shirt\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"count\":1,\"products\":[{\"id\":\"prod_01M1VFJJ0QBG3EH35PQ1MT1ZYV\",\"title\":\"Medusa T-Shirt\",\"handle\":\"t-shirt\",\"path\":\"/gb/products/t-shirt\",\"price_from\":\"€10.00\",\"description\":\"Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.\",\"options\":{\"Size\":[\"S\",\"M\",\"L\",\"XL\"],\"Color\":[\"Black\",\"White\"]},\"variants\":[{\"variant_id\":\"variant_01M1VFJJ1TN4BYP0DE9VB51E74\",\"title\":\"S / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TQS9AATZARG5V23P4\",\"title\":\"S / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TGKH2R72YR73CNQ71\",\"title\":\"M / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1T5WQN8X0B4DBY81Y8\",\"title\":\"M / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"title\":\"L / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1T7WYWVCP702CSJC9H\",\"title\":\"L / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TSZT3S8YNC9M8KSRR\",\"title\":\"XL / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1VDBHGA0MCWE3493TH\",\"title\":\"XL / White\",\"price\":\"€10.00\",\"in_stock\":true}]}],\"viewing\":\"/gb/store\"}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_047ffdbe2f8b52b9006a9d711bf65887d1a00e11e12b90b789",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1}",
+              "call_id": "call_VZgM0GGTZQqSQVKxmUx8VYSO",
+              "name": "add_to_cart"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1438,
+            "input_tokens_details": {
+              "cache_write_tokens": 1435,
+              "cached_tokens": 0
+            },
+            "output_tokens": 42,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1480
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "add_to_cart",
+          "input": "{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"added\":{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1},\"cart\":{\"item_count\":1,\"items\":[{\"line_id\":\"cali_01M1VG3PBTS41DZ6T5KDCASP00\",\"product\":\"Medusa T-Shirt\",\"variant\":\"L / Black\",\"quantity\":1,\"unit_price\":\"€10.00\",\"line_total\":\"€10.00\"}],\"subtotal\":\"€10.00\",\"total\":\"€10.00\",\"currency\":\"EUR\",\"cart_path\":\"/gb/cart\"}}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart",
+            "update_cart",
+            "begin_checkout"
+          ]
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_047ffdbe2f8b52b9006a9d71215fdc87d1b9f5261b909dc071",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\"}",
+              "call_id": "call_SyzVlDQtDY7CUSN0ACcdSxsJ",
+              "name": "complete_checkout"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1810,
+            "input_tokens_details": {
+              "cache_write_tokens": 781,
+              "cached_tokens": 1026
+            },
+            "output_tokens": 71,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1881
+          }
+        },
+        {
+          "turn": 3,
+          "tool": "complete_checkout",
+          "input": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"Choose a shipping option and call again with shipping_option_id.\",\"step\":\"shipping\",\"choices\":[{\"id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\",\"name\":\"Standard Shipping\",\"amount\":10},{\"id\":\"so_01M1VFJHZ9C30MA162PFDEWZZ7\",\"name\":\"Express Shipping\",\"amount\":10}]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_047ffdbe2f8b52b9006a9d7124ab2087d1a3481f683cf8c3a0",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\",\"shipping_option_id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\"}",
+              "call_id": "call_5rAk6XjGdYre5h1f0ir9Y2XR",
+              "name": "complete_checkout"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1994,
+            "input_tokens_details": {
+              "cache_write_tokens": 184,
+              "cached_tokens": 1807
+            },
+            "output_tokens": 97,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2091
+          }
+        },
+        {
+          "turn": 4,
+          "tool": "complete_checkout",
+          "input": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\",\"shipping_option_id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"order\":{\"order_id\":\"order_01M1VG3ZGS6C2GT6EF0M8R0QKK\",\"display_id\":1,\"total\":20,\"currency_code\":\"eur\",\"items\":[{\"title\":\"Medusa T-Shirt\",\"variant\":\"L / Black\",\"quantity\":1}],\"shipping_address\":{\"id\":\"ordaddr_01M1VG3ZGQH88FDBNHDDNV1GM0\",\"customer_id\":null,\"company\":null,\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"address_2\":\"\",\"city\":\"London\",\"country_code\":\"gb\",\"province\":\"\",\"postal_code\":\"N1 9GU\",\"phone\":\"+44 20 7946 0000\",\"metadata\":null,\"created_at\":\"2026-09-06T13:56:54.068Z\",\"updated_at\":\"2026-09-06T13:56:54.068Z\",\"deleted_at\":null},\"payment_provider\":\"pp_system_default\",\"confirmation_path\":\"/gb/order/order_01M1VG3ZGS6C2GT6EF0M8R0QKK/confirmed\"},\"note\":\"Order placed. The page is navigating to the confirmation.\"}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart"
+          ]
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_047ffdbe2f8b52b9006a9d7128602087d1add03c8b625a5973",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Guest checkout completed successfully using the store’s test payment method.\n\n- **Order confirmation:** #1\n- **Item:** 1 × Medusa T-Shirt, L / Black\n- **Total:** €20.00 (€10.00 item + €10.00 Standard Shipping)\n- **Recipient:** Jane Tester\n- **Delivery:** 1 High Street, London, N1 9GU, United Kingdom\n- **Email:** jane.tester@example.test\n- **Phone:** +44 20 7946 0000\n\n[View order confirmation](/gb/order/order_01M1VG3ZGS6C2GT6EF0M8R0QKK/confirmed)"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 2192,
+            "input_tokens_details": {
+              "cache_write_tokens": 754,
+              "cached_tokens": 1435
+            },
+            "output_tokens": 149,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2341
+          }
+        }
+      ],
+      "final_text": "Final answer: Guest checkout completed successfully using the store’s test payment method.\n\n- **Order confirmation:** #1\n- **Item:** 1 × Medusa T-Shirt, L / Black\n- **Total:** €20.00 (€10.00 item + €10.00 Standard Shipping)\n- **Recipient:** Jane Tester\n- **Delivery:** 1 High Street, London, N1 9GU, United Kingdom\n- **Email:** jane.tester@example.test\n- **Phone:** +44 20 7946 0000\n\n[View order confirmation](/gb/order/order_01M1VG3ZGS6C2GT6EF0M8R0QKK/confirmed)"
+    },
+    {
+      "run_id": "md-8_wm-gpt_8cec34da-362d-45b1-9149-0cd8a7c83ad6",
+      "task_id": "md-8",
+      "arm": "wm-gpt",
+      "method": "wm-gpt",
+      "model": "gpt-6-astra",
+      "model_snapshot": "gpt-6-astra",
+      "tool_version": "responses-api",
+      "site": "nextjs-starter-medusa",
+      "start_url": "http://127.0.0.1:3215",
+      "success": true,
+      "pass": true,
+      "failure_category": "",
+      "wall_clock_s": "42.786",
+      "reset_s": "23.408",
+      "setup_s": "1.417",
+      "agent_s": "17.961",
+      "ms": 42786,
+      "model_turns": 5,
+      "actions_or_tool_calls": 12,
+      "input_tokens": 938,
+      "output_tokens": 367,
+      "cached_tokens": 5717,
+      "cache_write_tokens": 1724,
+      "snapshot_source": "provider-response",
+      "stop_reason": "",
+      "refusal": false,
+      "truncated": false,
+      "effort": "medium",
+      "caching": "provider-managed",
+      "tokens": 1305,
+      "est_cost_usd": 0.054997,
+      "cost_estimated": "",
+      "retries": 0,
+      "retry_wait_ms": 0,
+      "budget_exhausted": false,
+      "temperature": "default",
+      "perturbation_id": "none",
+      "spec_shape": "none",
+      "timestamp": "2026-09-06T13:57:42.596Z",
+      "transcript": [
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart"
+          ]
+        },
+        {
+          "turn": 1,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_050057022899e91d006a9d7146030487d1b2d828231861f24c",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"query\":\"Medusa T-Shirt\",\"max_results\":8}",
+              "call_id": "call_mUmHStNorMSM1I2thPLeZtEb",
+              "name": "search_products"
+            }
+          ],
+          "usage": {
+            "input_tokens": 926,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 0
+            },
+            "output_tokens": 26,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 952
+          }
+        },
+        {
+          "turn": 1,
+          "tool": "search_products",
+          "input": "{\"query\":\"Medusa T-Shirt\",\"max_results\":8}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"count\":1,\"products\":[{\"id\":\"prod_01M1VFJJ0QBG3EH35PQ1MT1ZYV\",\"title\":\"Medusa T-Shirt\",\"handle\":\"t-shirt\",\"path\":\"/gb/products/t-shirt\",\"price_from\":\"€10.00\",\"description\":\"Reimagine the feeling of a classic T-shirt. With our cotton T-shirts, everyday essentials no longer have to be ordinary.\",\"options\":{\"Size\":[\"S\",\"M\",\"L\",\"XL\"],\"Color\":[\"Black\",\"White\"]},\"variants\":[{\"variant_id\":\"variant_01M1VFJJ1TN4BYP0DE9VB51E74\",\"title\":\"S / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TQS9AATZARG5V23P4\",\"title\":\"S / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TGKH2R72YR73CNQ71\",\"title\":\"M / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1T5WQN8X0B4DBY81Y8\",\"title\":\"M / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"title\":\"L / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1T7WYWVCP702CSJC9H\",\"title\":\"L / White\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1TSZT3S8YNC9M8KSRR\",\"title\":\"XL / Black\",\"price\":\"€10.00\",\"in_stock\":true},{\"variant_id\":\"variant_01M1VFJJ1VDBHGA0MCWE3493TH\",\"title\":\"XL / White\",\"price\":\"€10.00\",\"in_stock\":true}]}],\"viewing\":\"/gb/store\"}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 2,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_050057022899e91d006a9d7149ad9487d185b782e4774d3c26",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1}",
+              "call_id": "call_lzZAymOEYq32JjXjjJIO5X3H",
+              "name": "add_to_cart"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1443,
+            "input_tokens_details": {
+              "cache_write_tokens": 0,
+              "cached_tokens": 1440
+            },
+            "output_tokens": 42,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1485
+          }
+        },
+        {
+          "turn": 2,
+          "tool": "add_to_cart",
+          "input": "{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"added\":{\"variant_id\":\"variant_01M1VFJJ1TJTSVE1Q90K5GAGEQ\",\"quantity\":1},\"cart\":{\"item_count\":1,\"items\":[{\"line_id\":\"cali_01M1VG530XEYK4E156GNWGH8CM\",\"product\":\"Medusa T-Shirt\",\"variant\":\"L / Black\",\"quantity\":1,\"unit_price\":\"€10.00\",\"line_total\":\"€10.00\"}],\"subtotal\":\"€10.00\",\"total\":\"€10.00\",\"currency\":\"EUR\",\"cart_path\":\"/gb/cart\"}}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart",
+            "update_cart",
+            "begin_checkout"
+          ]
+        },
+        {
+          "turn": 3,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_050057022899e91d006a9d714cdaa087d18f2abd06bcba5073",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\"}",
+              "call_id": "call_CEgXCKzrgQmJ9DnDJGLiFdGo",
+              "name": "complete_checkout"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1814,
+            "input_tokens_details": {
+              "cache_write_tokens": 785,
+              "cached_tokens": 1026
+            },
+            "output_tokens": 71,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 1885
+          }
+        },
+        {
+          "turn": 3,
+          "tool": "complete_checkout",
+          "input": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"Choose a shipping option and call again with shipping_option_id.\",\"step\":\"shipping\",\"choices\":[{\"id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\",\"name\":\"Standard Shipping\",\"amount\":10},{\"id\":\"so_01M1VFJHZ9C30MA162PFDEWZZ7\",\"name\":\"Express Shipping\",\"amount\":10}]}"
+              }
+            ]
+          }
+        },
+        {
+          "turn": 4,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "fc_050057022899e91d006a9d714fe0c087d1851e1dee438b24e3",
+              "type": "function_call",
+              "status": "completed",
+              "arguments": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\",\"shipping_option_id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\"}",
+              "call_id": "call_iPM0HSCF6iJwnbzeKFuXkePJ",
+              "name": "complete_checkout"
+            }
+          ],
+          "usage": {
+            "input_tokens": 1998,
+            "input_tokens_details": {
+              "cache_write_tokens": 184,
+              "cached_tokens": 1811
+            },
+            "output_tokens": 97,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2095
+          }
+        },
+        {
+          "turn": 4,
+          "tool": "complete_checkout",
+          "input": "{\"email\":\"jane.tester@example.test\",\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"city\":\"London\",\"postal_code\":\"N1 9GU\",\"country_code\":\"gb\",\"phone\":\"+44 20 7946 0000\",\"shipping_option_id\":\"so_01M1VFJHZ8NVRBXK3X5WKD55D4\"}",
+          "result": {
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"order\":{\"order_id\":\"order_01M1VG5A6H1T47E6TY1CQT3BTH\",\"display_id\":1,\"total\":20,\"currency_code\":\"eur\",\"items\":[{\"title\":\"Medusa T-Shirt\",\"variant\":\"L / Black\",\"quantity\":1}],\"shipping_address\":{\"id\":\"ordaddr_01M1VG5A6FF54Q0PZD5CQSV4AY\",\"customer_id\":null,\"company\":null,\"first_name\":\"Jane\",\"last_name\":\"Tester\",\"address_1\":\"1 High Street\",\"address_2\":\"\",\"city\":\"London\",\"country_code\":\"gb\",\"province\":\"\",\"postal_code\":\"N1 9GU\",\"phone\":\"+44 20 7946 0000\",\"metadata\":null,\"created_at\":\"2026-09-06T13:57:37.738Z\",\"updated_at\":\"2026-09-06T13:57:37.738Z\",\"deleted_at\":null},\"payment_provider\":\"pp_system_default\",\"confirmation_path\":\"/gb/order/order_01M1VG5A6H1T47E6TY1CQT3BTH/confirmed\"},\"note\":\"Order placed. The page is navigating to the confirmation.\"}"
+              }
+            ]
+          }
+        },
+        {
+          "harness": "discovery",
+          "tools": [
+            "ask_site",
+            "search_products",
+            "view_cart",
+            "complete_checkout",
+            "get_product",
+            "add_to_cart"
+          ]
+        },
+        {
+          "turn": 5,
+          "role": "assistant",
+          "content": [
+            {
+              "id": "msg_050057022899e91d006a9d7153d87087d18ea2706c98100bc3",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Final answer: Guest checkout completed successfully using the store’s test payment method.\n\n- **Order confirmation:** #1\n- **Item:** 1 × Medusa T-Shirt, L / Black\n- **Shipping:** Standard Shipping\n- **Total:** €20.00 (€10.00 item + €10.00 shipping)\n- **Recipient:** Jane Tester, 1 High Street, London, N1 9GU, United Kingdom\n- **Email:** jane.tester@example.test\n\n**Order ID:** `order_01M1VG5A6H1T47E6TY1CQT3BTH`"
+                }
+              ],
+              "phase": "final_answer",
+              "role": "assistant"
+            }
+          ],
+          "usage": {
+            "input_tokens": 2198,
+            "input_tokens_details": {
+              "cache_write_tokens": 755,
+              "cached_tokens": 1440
+            },
+            "output_tokens": 131,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 2329
+          }
+        }
+      ],
+      "final_text": "Final answer: Guest checkout completed successfully using the store’s test payment method.\n\n- **Order confirmation:** #1\n- **Item:** 1 × Medusa T-Shirt, L / Black\n- **Shipping:** Standard Shipping\n- **Total:** €20.00 (€10.00 item + €10.00 shipping)\n- **Recipient:** Jane Tester, 1 High Street, London, N1 9GU, United Kingdom\n- **Email:** jane.tester@example.test\n\n**Order ID:** `order_01M1VG5A6H1T47E6TY1CQT3BTH`"
+    }
+  ],
+  "verdicts": [
+    {
+      "site": "nextjs-starter-medusa",
+      "taskId": "md-8",
+      "tier": "transaction",
+      "method": "wm-gpt",
+      "solved": true,
+      "passes": 3,
+      "attempts": 3
+    }
+  ]
+}

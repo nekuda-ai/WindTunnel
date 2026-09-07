@@ -1,6 +1,6 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
-import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
+import { BASE_SYSTEM, MECHANICS, samplingFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "computer";
 const MODEL = "gpt-5.5";
@@ -22,8 +22,30 @@ const KEY_MAP = {
 };
 const BUTTON_MAP = { left: "left", right: "right", wheel: "middle" };
 
-const toPlaywrightKey = (key) => KEY_MAP[String(key).toUpperCase()]
-  ?? (key.length === 1 ? key : key[0].toUpperCase() + key.slice(1).toLowerCase());
+const toPlaywrightKey = (raw) => {
+  const key = String(raw).replace(/_[lr]$/i, "");                       // xdotool Control_L / Shift_R
+  if (key.length === 1) return key;                                     // "a", "A", " ", "+" — case-sensitive, as Playwright wants
+  const code = /^(key)([a-z])$|^(digit)(\d)$/i.exec(key);              // DOM codes KeyA / Digit5, valid Playwright keys
+  if (code) return code[1] ? `Key${code[2].toUpperCase()}` : `Digit${code[4]}`;
+  // Capitalize only the first letter: ControlOrMeta / ShiftLeft / NumpadEnter
+  // are already valid Playwright names and must not be lower-cased.
+  return KEY_MAP[key.toUpperCase()] ?? key[0].toUpperCase() + key.slice(1);
+};
+
+// One "ctrl+a"-style string → its keys. A "+" that is not followed by a key
+// ("Control++", or "+" alone) is the plus key itself, not a separator.
+const splitChord = (s) => s.split("+").flatMap((t, i, all) => t ? [t] : (i > 0 && all[i - 1] === "" ? ["+"] : []));
+
+// OpenAI's `keypress` carries ONE chord — "the combination of keys" — and models
+// spell it every way: ["CTRL","a"], ["ctrl+a"], ["Control_L","a"], ["Control","KeyA"].
+// Pressing the keys one at a time (what this arm did until the Astra smoke)
+// releases Control before "a" arrives, so select-all never happens and the
+// model burns turns retrying. A lone capital letter inside a chord is lowercased
+// ("CTRL+A" → Control+a): models mean the shortcut, not a shifted character.
+export const keyChord = (keys) => {
+  const parts = keys.flatMap((k) => splitChord(String(k))).map(toPlaywrightKey);
+  return parts.map((k) => parts.length > 1 && /^[A-Z]$/.test(k) ? k.toLowerCase() : k).join("+");
+};
 
 async function withModifiers(page, keys, callback) {
   const pressed = (keys ?? []).map(toPlaywrightKey);
@@ -69,14 +91,6 @@ export async function respond(body) {
   }
 }
 
-async function respondAtZero(body) {
-  try { return { ...(await respond({ ...body, temperature: 0 })), temperature: "0" }; }
-  catch (error) {
-    if (!/^OpenAI 400:/.test(error.message)) throw error;
-    return { ...(await respond(body)), temperature: "default" };
-  }
-}
-
 async function executeAction(page, action) {
   const { x, y } = action;
   switch (action.type) {
@@ -97,7 +111,7 @@ async function executeAction(page, action) {
       break;
     case "type": await page.keyboard.type(action.text ?? "", { delay: 10 }); break;
     case "keypress":
-      for (const key of action.keys ?? []) await page.keyboard.press(toPlaywrightKey(key));
+      if (action.keys?.length) await page.keyboard.press(keyChord(action.keys));
       break;
     case "drag": {
       const path = action.path ?? [];
@@ -141,7 +155,8 @@ export async function run({ task, capsule, page, model = MODEL }) {
   let failure = "";
   let model_snapshot = "";
   let turns = 0;
-  let retries = 0, retry_wait_ms = 0, temperature = "0";
+  let retries = 0, retry_wait_ms = 0, temperature = "default";
+  let effort = "", truncated = false;
   // Both screenshot arms share one context policy: the model sees only the
   // SCREENSHOT_WINDOW most recent screenshots (matches cu-claude's prune).
   // History is replayed explicitly (the OpenAI Responses docs' supported
@@ -163,21 +178,30 @@ export async function run({ task, capsule, page, model = MODEL }) {
       break;
     }
     turns++;
-    const outcome = await respondAtZero({
+    const sampling = samplingFor(model);
+    const outcome = await respond({
       model,
       instructions: withToday(SYSTEM),
       tools,
       input: windowed(),
+      ...sampling.request,
     });
     const response = outcome.response;
     model_snapshot = response.model ?? model_snapshot;
-    temperature = outcome.temperature;
+    temperature = sampling.temperature;
+    effort = response.reasoning?.effort ?? effort;
+    if (response.status === "incomplete") truncated = true;
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
     history.push(...response.output);
-    usage.input_tokens += (response.usage?.input_tokens ?? 0) - (response.usage?.input_tokens_details?.cached_tokens ?? 0);
+    const details = response.usage?.input_tokens_details ?? {};
+    const cached = details.cached_tokens ?? 0, written = details.cache_write_tokens ?? 0;
+    // OpenAI's input_tokens INCLUDES cache reads and cache writes; split them
+    // so each is priced at its own rate (Astra: $1 read, $12.50 write, $10 fresh).
+    usage.input_tokens += (response.usage?.input_tokens ?? 0) - cached - written;
+    usage.cached_input_tokens += cached;
+    usage.cache_creation_tokens += written;
     usage.output_tokens += response.usage?.output_tokens ?? 0;
-    usage.cached_input_tokens += response.usage?.input_tokens_details?.cached_tokens ?? 0;
     transcript.push({ turn: turns, role: "assistant", content: response.output, usage: response.usage });
     finalText = finalTextOf(response.output) || finalText;
 
@@ -203,5 +227,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     }
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, caching: "provider-managed" };
+  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, effort, truncated, caching: "provider-managed" };
 }

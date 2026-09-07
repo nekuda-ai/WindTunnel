@@ -64,6 +64,193 @@ index 0000000..43b78d1
 +    description: c.description ?? null,
 +  }))
 +}
+diff --git a/src/lib/webmcp/checkout-actions.ts b/src/lib/webmcp/checkout-actions.ts
+new file mode 100644
+index 0000000..a4c7463
+--- /dev/null
++++ b/src/lib/webmcp/checkout-actions.ts
+@@ -0,0 +1,181 @@
++"use server"
++
++import { sdk } from "@lib/config"
++import medusaError from "@lib/util/medusa-error"
++import { HttpTypes } from "@medusajs/types"
++import { revalidateTag } from "next/cache"
++import {
++  initiatePaymentSession,
++  listCartOptions,
++  retrieveCart,
++  setShippingMethod,
++  updateCart,
++} from "@lib/data/cart"
++import { getAuthHeaders, getCacheTag, removeCartId } from "@lib/data/cookies"
++import { listCartPaymentMethods } from "@lib/data/payment"
++
++export type CheckoutInput = {
++  email: string
++  first_name: string
++  last_name: string
++  address_1: string
++  address_2?: string
++  city: string
++  postal_code: string
++  province?: string
++  country_code: string
++  phone?: string
++  shipping_option_id?: string
++  payment_provider_id?: string
++}
++
++export type CheckoutResult =
++  | {
++      ok: true
++      order: {
++        order_id: string
++        display_id: number | undefined
++        total: number | undefined
++        currency_code: string | undefined
++        items: { title: string; variant: string | undefined; quantity: number }[]
++        shipping_address: Record<string, unknown> | undefined
++        payment_provider: string | undefined
++        confirmation_path: string
++      }
++    }
++  | { ok: false; step: string; error: string; choices?: unknown }
++
++/**
++ * Guest checkout through the storefront's own data path — the same calls the
++ * checkout page makes (updateCart → setShippingMethod → initiatePaymentSession
++ * → cart.complete). Shipping and payment are chosen automatically only when
++ * there is exactly one option; otherwise the choices are returned so the
++ * caller can pick.
++ */
++export async function completeCheckout(
++  input: CheckoutInput
++): Promise<CheckoutResult> {
++  const cart = await retrieveCart()
++  if (!cart?.items?.length) {
++    return {
++      ok: false,
++      step: "cart",
++      error: "The cart is empty — add items before checking out.",
++    }
++  }
++  if ((cart as { completed_at?: string | null }).completed_at) {
++    return { ok: false, step: "cart", error: "This cart was already completed." }
++  }
++
++  const address = {
++    first_name: input.first_name,
++    last_name: input.last_name,
++    address_1: input.address_1,
++    address_2: input.address_2 ?? "",
++    city: input.city,
++    postal_code: input.postal_code,
++    province: input.province ?? "",
++    country_code: input.country_code.toLowerCase(),
++    phone: input.phone ?? "",
++  }
++  try {
++    await updateCart({
++      email: input.email,
++      shipping_address: address,
++      billing_address: address,
++    })
++  } catch (e: any) {
++    return {
++      ok: false,
++      step: "address",
++      error: e?.message ?? "could not set addresses",
++    }
++  }
++
++  const { shipping_options: options = [] } = await listCartOptions()
++  const shippingId =
++    input.shipping_option_id ??
++    (options.length === 1 ? options[0].id : undefined)
++  if (!shippingId) {
++    return {
++      ok: false,
++      step: "shipping",
++      error:
++        "Choose a shipping option and call again with shipping_option_id.",
++      choices: options.map((o) => ({ id: o.id, name: o.name, amount: o.amount })),
++    }
++  }
++  try {
++    await setShippingMethod({ cartId: cart.id, shippingMethodId: shippingId })
++  } catch (e: any) {
++    return {
++      ok: false,
++      step: "shipping",
++      error: e?.message ?? "could not set shipping method",
++    }
++  }
++
++  const providers = (await listCartPaymentMethods(cart.region_id ?? "")) ?? []
++  const providerId =
++    input.payment_provider_id ??
++    (providers.length === 1 ? providers[0].id : undefined)
++  if (!providerId) {
++    return {
++      ok: false,
++      step: "payment",
++      error:
++        "Choose a payment provider and call again with payment_provider_id.",
++      choices: providers.map((p) => ({ id: p.id })),
++    }
++  }
++  try {
++    const fresh = (await retrieveCart(cart.id)) ?? cart
++    await initiatePaymentSession(fresh, { provider_id: providerId })
++  } catch (e: any) {
++    return {
++      ok: false,
++      step: "payment",
++      error: e?.message ?? "could not start payment session",
++    }
++  }
++
++  const headers = { ...(await getAuthHeaders()) }
++  const res = await sdk.store.cart
++    .complete(cart.id, {}, headers)
++    .then(async (r) => {
++      revalidateTag(await getCacheTag("carts"))
++      return r
++    })
++    .catch(medusaError)
++  if (res?.type !== "order") {
++    return {
++      ok: false,
++      step: "place_order",
++      error:
++        (res as any)?.error?.message ?? "the store did not accept the order",
++    }
++  }
++  revalidateTag(await getCacheTag("orders"))
++  await removeCartId()
++  const o = res.order as HttpTypes.StoreOrder
++  const country =
++    o.shipping_address?.country_code?.toLowerCase() ??
++    input.country_code.toLowerCase()
++  return {
++    ok: true,
++    order: {
++      order_id: o.id,
++      display_id: o.display_id,
++      total: o.total,
++      currency_code: o.currency_code,
++      items: (o.items ?? []).map((i) => ({
++        title: i.product_title ?? i.title,
++        variant: i.variant_title ?? undefined,
++        quantity: i.quantity,
++      })),
++      shipping_address: o.shipping_address as Record<string, unknown> | undefined,
++      payment_provider: providerId,
++      confirmation_path: `/${country}/order/${o.id}/confirmed`,
++    },
++  }
++}
 diff --git a/src/lib/webmcp/page-state.ts b/src/lib/webmcp/page-state.ts
 new file mode 100644
 index 0000000..544bd71
@@ -117,10 +304,10 @@ index 0000000..544bd71
 +}
 diff --git a/src/lib/webmcp/provider.tsx b/src/lib/webmcp/provider.tsx
 new file mode 100644
-index 0000000..7c8134f
+index 0000000..9ebd088
 --- /dev/null
 +++ b/src/lib/webmcp/provider.tsx
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,126 @@
 +"use client"
 +
 +import { usePathname, useRouter } from "next/navigation"
@@ -129,6 +316,7 @@ index 0000000..7c8134f
 +import {
 +  buildAlwaysTools,
 +  buildCartTools,
++  buildCheckoutTools,
 +  buildProductTools,
 +  Navigator,
 +} from "./tools"
@@ -174,7 +362,15 @@ index 0000000..7c8134f
 +    const ctx = getModelContext()
 +    if (!ctx?.registerTool) return
 +    const controller = new AbortController()
-+    registerAll(ctx, buildAlwaysTools(navRef.current), controller.signal)
++    // complete_checkout lives here too (v1.1): registering it with the cart-
++    // conditioned group left a gap during the begin_checkout navigation in
++    // which an agent's next call found no such tool. It fails cleanly on an
++    // empty cart, so always-on costs nothing.
++    registerAll(
++      ctx,
++      [...buildAlwaysTools(navRef.current), ...buildCheckoutTools(navRef.current)],
++      controller.signal
++    )
 +    return () => controller.abort()
 +  }, [])
 +
@@ -400,10 +596,10 @@ index 0000000..7849b20
 +}
 diff --git a/src/lib/webmcp/tools.ts b/src/lib/webmcp/tools.ts
 new file mode 100644
-index 0000000..9aee65f
+index 0000000..e563fcd
 --- /dev/null
 +++ b/src/lib/webmcp/tools.ts
-@@ -0,0 +1,718 @@
+@@ -0,0 +1,793 @@
 +import { HttpTypes } from "@medusajs/types"
 +import {
 +  addToCart,
@@ -422,6 +618,7 @@ index 0000000..9aee65f
 +} from "./site-content"
 +import { ProductSnapshot } from "./page-state"
 +import { WebMcpContent, WebMcpTool } from "./types"
++import { completeCheckout } from "./checkout-actions"
 +
 +/** Client-side page navigation the tools use for their ui_effect. */
 +export type Navigator = { push: (path: string) => void }
@@ -1093,7 +1290,7 @@ index 0000000..9aee65f
 +    {
 +      name: "begin_checkout",
 +      description:
-+        "Start checkout for the current cart: navigates the page to the checkout flow with all cart items and totals preserved (the Medusa cart is the checkout session). No order is placed and no payment is taken by this tool — the user completes address, delivery and payment in the page. Returns the cart summary being checked out.",
++        "Start checkout for the current cart: navigates the page to the checkout flow with all cart items and totals preserved (the Medusa cart is the checkout session). No order is placed and no payment is taken by this tool — the user completes address, delivery and payment in the page. Returns the cart summary being checked out. To place the order use complete_checkout.",
 +      inputSchema: {
 +        type: "object",
 +        additionalProperties: false,
@@ -1112,11 +1309,85 @@ index 0000000..9aee65f
 +          navigateSoon(nav, path)
 +          return ok({
 +            checkout_path: path,
-+            note: "Checkout opened with the cart preserved. The user completes address, delivery and payment steps in the page UI.",
++            note: "Checkout opened with the cart preserved. Call complete_checkout with the buyer's details to place the order.",
 +            cart: summarizeCart(cart),
 +          })
 +        } catch (e: any) {
 +          return fail(e?.message ?? "begin_checkout failed")
++        }
++      },
++    },
++  ]
++}
++
++// ---------------------------------------------------------------------------
++// Checkout (v1.1) — registered with the always-on group so it is never absent
++// mid-navigation; before this, the tools handed off at begin_checkout and no
++// WebMCP agent could finish a purchase. Fails cleanly when the cart is empty.
++// ---------------------------------------------------------------------------
++
++export function buildCheckoutTools(nav: Navigator): WebMcpTool[] {
++  return [
++    {
++      name: "complete_checkout",
++      description:
++        "Complete guest checkout for the current cart in one step: sets the contact email and shipping/billing address, picks the shipping option and payment provider (automatically when the store offers exactly one of each, otherwise returns the choices so you can pass shipping_option_id / payment_provider_id), places the order, and returns the order confirmation (order id, display number, total, items). Use after add_to_cart; begin_checkout is not required.",
++      inputSchema: {
++        type: "object",
++        additionalProperties: false,
++        properties: {
++          email: { type: "string" },
++          first_name: { type: "string" },
++          last_name: { type: "string" },
++          address_1: { type: "string", description: "Street address" },
++          address_2: { type: "string" },
++          city: { type: "string" },
++          postal_code: { type: "string" },
++          province: {
++            type: "string",
++            description: "State / province / county, if any",
++          },
++          country_code: {
++            type: "string",
++            description: "ISO 3166-1 alpha-2, e.g. 'gb'",
++          },
++          phone: { type: "string" },
++          shipping_option_id: {
++            type: "string",
++            description: "Only needed when the store offers several shipping options",
++          },
++          payment_provider_id: {
++            type: "string",
++            description: "Only needed when the store offers several payment providers",
++          },
++        },
++        required: [
++          "email",
++          "first_name",
++          "last_name",
++          "address_1",
++          "city",
++          "postal_code",
++          "country_code",
++        ],
++      },
++      annotations: { readOnlyHint: false },
++      async execute(args: Parameters<typeof completeCheckout>[0]) {
++        try {
++          const result = await completeCheckout(args)
++          if (!result.ok) {
++            return fail(result.error, {
++              step: result.step,
++              ...(result.choices ? { choices: result.choices } : {}),
++            })
++          }
++          navigateSoon(nav, result.order.confirmation_path)
++          return ok({
++            order: result.order,
++            note: "Order placed. The page is navigating to the confirmation.",
++          })
++        } catch (e: any) {
++          return fail(e?.message ?? "complete_checkout failed")
 +        }
 +      },
 +    },

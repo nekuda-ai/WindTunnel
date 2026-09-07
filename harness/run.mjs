@@ -104,11 +104,13 @@ export async function runBatch({
       }
     }
   } finally {
-    await capsule.down();
+    // A failed teardown is recorded, not thrown: throwing here made cli.mjs
+    // drop every finished row of the batch (hi-events, 2026-09-05).
+    var teardown_error = await capsule.down().then(() => "", (error) => { console.warn(`teardown failed for ${siteId}: ${error.message}`); return error.message; });
   }
   const verdicts = tasks.map((task) => {
     const attempts = rows.filter((row) => row.task_id === task.id);
     return { site: siteId, taskId: task.id, tier: task.tier, method: method.id, ...verdictFor(attempts) };
   });
-  return { rows, verdicts, capsule: capsule.meta };
+  return { rows, verdicts, teardown_error, capsule: capsule.meta };
 }

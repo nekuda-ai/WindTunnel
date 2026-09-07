@@ -1,83 +1,69 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-
 import { renderExplorerHTML } from "../harness/build_explorer.mjs";
 
+// Same arm, two models: the explorer must show two configurations, not one
+// pooled row (the canonical explorer used to merge Luna and SOL this way).
+const row = (model, pass, cost) => ({
+  site: "blog", task_id: "b-1", arm: "cu-openai", model, pass, est_cost_usd: cost,
+  agent_s: 10, wall_clock_s: 12, input_tokens: 100, cached_tokens: 50, cache_write_tokens: 25, output_tokens: 10,
+});
 const rows = [
-  { site: "directory-9d8", task_id: "d-1", arm: "wm-claude", pass: true, est_cost_usd: 0.01, wall_clock_s: 5, input_tokens: 100, output_tokens: 10 },
-  { site: "directory-9d8", task_id: "d-1", arm: "cu-claude", pass: false, est_cost_usd: 0.3, wall_clock_s: 50, input_tokens: 9000, output_tokens: 90 },
+  row("gpt-5.6-sol", true, 1), row("gpt-5.6-sol", true, 1), row("gpt-5.6-sol", true, 1),
+  row("gpt-6-astra", true, 2), row("gpt-6-astra", false, 2), row("gpt-6-astra", false, 2),
 ];
-const tasksBySite = { "directory-9d8": [{ id: "d-1", tier: "answer", prompt: "How many?" }] };
-const html = renderExplorerHTML({ rows, tasksBySite, runCount: 1, meta: { date: "2026-07-25", label: "t", preset: "lite", sites: "lite", n: 1 } });
+const tasksBySite = { blog: [{ id: "b-1", tier: "answer", prompt: "read" }] };
 
-test("explorer renders the tasks and table views as separate tabs", () => {
-  // Both panels exist, and the tasks panel is the one selected by default.
-  assert.match(html, /<input class="tabr" type="radio" name="view" id="v-tasks" checked>/);
-  assert.match(html, /<section class="panel p-tasks">/);
-  assert.match(html, /<section class="panel p-table">/);
-  assert.ok(!/id="v-table" checked/.test(html), "table tab must not be the default view");
-
-  // The two views must not collapse into one scroll: site sections belong to
-  // the tasks panel, the sortable table to the table panel.
-  const tasksAt = html.indexOf('<section class="panel p-tasks">');
-  const tableAt = html.indexOf('<section class="panel p-table">');
-  const siteAt = html.indexOf("<h2>directory-9d8");
-  const dataAt = html.indexOf("var DATA=");
-  assert.ok(siteAt > tasksAt && siteAt < tableAt, "site sections must sit inside the tasks panel");
-  assert.ok(dataAt > tableAt, "the data table must sit inside the table panel");
-
-  // CSS that does the switching, and a label per tab to click.
-  assert.match(html, /#v-tasks:checked~\.p-tasks,#v-table:checked~\.p-table\{display:block;\}/);
-  assert.match(html, /<label for="v-tasks">/);
-  assert.match(html, /<label for="v-table">/);
-});
-
-test("each summary chart sorts on its own metric, best performer first", () => {
-  // Three methods whose cost and success orders deliberately disagree, so a
-  // shared sort order would show up as one of the charts being unsorted.
-  const mixed = [
-    { site: "s", task_id: "t1", arm: "wm-claude", pass: true, est_cost_usd: 0.30, wall_clock_s: 1, input_tokens: 1, output_tokens: 0 },
-    { site: "s", task_id: "t1", arm: "cu-claude", pass: true, est_cost_usd: 0.01, wall_clock_s: 1, input_tokens: 1, output_tokens: 0 },
-    { site: "s", task_id: "t1", arm: "a11y-stagehand", pass: false, est_cost_usd: 0.10, wall_clock_s: 1, input_tokens: 1, output_tokens: 0 },
-  ];
-  const out = renderExplorerHTML({
-    rows: mixed,
-    tasksBySite: { s: [{ id: "t1", tier: "answer", prompt: "p" }] },
-    runCount: 1,
-    meta: { date: "2026-07-25", label: "t", preset: "lite", sites: "lite", n: 1 },
-  });
-
-  // Pull each chart's bar values in render order. Cost/tokens/time lead with the
-  // lowest (best); success rate leads with the highest, because there big is good.
-  for (const [caption, parse, bigIsBetter] of [
-    ["Median cost / task", (s) => Number(s.replace(/[$,]/g, "")), false],
-    ["Median tokens processed / task", (s) => Number(s.replace(/,/g, "")), false],
-    ["Median agent time / task", (s) => Number(s.replace("s", "")), false],
-    ["Success rate", (s) => Number(s.replace("%", "")), true],
-  ]) {
-    const chart = out.split(`<figcaption>${caption}</figcaption>`)[1].split("</figure>")[0];
-    const vals = [...chart.matchAll(/<span class="bar-val">([^<]+)<\/span>/g)].map((m) => parse(m[1]));
-    assert.ok(vals.length >= 3, `${caption}: expected at least 3 bars, got ${vals.length}`);
-    const want = [...vals].sort((a, b) => (bigIsBetter ? b - a : a - b));
-    assert.deepEqual(vals, want, `${caption} should lead with the best performer, got: ${vals}`);
-  }
-
-  // And the two charts must genuinely differ in order, or the sort is shared.
-  const order = (caption) => {
-    const chart = out.split(`<figcaption>${caption}</figcaption>`)[1].split("</figure>")[0];
-    return [...chart.matchAll(/<span class="bar-label">([^<]+)<\/span>/g)].map((m) => m[1]);
-  };
-  assert.notDeepEqual(order("Median cost / task"), order("Success rate"),
-    "charts share one order — each should sort on its own metric");
-});
-
-test("explorer table embeds one row per site/task/method with medians", () => {
-  const data = JSON.parse(html.match(/var DATA=(\[[\s\S]*?\]);/)[1]);
+test("explorer keys every aggregate by arm × model", () => {
+  const html = renderExplorerHTML({ rows, tasksBySite });
+  assert.match(html, /Computer use · GPT · SOL/);
+  assert.match(html, /Computer use · GPT · Astra/);
+  // summary bars: separate success rates (100% vs 33%)
+  assert.match(html, /100% \(3\/3\)/);
+  assert.match(html, /33% \(1\/3\)/);
+  // flat table: two entries for the one site/task
+  const data = JSON.parse(html.match(/var DATA=(\[.*?\]);/s)[1]);
   assert.equal(data.length, 2);
-  const wm = data.find((r) => r.method === "wm-claude");
-  assert.deepEqual(
-    { site: wm.site, task: wm.task, tier: wm.tier, iface: wm.iface, p: wm.p, n: wm.n, pct: wm.pct },
-    { site: "directory-9d8", task: "d-1", tier: "answer", iface: "WebMCP", p: 1, n: 1, pct: 100 },
-  );
-  assert.equal(data.find((r) => r.method === "cu-claude").iface, "Screenshots");
+  assert.deepEqual(data.map((d) => d.model).sort(), ["gpt-5.6-sol", "gpt-6-astra"]);
+  // tokens processed include cache writes: 100 + 50 + 25 + 10
+  assert.ok(data.every((d) => d.tok === 185));
+});
+
+test("explorer files code-openai under its own class, not page structure", () => {
+  const html = renderExplorerHTML({ rows: [{ ...row("gpt-6-astra", true, 1), arm: "code-openai" }], tasksBySite });
+  assert.match(html, /Code execution · GPT · Astra/);
+  assert.match(html, /class="code"/);
+  assert.match(html, /Code execution \(Playwright\)/);
+  assert.doesNotMatch(html, /comparing three ways/);
+});
+
+test("explorer: a recorded agent_s of 0 is a real value, not a missing one", () => {
+  // Two instant attempts (agent_s 0, long wall clock) + one 10 s attempt: the
+  // median agent time is 0 s. Treating 0 as "missing" swapped in the 500 s wall
+  // clock and reported 500 s.
+  const rs = [{ ...row("gpt-6-astra", true, 1), agent_s: 0, wall_clock_s: 500 }, { ...row("gpt-6-astra", true, 1), agent_s: 0, wall_clock_s: 500 }, row("gpt-6-astra", true, 1)];
+  const html = renderExplorerHTML({ rows: rs, tasksBySite });
+  assert.match(html, /<span class="bar-val">0s<\/span>/);
+  assert.doesNotMatch(html, /<span class="bar-val">500s<\/span>/);
+  // Legacy rows without the agent_s field still fall back to wall clock.
+  const legacy = [{ ...row("gpt-6-astra", true, 1), agent_s: undefined, wall_clock_s: 42 }];
+  assert.match(renderExplorerHTML({ rows: legacy, tasksBySite }), /<span class="bar-val">42s<\/span>/);
+});
+
+test("explorer: interface summary includes every arm present and pools attempt rates", () => {
+  const mk = (arm, model, pass) => ({ ...row(model, pass, 1), arm });
+  const rs = [
+    mk("wm-gpt", "gpt-5.6-luna", false), mk("wm-gpt", "gpt-5.6-luna", false), mk("wm-gpt", "gpt-5.6-luna", false),
+    mk("wm-claude", "claude-opus-5", true), mk("wm-claude", "claude-opus-5", true), mk("wm-claude", "claude-opus-5", true),
+    mk("wm-gemini", "gemini-3.6-flash", true), mk("wm-gemini", "gemini-3.6-flash", true), mk("wm-gemini", "gemini-3.6-flash", true),
+    mk("cu-gemini", "gemini-3.6-flash", true), mk("wm-stagehand-v4", "claude-sonnet-5", true),
+  ];
+  const html = renderExplorerHTML({ rows: rs, tasksBySite, canonical: true });
+  const table = html.slice(html.indexOf('<table class="imp">'), html.indexOf("</table>", html.indexOf('<table class="imp">')));
+  for (const arm of ["wm-gemini", "cu-gemini", "wm-stagehand-v4"]) assert.ok(table.includes(arm), `${arm} missing from the interface summary`);
+  // pooled 7/10 = 70% across the four WebMCP configs, whereas a median of
+  // per-config rates (0, 100, 100, 100) would say 100%
+  assert.match(html, /WebMCP passed <b>70\.0%<\/b> of attempts/);
+  assert.match(html, /Canonical leaderboard — consolidated per cell/);
+  assert.doesNotMatch(renderExplorerHTML({ rows: rs, tasksBySite }), /Canonical leaderboard/);
 });

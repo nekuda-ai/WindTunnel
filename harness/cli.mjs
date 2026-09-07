@@ -9,6 +9,7 @@ import { run as runStagehand, TOOL_VERSION as STAGEHAND_VERSION } from "../arms/
 import { run as runWMClaude } from "../arms/wm-claude.mjs";
 import { run as runWMGPT } from "../arms/wm-gpt.mjs";
 import { run as runCUOpenAI, TOOL_VERSION as CU_OPENAI_VERSION } from "../arms/cu-openai.mjs";
+import { run as runCodeOpenAI, TOOL_VERSION as CODE_OPENAI_VERSION } from "../arms/code-openai.mjs";
 import { run as runWMStagehand, TOOL_VERSION as WM_STAGEHAND_VERSION } from "../arms/wm-stagehand.mjs";
 import { run as runWMStagehandV4, TOOL_VERSION as WM_STAGEHAND_V4_VERSION } from "../arms/wm-stagehand-v4.mjs";
 import { run as runWMStagehandV4Gemini, TOOL_VERSION as WM_STAGEHAND_V4_GEMINI_VERSION } from "../arms/wm-stagehand-v4-gemini.mjs";
@@ -27,6 +28,7 @@ const ARMS = {
   scripted: { id: "scripted", run: runScripted, model: "none", paid: false },
   "cu-claude": { id: "cu-claude", run: runCUClaude, model: "claude-sonnet-4-6", version: CU_CLAUDE_VERSION, key: "ANTHROPIC_API_KEY", paid: true },
   "cu-openai": { id: "cu-openai", run: runCUOpenAI, model: "gpt-5.5", version: CU_OPENAI_VERSION, key: "OPENAI_API_KEY", paid: true },
+  "code-openai": { id: "code-openai", run: runCodeOpenAI, model: "gpt-6-astra", version: CODE_OPENAI_VERSION, key: "OPENAI_API_KEY", paid: true },
   // The two structured arms are reused across providers via --model (Luna runs
   // through them), so their credential follows the EFFECTIVE model rather than
   // being pinned to Anthropic — otherwise a Luna run would demand an unused
@@ -123,7 +125,19 @@ export function planRuns(options, env = process.env, methods = ARMS) {
 
 function fakePage() {
   const locator = () => ({ async fill() {}, async click() {}, async press() {}, async innerText() { return "fake page content"; } });
-  return { async goto() {}, async title() { return "fake page"; }, locator };
+  // Enough Playwright surface for every arm's setup + action path (CU mouse /
+  // keyboard, WebMCP bridge install + discovery, code-exec screenshot) so a
+  // WT_FAKE_LIFECYCLE dry run reaches the model API instead of crashing in setup.
+  const noop = async () => {};
+  const PNG_1x1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+  const context = { addInitScript: noop, browser: () => ({}) };
+  return {
+    goto: noop, async title() { return "fake page"; }, locator,
+    setViewportSize: noop, waitForLoadState: noop, waitForTimeout: noop, waitForFunction: noop,
+    async screenshot() { return PNG_1x1; }, async evaluate() { return []; }, context: () => context,
+    mouse: { click: noop, dblclick: noop, move: noop, down: noop, up: noop, wheel: noop },
+    keyboard: { type: noop, press: noop, down: noop, up: noop },
+  };
 }
 
 async function openPage(env) {
@@ -217,7 +231,13 @@ export async function runBenchmark(argv, {
       });
       rows.push(...result.rows);
       verdicts.push(...result.verdicts);
-      capsules.push(result.capsule);
+      // A failed teardown is an incident worth auditing after the flight — keep it
+      // on the run record and in the live journal, not only on the console.
+      capsules.push(result.teardown_error ? { ...result.capsule, teardown_error: result.teardown_error } : result.capsule);
+      if (result.teardown_error) {
+        log(`Teardown failed for ${method.id} × ${siteId}: ${result.teardown_error}`);
+        fs.appendFileSync(livePath, JSON.stringify({ teardown_failed: `${method.id} × ${siteId}`, error: result.teardown_error.slice(0, 300) }) + "\n");
+      }
     } catch (error) {
       // A capsule that won't boot must cost one batch, not the whole run —
       // a 20-hour flight once died at batch 31/56 (a broken seed on a cold
