@@ -36,7 +36,7 @@ npm ci
 WT_FAKE_LIFECYCLE=1 npm run bench    # no LLM — scores 0/7 by design, just proves it runs
 ```
 
-Run the real benchmark — needs Docker, Linux, and a key
+Run the real benchmark — needs Docker, Linux or macOS, and a key
 ([setup](#running-it-yourself)):
 
 ```bash
@@ -115,7 +115,8 @@ Canonical artifacts — [CSV](results/canonical/results.csv),
 
 <sub>Attempts are successful attempts out of 147; Turn-cap counts attempts
 that used every turn of their model-turn budget (whether or not the final turn
-produced an answer). Median tokens are total processed:
+produced an answer). Medians are rounded by the chart generator (JavaScript
+`toFixed`; an exact 6.85 s prints as 6.8 s). Median tokens are total processed:
 uncached input + cache reads + cache writes + output. The table reports tasks
 solved by a majority of three attempts; infrastructure rows are excluded.</sub>
 
@@ -230,8 +231,9 @@ interface:
 
 - **Screenshots (computer use)** — a full page *image* every turn: thousands of
   tokens each, refreshed nearly every step.
-- **Page structure (DOM / accessibility tree)** — the page's *text* every turn.
-  Lighter than images, but still the whole page, re-read each step.
+- **Page structure (DOM / accessibility tree)** — the page's *text* every turn,
+  the whole page re-read each step. DOM + vision sends the text *and* a
+  screenshot, and is often the heaviest configuration of all.
 - **WebMCP** — a short list of tool schemas plus small JSON results. No page
   text, no screenshots. Lightest by far.
 

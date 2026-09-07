@@ -38,7 +38,7 @@ configs:
 
 # WindTunnel
 
-WindTunnel measures WebMCP—a website exposing its own callable tools—against four screen-driving browser-agent interfaces: screenshots (computer use), the accessibility tree, DOM plus vision, and code execution (the model writes Playwright code against the page; OpenAI's recommended mode for GPT-6 Astra). The canonical run uses the same 49 tasks on the same eight pinned, self-hosted open-source applications for 19 model/interface configurations, with three attempts per cell and a 600-second per-attempt agent cap.
+WindTunnel measures WebMCP—a website exposing its own callable tools—against three screen-driving interface classes: screenshots (computer use), page structure (two variants: the accessibility tree, and DOM plus vision), and code execution (the model writes Playwright code against the page; OpenAI's recommended mode for GPT-6 Astra). The canonical run uses the same 49 tasks on the same eight pinned, self-hosted open-source applications for 19 model/interface configurations, with three attempts per cell and a 600-second per-attempt agent cap.
 
 **Conflict of interest:** nekuda created WindTunnel and authored the WebMCP reference tool implementations called by the WebMCP arms.
 
@@ -53,8 +53,8 @@ These results cover eight applications, one fixed task set, six model families, 
 ## Results
 
 Full canonical leaderboard. `Turn cap hit` counts attempts that exhausted their turn budget.
-These figures are regenerated from `attempts` and `verdicts` in this repository, so they cannot
-drift from the published data.
+These figures are computed from the `attempts` and `verdicts` published here and were re-derived
+by hand at release; the card text itself is not machine-generated.
 
 | Model | Interface | Tasks solved | Attempts passed | Turn cap hit | Median cost | Median s |
 |---|---|---:|---:|---:|---:|---:|

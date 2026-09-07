@@ -13,8 +13,8 @@ each choice was made. A plain-language overview is in the
 ## 1. Goal
 
 Answer one question with evidence instead of opinion: **does WebMCP let an
-agent operate a website more reliably and cheaply than screenshots or page
-structure — and where does it not?**
+agent operate a website more reliably and cheaply than screenshots, page
+structure, or model-written browser code — and where does it not?**
 
 The four methods (the benchmark calls them *interface classes*):
 
@@ -115,23 +115,27 @@ when it shouldn't.
 
 ## 4. Keeping the comparison honest
 
-These are real open-source apps, so their code is already in every model's
-training data. WindTunnel does not try to hide the sites; instead the design
-makes memorization irrelevant to the result:
+These are real open-source apps, so their code is public and very likely in
+the models' training data. WindTunnel does not try to hide the sites; instead
+the design limits what memorization can change:
 
 1. **Paired comparison (the main defense).** Every method runs the same task on
-   the same site. If a model has memorized a site, that helps *every*
-   methods equally — it inflates the absolute scores together but leaves the
-   *gap between methods*, which is the actual claim, intact. Memorization would
-   only distort the finding if it helped one interface more than another, and
-   nothing about knowing a site's content does that.
-2. **Held-out task sets.** The secret that rotates each leaderboard period is
-   the **tasks** — their prompts, checks, and data values — not the sites. A
-   development set is public; the scoring set is private (see §7).
+   the same site. If a model has memorized a site, that helps every method —
+   it inflates the absolute scores together and leaves the *gap between
+   methods*, which is the actual claim, largely intact. It would distort the
+   finding if it helped one interface more than another; a model that has
+   memorized a site's markup or selectors could favor page-structure and
+   code-execution agents over screenshot agents. We have not measured that
+   effect, and it is a known limitation.
+2. **Held-out task sets (planned, not yet built — see §4.1).** The secret that
+   would rotate each leaderboard period is the **tasks** — their prompts,
+   checks, and data values — not the sites. Today only the public development
+   set exists and it is what the canonical board measures.
 3. **Seeded data we control.** Catalog contents, prices, dates, and
-   availability are seeded by WindTunnel, so held-out task sets can use fresh
-   values that can't be answered from the upstream defaults.
-4. **Perturbation mode** (§6) tests reliance on unstable page details.
+   availability are seeded by WindTunnel, so task checks use values that can't
+   be answered from the upstream defaults.
+4. **Perturbation mode** (planned; `--perturbed` is currently rejected) would
+   test reliance on unstable page details.
 5. **Canary markers** on published data so training pipelines can exclude it,
    plus periodic contamination checks.
 
@@ -159,9 +163,9 @@ the published transcripts are what carry weight in the meantime.
 ## 5. Tasks
 
 Tasks are small YAML templates — each has a prompt, a success predicate, a
-difficulty tier, and any data parameters. The repo currently ships 17: 7
-benchmark tasks across the three `lite` sites, plus 10 calibration tasks. The
-design target is ~50, roughly six or seven per site. Tiers, by journey length:
+difficulty tier, and any data parameters. The repo ships 49 benchmark tasks
+across the eight sites plus 10 calibration tasks; the `lite` profile runs the 7
+tasks on the three lightweight sites. Tiers, by journey length:
 
 - **T1 — answer** (1–2 steps): "what's the price of X?"
 - **T2 — act, short** (3–5 steps): "add two of X to the cart."
@@ -209,9 +213,11 @@ process against pinned local capsules (a `node:vm` context exposing only the
 browser objects). New methods are added by implementing one small
 interface, so outside contributors can submit their own.
 
-The WebMCP methods call the tools each site's capsule installs (the WebMCP
-reference implementations vendored under `capsules/`) — real, reviewed tool
-sets, not tools invented for the benchmark.
+The WebMCP methods call the tools each site's capsule installs — the reference
+implementations under `goldens/`, written by the benchmark's authors (nekuda)
+as a model of what each site could expose. That authorship is a disclosed
+conflict of interest (see the Hugging Face dataset card); the tools are
+published as patches so anyone can review or replace them.
 
 Run configuration:
 
@@ -223,7 +229,8 @@ Run configuration:
 - `--sites <profile|list>` picks which sites boot; `--n` sets repeats (odd,
   for majority scoring; the preset sets the default). A planned `--n auto`
   mode — run each task once, repeat only first-attempt failures — is not yet
-  implemented. `--budget <usd>` is a hard stop.
+  implemented. `--budget <usd>` stops launching further attempts once
+  accumulated spend exceeds it (the attempt in flight completes).
 - `--perturbed` is planned and currently rejected explicitly.
 
 Practical note: containers boot in minutes, not milliseconds, so the harness
@@ -301,8 +308,8 @@ attempt, shortest tier → longest): **WebMCP $0.0067 → $0.0285 (~4×)**;
 **computer use $0.0399 → $0.3620 (~9×)**. That divergence, not a flat WebMCP
 cost, is what widens the multiple on long journeys.
 
-**OpenAI arms, v1.1 harness.** The OpenAI arms send no `temperature` (every
-GPT-5.x/6 reasoning model rejects it; rows record `temperature: default` and
+**OpenAI arms, v1.1 harness.** The OpenAI arms send no `temperature` (the
+GPT-5.6 and GPT-6 models measured here reject it with a 400; rows record `temperature: default` and
 the provider-reported `effort`). OpenAI reports cache writes inside
 `input_tokens`; the arms split them out and price them at the provider's
 cache-write rate (1.25× input on GPT-5.6+/Astra). `cu-openai` sends a

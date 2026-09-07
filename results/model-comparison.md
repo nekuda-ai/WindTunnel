@@ -50,15 +50,17 @@ Code execution (GPT-6 Astra only): 49/49.
   Until v1.1 the Medusa checkout task capped every WebMCP row at 48/49 by
   construction (see the changelog).
 - GPT-5.6 Luna is the cost winner on WebMCP at $0.002 per median
-  attempt; Astra's WebMCP row costs $0.017 — more per token, but the fewest
-  tokens of any configuration (2,575) and 6.3 s median time.
+  attempt; Astra's WebMCP row costs $0.017 — more per token, with among the
+  lowest token counts on the board (2,575; SOL's 2,573 is the lowest) and a
+  6.3 s median time.
 - Computer use tops out at 91.8% attempt success (GPT-6 Astra); no
   screenshot configuration solves more than 46/49 tasks. Turn-cap hits on the
   screenshot arms: GPT-5.6 Luna 11, GPT-5.6 SOL 12, Gemini 3.6 Flash 22, Claude Opus 5 27, GPT-6 Astra 11.
-- Astra is the first model measured on three interfaces. Its screenshot row is
-  the most expensive on the board ($0.261 per median attempt — 2× SOL's list
-  price, more turns per task, and cache reads on only 1 of 147 attempts) for
-  a mid-pack 45/49.
+- Astra is the first model measured with OpenAI's code-execution interface
+  alongside screenshots and WebMCP. Its screenshot row is the most expensive on
+  the board ($0.261 per median attempt — roughly 2× SOL's input price and 1.7×
+  its output price, more turns per task, and cache reads on only 1 of 147
+  attempts) for a mid-pack 45/49.
 - OpenAI's recommended code-execution mode is the strongest screen-driving
   result measured here: 147/147 attempts and 49/49 tasks at $0.119 and 16.4s.
   Same model, same tasks, native WebMCP is 6.9× cheaper, 4.3× lighter and
@@ -93,7 +95,8 @@ row replaces the attempts that reached the previous cap with their targeted
 
 ## Majority-task success
 
-|---|---:|---:|---:|---:|---:|---:|
+| Interface | GPT-5.5 reference | GPT-5.6 Luna | GPT-5.6 SOL | Gemini 3.6 Flash | Claude Opus 5 |
+|---|---:|---:|---:|---:|---:|
 | Computer use | 44/49 (89.8%) | 41/49 (83.7%) | 42/49 (85.7%) | 38/49 (77.6%) | 43/49 (87.8%) |
 | WebMCP | 47/49 (95.9%) | 46/49 (93.9%) | 46/49 (93.9%) | 47/49 (95.9%) | 48/49 (98.0%) |
 
