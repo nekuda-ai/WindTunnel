@@ -6,7 +6,7 @@
 Reproduce:
 
 ```bash
-npm run bench -- --preset full --sites learnhouse,hi-events --arms cu-openai
+npm run bench -- --preset full --sites learnhouse,hi-events --arms cu-openai --model cu-openai=gpt-6-astra
 ```
 
 Task set: `development tasks` · Harness commit: `42b185357813fa98b0c2ab92accb92c91a059d74-dirty` · N: `3`

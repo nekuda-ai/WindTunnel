@@ -49,3 +49,21 @@ test("explorer: a recorded agent_s of 0 is a real value, not a missing one", () 
   const legacy = [{ ...row("gpt-6-astra", true, 1), agent_s: undefined, wall_clock_s: 42 }];
   assert.match(renderExplorerHTML({ rows: legacy, tasksBySite }), /<span class="bar-val">42s<\/span>/);
 });
+
+test("explorer: interface summary includes every arm present and pools attempt rates", () => {
+  const mk = (arm, model, pass) => ({ ...row(model, pass, 1), arm });
+  const rs = [
+    mk("wm-gpt", "gpt-5.6-luna", false), mk("wm-gpt", "gpt-5.6-luna", false), mk("wm-gpt", "gpt-5.6-luna", false),
+    mk("wm-claude", "claude-opus-5", true), mk("wm-claude", "claude-opus-5", true), mk("wm-claude", "claude-opus-5", true),
+    mk("wm-gemini", "gemini-3.6-flash", true), mk("wm-gemini", "gemini-3.6-flash", true), mk("wm-gemini", "gemini-3.6-flash", true),
+    mk("cu-gemini", "gemini-3.6-flash", true), mk("wm-stagehand-v4", "claude-sonnet-5", true),
+  ];
+  const html = renderExplorerHTML({ rows: rs, tasksBySite, canonical: true });
+  const table = html.slice(html.indexOf('<table class="imp">'), html.indexOf("</table>", html.indexOf('<table class="imp">')));
+  for (const arm of ["wm-gemini", "cu-gemini", "wm-stagehand-v4"]) assert.ok(table.includes(arm), `${arm} missing from the interface summary`);
+  // pooled 7/10 = 70% across the four WebMCP configs, whereas a median of
+  // per-config rates (0, 100, 100, 100) would say 100%
+  assert.match(html, /WebMCP passed <b>70%<\/b> of attempts/);
+  assert.match(html, /Canonical leaderboard — consolidated per cell/);
+  assert.doesNotMatch(renderExplorerHTML({ rows: rs, tasksBySite }), /Canonical leaderboard/);
+});

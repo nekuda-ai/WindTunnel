@@ -111,7 +111,7 @@ for (const [cell, dir] of ownerOf) {
   sourcesPerConfig.set(key, (sourcesPerConfig.get(key) ?? new Set()).add(dir));
 }
 const splitCount = [...sourcesPerConfig.values()].filter((s) => s.size > 1).length;
-const html = renderExplorerHTML({ rows, tasksBySite, runCount: dirs.length,
+const html = renderExplorerHTML({ rows, tasksBySite, runCount: dirs.length, canonical: true,
   meta: { date: new Date().toISOString().slice(0, 10), label: outName, preset: "full", sites: "full", n: ATTEMPTS,
     notes: [
       `Consolidated from ${dirs.length} source runs spanning ${span}; ${splitCount} of ${byConfig.size} configurations draw cells from more than one run. Every cell carries exactly ${ATTEMPTS} attempts from a single source — cells are never assembled across runs. Per-cell sources: PROVENANCE.md.`,

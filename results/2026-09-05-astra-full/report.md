@@ -6,7 +6,7 @@
 Reproduce:
 
 ```bash
-npm run bench -- --preset full --sites full --arms cu-openai,wm-gpt,code-openai
+npm run bench -- --preset full --sites full --arms cu-openai,wm-gpt,code-openai --model cu-openai=gpt-6-astra --model wm-gpt=gpt-6-astra --model code-openai=gpt-6-astra
 ```
 
 Task set: `development tasks` · Harness commit: `42b185357813fa98b0c2ab92accb92c91a059d74-dirty` · N: `3`
@@ -51,8 +51,8 @@ Not implemented.
 
 ## Notes
 
-- Skipped runs (missing keys, timeouts): none recorded
-- Anomalies or surprises: none recorded
+- Skipped runs (missing keys, timeouts): two batches skipped — see Incidents in the Notes below
+- Anomalies or surprises: hi-events capsule died mid-batch; learnhouse image build timed out — see Notes
 - Sanity checks (the two control sites behaved as expected?): controls included — see the per-site table
 
 
@@ -61,5 +61,5 @@ Not implemented.
 - Host: macOS (Apple Silicon), Docker Desktop, serial flight 2026-09-05 18:17 → 2026-09-06 02:00 local. Second attempt: attempt 1 (72 cu-openai rows) was killed after a learnhouse image build stalled behind a locked-keychain Docker pull and the harness hung; its rows are kept out of the board (transcripts lost) — see `results/astra-full-attempt1.live.jsonl`.
 - Harness fixes shipped with this run (disclosed in CHANGELOG.md and docs/SPEC.md §6): gpt-6-astra price row; OpenAI arms send no `temperature` (one request per turn); cache writes split out of `input_tokens` and priced at $12.50/M; rows record `effort`/`truncated`; `wm-gpt` keeps usage on timeout; **`cu-openai` keypress is a chord** (Ctrl+A now works; Luna/SOL rows predate this); smoke-gate request-error check scoped to harness failures; capsule lifecycle steps have hard ceilings.
 - Incidents: `cu-openai × learnhouse` skipped (stale runtime dir from attempt 1) → re-run in `2026-09-05-astra-rem-cu-openai`. `cu-openai × hi-events`: the capsule's app container exited mid-batch; 8 attempts failed at the 5-min reset ceiling for $0 and teardown hung, so the batch's rows were dropped from this run.json → whole site re-run in `2026-09-05-astra-rem-cu-openai`. `code-openai × learnhouse` skipped (image build timed out while the keychain was locked again) → `2026-09-06-astra-rem-code-openai`. Docker `credsStore` was disabled at 01:03 to unblock pulls.
-- Budget: `--budget 130` never tripped ($84.68). Turn-cap hits: 11, all `cu-openai`. Attempt timeouts: 0. Infra rows: 0.
-- Caching: OpenAI reported zero cache reads on `cu-openai` rows (screenshots) while `wm-gpt`/`code-openai` rows did get reads; recorded as reported.
+- Budget: `--budget 130` never tripped ($84.68). Turn-cap hits in this directory: 10, all `cu-openai` (11 across the canonical Astra CU cells, the 11th in the hi-events re-run). Attempt timeouts: 0. Infra rows: 0.
+- Caching: OpenAI reported cache reads on only 1 of 147 `cu-openai` (screenshot) attempts across the canonical Astra CU cells, while `wm-gpt`/`code-openai` rows regularly did; recorded as reported.

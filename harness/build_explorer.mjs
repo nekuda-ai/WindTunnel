@@ -81,7 +81,7 @@ export function loadTasksBySite() {
   return bySite;
 }
 
-export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount = 1, meta = null }) {
+export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount = 1, meta = null, canonical = false }) {
   // Drop infrastructure failures — 429s, boot/registration timeouts, browser
   // crashes (failure_category prefixed "harness:") — from every aggregate, so a
   // method that errored out (e.g. rate-limited cu-openai) can't skew the medians,
@@ -155,14 +155,16 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
 
   // Improvement table: interfaces grouped, WebMCP as the reference, others shown
   // as multiples of the WebMCP median for cost / tokens / time.
-  const aggsOf = (arm) => methodAgg.filter((a) => a.arm === arm);
+  // Interface groups are derived from the arms present, never from a fixed list:
+  // a hard-coded list silently dropped wm-gemini, cu-gemini and both Stagehand v4
+  // arms from this table while the charts above showed all 19 configurations.
   const GROUPS = [
-    { label: "WebMCP", arms: ["wm-gpt", "wm-claude", "wm-stagehand"], cls: "webmcp" },
-    { label: "Page structure · a11y", arms: ["a11y-stagehand"], cls: "struct" },
-    { label: "DOM + vision (multimodal)", arms: ["dom-browseruse"], cls: "struct" },
-    { label: "Screenshots", arms: ["cu-claude", "cu-openai"], cls: "cu" },
-    { label: "Code execution (Playwright)", arms: ["code-openai"], cls: "code" },
-  ].map((g) => ({ ...g, aggs: g.arms.flatMap(aggsOf) })).filter((g) => g.aggs.length);
+    { label: "WebMCP", cls: "webmcp", match: (a) => a.startsWith("wm") },
+    { label: "Page structure · a11y", cls: "struct", match: (a) => a === "a11y-stagehand" },
+    { label: "DOM + vision (multimodal)", cls: "struct", match: (a) => a === "dom-browseruse" },
+    { label: "Screenshots", cls: "cu", match: (a) => a.startsWith("cu") },
+    { label: "Code execution (Playwright)", cls: "code", match: (a) => a.startsWith("code") },
+  ].map((g) => ({ ...g, aggs: methodAgg.filter((a) => g.match(a.arm)) })).filter((g) => g.aggs.length);
   const wmAggs = GROUPS.find((g) => g.cls === "webmcp")?.aggs ?? [];
   const wmCost = median(wmAggs.map((a) => a.cost).filter((x) => x != null));
   const wmTok = median(wmAggs.map((a) => a.tk).filter((x) => x != null));
@@ -188,12 +190,14 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
     const lo = Math.round(Math.min(...xs)), hi = Math.round(Math.max(...xs));
     return lo === hi ? `${lo}×` : `${lo}×–${hi}×`;
   };
-  const succOf = (aggs) => median(aggs.map((a) => (a.n ? a.pass / a.n * 100 : null)).filter((x) => x != null));
+  // Pooled attempt rate (passes ÷ attempts across the group), not a median of
+  // per-configuration rates.
+  const succOf = (aggs) => { const n = aggs.reduce((s, a) => s + a.n, 0); return n ? aggs.reduce((s, a) => s + a.pass, 0) / n * 100 : null; };
   const wmSucc = succOf(wmAggs);
   const otherSucc = GROUPS.filter((g) => g.cls !== "webmcp").map((g) => succOf(g.aggs)).filter((x) => Number.isFinite(x));
   const succRange = otherSucc.length ? `${Math.round(Math.min(...otherSucc))}%–${Math.round(Math.max(...otherSucc))}%` : "—";
   const takeaway = wmAggs.length && others.length
-    ? `WebMCP solved <b>${Math.round(wmSucc)}%</b> of attempts (vs ${succRange} for the other interfaces) while being <b>${range(others)} cheaper</b>, <b>${range(tokOthers)} lighter</b> (median tokens), and <b>${range(msOthers)} faster</b>.`
+    ? `WebMCP passed <b>${Math.round(wmSucc)}%</b> of attempts (vs ${succRange} for the other interfaces) while being <b>${range(others)} cheaper</b>, <b>${range(tokOthers)} lighter</b> (median tokens), and <b>${range(msOthers)} faster</b>.`
     : "";
   // ---- run identity + plain-language "what ran" ----
   const armIds = [...new Set(rows.map((r) => r.arm))];
@@ -245,7 +249,7 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
 
   const summary = `${charts}
     <table class="imp"><thead><tr><th>Interface</th><th>Method</th><th>Median $/task</th><th>Median tokens</th><th>vs WebMCP</th></tr></thead><tbody>${impRows}</tbody></table>
-    <p class="note">The <b>DOM + vision</b> row (Browser Use) is <b>multimodal</b> — by default it reads the page's DOM <em>and</em> a screenshot each step, so it's the strongest realistic non-WebMCP baseline here, not a DOM-only agent. The computer-use rows are screenshots-only; the a11y row is accessibility-tree-only. WebMCP is compared against each on equal footing.</p>
+    <p class="note">The <b>DOM + vision</b> row (Browser Use) is <b>multimodal</b> — by default it reads the page's DOM <em>and</em> a screenshot each step, so it's the strongest page-structure baseline here, not a DOM-only agent. The computer-use rows are screenshots-only; the a11y row is accessibility-tree-only. WebMCP is compared against each on equal footing.</p>
     ${tierTable}`;
 
   // ---- flat sortable/filterable data table (spreadsheet view) ----
@@ -390,7 +394,7 @@ ${siteSections}
 ${dataTable}
 </section>
 ${(meta?.notes ?? []).length ? `<div class="footnotes">${meta.notes.map((note) => `<p class="note">* ${note}</p>`).join("\n")}</div>` : ""}
-<footer>Generated by harness/build_explorer.mjs. Cost/tokens/success exclude infrastructure-errored runs. Not a canonical leaderboard — includes calibration flights.</footer>
+<footer>Generated by harness/build_explorer.mjs. Cost/tokens/success exclude infrastructure-errored runs. ${canonical ? "Canonical leaderboard — consolidated per cell from the source runs listed in PROVENANCE.md." : "Not a canonical leaderboard — includes calibration flights."}</footer>
 </div></body></html>`;
 }
 

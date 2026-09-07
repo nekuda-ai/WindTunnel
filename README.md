@@ -47,7 +47,7 @@ npm run bench -- --arms wm-claude,cu-claude --budget 2
 
 Runs the 7 tasks on the three lightweight sites once each, same model on two
 interfaces — WebMCP against screenshots. 14 attempts, well under $1; `--budget`
-hard-stops the run if it isn't.
+stops launching further attempts once accumulated spend exceeds it.
 
 ## Background: Four ways to operate a website
 
@@ -229,7 +229,7 @@ configuration uses the same 49 tasks, sites, scoring, and three attempts.
 interface:
 
 - **Screenshots (computer use)** — a full page *image* every turn: thousands of
-  tokens each, refreshed nearly every step. Heaviest.
+  tokens each, refreshed nearly every step.
 - **Page structure (DOM / accessibility tree)** — the page's *text* every turn.
   Lighter than images, but still the whole page, re-read each step.
 - **WebMCP** — a short list of tool schemas plus small JSON results. No page
@@ -267,7 +267,7 @@ The projected ranges do not overlap.
 |---|---|---:|
 | quick check | `--preset smoke --sites lite` — 3 light sites, 1 attempt each | under $1 |
 | small | `--preset lite --sites lite` — the lite task set × 3 attempts | $5–10 |
-| full paired model (measured additions) | all 8 sites, 49 tasks × 3 attempts × WebMCP + computer use | ~$6–35 |
+| full paired model (measured additions) | all 8 sites, 49 tasks × 3 attempts × WebMCP + computer use | ~$6–70 |
 | full canonical leaderboard (measured) | all 8 sites, 49 tasks × 3 attempts × 19 configurations | $281.35 |
 
 In the former 2026-07-27 reference flight, the three WebMCP methods were ~9%
@@ -277,7 +277,7 @@ of the bill; historical breakdown:
 **Spending less.** The levers, cheapest first:
 
 - **Fewer sites** — `--sites lite` (3 lightweight sites, no databases).
-- **Fewer / cheaper methods** — WebMCP medians are $0.002–$0.014/task;
+- **Fewer / cheaper methods** — WebMCP medians are $0.002–$0.017/task;
   computer use and DOM + vision carry most of the cost.
 - **Fewer attempts** — `--preset smoke` or `--n 1` instead of the default 3
   (you lose majority voting, so one run decides each task).

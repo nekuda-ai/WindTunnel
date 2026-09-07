@@ -1,8 +1,9 @@
 # WindTunnel — design spec
 
 WindTunnel is the WebMCP benchmark. It measures WebMCP against the other ways a
-browser agent operates a website — screenshots (computer use) and page
-structure (DOM / accessibility tree) — by racing all three against the **same
+browser agent operates a website — screenshots (computer use), page
+structure (DOM / accessibility tree), and model-written browser code — by
+racing all four against the **same
 tasks** on the **same real websites**, scoring each on whether the task
 actually succeeded and what it cost in time, tokens, and dollars. This document
 is the design: what it measures, how, and why
@@ -15,11 +16,13 @@ Answer one question with evidence instead of opinion: **does WebMCP let an
 agent operate a website more reliably and cheaply than screenshots or page
 structure — and where does it not?**
 
-The three methods (the benchmark calls them *interface classes*):
+The four methods (the benchmark calls them *interface classes*):
 
 - **Screenshots** — the agent sees rendered images and acts by coordinates
   (computer use).
 - **Page structure** — the agent reads the page's HTML / accessibility tree.
+- **Code execution** — the model writes browser-automation code (Playwright)
+  that reads and drives the page; OpenAI's recommended mode for GPT-6 Astra.
 - **WebMCP tool calls** — the site exposes direct actions
   (`add_to_cart(id)`), and the agent calls them.
 
@@ -31,9 +34,10 @@ settle the question in public.
 ## 2. Why a new benchmark
 
 Existing web-agent benchmarks (WebArena, WebVoyager, Mind2Web, and others)
-measure how well *one* agent style completes tasks. None of them race the
-**access methods against each other** on identical tasks, none include WebMCP,
-and most stop short of real checkout/booking flows. WindTunnel is built around
+measure how well an agent completes tasks, and some compare input modalities
+(WebVoyager reports text-only vs. multimodal). None include a site-exposed
+tool interface like WebMCP in a controlled comparison of access methods on
+identical tasks, and most stop short of real checkout/booking flows. WindTunnel is built around
 that head-to-head comparison.
 
 What makes the results defensible:
@@ -45,7 +49,7 @@ What makes the results defensible:
 - **Transaction-inclusive** — it scores real checkout and booking flows,
   configured so no real charge occurs (the site's sandbox/test mode, or an
   offline-payment fixture).
-- **Interface-controlled** — the same task runs through all three methods, so
+- **Interface-controlled** — the same task runs through every method, so
   differences come from the interface, not the task or the site.
 - **Real sites** — production open-source apps, not simplified pages tuned to
   flatter one method.
@@ -116,7 +120,7 @@ training data. WindTunnel does not try to hide the sites; instead the design
 makes memorization irrelevant to the result:
 
 1. **Paired comparison (the main defense).** Every method runs the same task on
-   the same site. If a model has memorized a site, that helps *all three*
+   the same site. If a model has memorized a site, that helps *every*
    methods equally — it inflates the absolute scores together but leaves the
    *gap between methods*, which is the actual claim, intact. Memorization would
    only distort the finding if it helped one interface more than another, and
@@ -237,9 +241,10 @@ The `cu-*` (screenshots-only) and `a11y-stagehand` (accessibility-tree-only)
 arms are deliberate single-channel controls, so a difference can be
 attributed to *that* channel. Browser Use, by contrast, runs **multimodal by
 default** — it sends the model the DOM *and* a screenshot each step — so
-`dom-browseruse` is really a DOM+vision agent, the strongest realistic
-non-WebMCP baseline, not a DOM-only one. That is the fair comparison for
-WebMCP: on the canonical board, Sonnet 5 on DOM + vision passes 145/147
+`dom-browseruse` is really a DOM+vision agent, not a DOM-only one — the
+strongest page-structure baseline (GPT-6 Astra's code execution is the
+strongest screen-driving result overall). That is the fair page-structure
+comparison for WebMCP: on the canonical board, Sonnet 5 on DOM + vision passes 145/147
 attempts and solves 48/49 tasks; native WebMCP for the same model passes
 147/147 and solves 49/49 while costing 23× less per median attempt, using
 12.5× fewer tokens, and running 4.3× faster.
@@ -253,8 +258,9 @@ planned addition as an even stronger combined baseline.
   attempts pass. Counts quoted as `x/y` are **task×method cells**, not tasks.
 - **Time** — the headline is **median agent time**: the per-attempt clock
   starts after the container reset and page boot and stops before scoring, so
-  the identical harness overhead every method pays (11–34s per attempt,
-  depending on the site) is excluded from all of them. Rows also carry
+  the harness overhead every method pays on a given site (median reset +
+  boot of roughly 4–37 s per attempt depending on the site) is excluded from
+  all of them. Rows also carry
   `reset_s`, `setup_s`, and total `wall_clock_s`.
 - **Cost** — provider list prices, with **cached input priced at each
   provider's cached rate**. Prompt caching is enabled for every method whose
