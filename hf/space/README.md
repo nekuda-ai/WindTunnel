@@ -7,7 +7,7 @@ sdk: static
 app_file: index.html
 pinned: false
 license: apache-2.0
-short_description: Explore the canonical WindTunnel WebMCP browser-agent benchmark.
+short_description: Explore the canonical WindTunnel WebMCP benchmark.
 ---
 
 # WindTunnel Results Explorer
