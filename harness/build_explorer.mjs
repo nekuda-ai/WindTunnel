@@ -197,7 +197,7 @@ export function renderExplorerHTML({ rows: allRows, tasksBySite = {}, runCount =
   const otherSucc = GROUPS.filter((g) => g.cls !== "webmcp").map((g) => succOf(g.aggs)).filter((x) => Number.isFinite(x));
   const succRange = otherSucc.length ? `${Math.round(Math.min(...otherSucc))}%–${Math.round(Math.max(...otherSucc))}%` : "—";
   const takeaway = wmAggs.length && others.length
-    ? `WebMCP passed <b>${Math.round(wmSucc)}%</b> of attempts (vs ${succRange} for the other interfaces) while being <b>${range(others)} cheaper</b>, <b>${range(tokOthers)} lighter</b> (median tokens), and <b>${range(msOthers)} faster</b>.`
+    ? `WebMCP passed <b>${wmSucc.toFixed(1)}%</b> of attempts (vs ${succRange} for the other interfaces) while being <b>${range(others)} cheaper</b>, <b>${range(tokOthers)} lighter</b> (median tokens), and <b>${range(msOthers)} faster</b>.`
     : "";
   // ---- run identity + plain-language "what ran" ----
   const armIds = [...new Set(rows.map((r) => r.arm))];

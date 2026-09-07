@@ -63,7 +63,7 @@ test("explorer: interface summary includes every arm present and pools attempt r
   for (const arm of ["wm-gemini", "cu-gemini", "wm-stagehand-v4"]) assert.ok(table.includes(arm), `${arm} missing from the interface summary`);
   // pooled 7/10 = 70% across the four WebMCP configs, whereas a median of
   // per-config rates (0, 100, 100, 100) would say 100%
-  assert.match(html, /WebMCP passed <b>70%<\/b> of attempts/);
+  assert.match(html, /WebMCP passed <b>70\.0%<\/b> of attempts/);
   assert.match(html, /Canonical leaderboard — consolidated per cell/);
   assert.doesNotMatch(renderExplorerHTML({ rows: rs, tasksBySite }), /Canonical leaderboard/);
 });
