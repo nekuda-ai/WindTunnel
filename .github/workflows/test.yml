@@ -30,6 +30,10 @@ jobs:
       - name: Verify portable Jev runners (no provider calls)
         if: matrix.node == '22'
         run: |
+          # Jev's September release pins dependencies and task hashes to v1.2.
+          git worktree add --detach "$RUNNER_TEMP/windtunnel-jev" 5ca8644
+          cd "$RUNNER_TEMP/windtunnel-jev"
+          npm ci
           npm ci --prefix experiments/jev
           node experiments/jev/run.mjs --interface webmcp
           node experiments/jev/run.mjs --interface dom

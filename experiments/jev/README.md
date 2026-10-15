@@ -5,6 +5,13 @@ The WebMCP and ultrafast DOM implementations used for the September 18 leaderboa
 ## Setup
 
 Use Node 22+, Python 3.12+ and the benchmark's Docker prerequisites.
+The September runner pins its shared dependencies and task hashes. Use its
+original release checkout, separate from the current model-refresh harness:
+
+```sh
+git worktree add --detach ../windtunnel-jev-v12 5ca8644
+cd ../windtunnel-jev-v12
+```
 
 ```sh
 npm ci
@@ -40,7 +47,7 @@ The files in `source-manifest.json` are copied from the frozen measured cohorts 
 
 `run.mjs` is a portable launcher, and `webmcp/arm.mjs` extracts the original WebMCP method. Historical date gates and the recovery supervisor are not part of this launcher. It does not add date hints or automatically retry an entire attempt. It stops for infrastructure/model/accounting flags; each rerun needs a fresh directory. Model responses are checked against `jev-1.13.0` and `mercury-2.5`. Availability and future responses can change. A stopped run exits with a nonzero status and retains its partial results.
 
-The shared dependencies are deliberately hash-pinned. Changes to those files stop this reproduction check in CI until reviewed against the measured runner; do not simply refresh the hashes.
+The shared dependencies are deliberately hash-pinned. CI checks this reproduction against the pinned v1.2 checkout; the current checkout separately verifies the published runner sources and traces. Do not refresh the recorded hashes.
 
 The original EasyAppointments oracle additionally recorded the customer's phone field. The public oracle's other observations and all task predicates are the same; none of these 49 predicates uses that extra field. This only affects saved evaluator detail, not the agent input or task score.
 
