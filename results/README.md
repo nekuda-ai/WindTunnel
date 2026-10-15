@@ -3,7 +3,7 @@
 Finished benchmark runs live here. Each run is one folder, and each folder has
 a short Markdown report as its front page.
 
-**The current reference is [`canonical/`](canonical/)** — board v1.2, 21
+**The current reference is [`canonical/`](canonical/)** — board v1.3, 18
 configurations × 49 tasks × 3 attempts, consolidated per cell from the source
 runs listed in its [`PROVENANCE.md`](canonical/PROVENANCE.md). Open its
 `explorer.html` for the interactive view; `results.csv` / `run.json` carry
@@ -11,10 +11,9 @@ every attempt's metrics and redacted final answer. The [Jev release](2026-09-18-
 is [`2026-07-27-reference/`](2026-07-27-reference/).
 
 **The cross-model view is [`model-comparison.md`](model-comparison.md).** It
-includes Jev + Mercury 2.5 with WebMCP and ultrafast DOM controls, alongside the paired computer-use and WebMCP arms for GPT-5.5, GPT-5.6 Luna,
-GPT-5.6 SOL, Gemini 3.6 Flash, Claude Opus 5, and GPT-6 Astra (plus Astra's
-code-execution arm) under the canonical 600-second per-attempt cap. Board
-versions and what changed between them: [`../CHANGELOG.md`](../CHANGELOG.md).
+shows the current board and a clearly marked historical snapshot. Earlier
+releases remain available through [Git history](https://github.com/nekuda-ai/WindTunnel/commits/main/results/canonical)
+and the [changelog](../CHANGELOG.md).
 
 | Run | Scope |
 |---|---|

@@ -9,7 +9,7 @@ import { isInfraRow } from "../harness/lib.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const RES = path.join(ROOT, "results");
-const loadRows = (runDir) => JSON.parse(fs.readFileSync(path.join(RES, runDir, "run.json"), "utf8")).rows.filter((r) => !isInfraRow(r));
+const loadRows = (runDir) => JSON.parse(fs.readFileSync(path.resolve(RES, runDir, "run.json"), "utf8")).rows.filter((r) => !isInfraRow(r));
 
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const isWm = (a) => a.webmcp ?? a.m.startsWith("wm");
@@ -29,16 +29,19 @@ const aggregate = (rs, m, webmcp = m.startsWith("wm")) => ({
 // site and the paper use. It previously stitched named run dirs together and
 // re-applied the SOL 300s timeout replacements by hand, which silently went
 // stale the moment canonical was rebuilt (and still listed retired models).
-const CANON = "canonical";
+const CANON = process.argv[2] ?? "canonical";
 const canonRows = loadRows(CANON);
 const MODEL_LABEL = {
+  "claude-sonnet-5-5": "Sonnet 5.5", "claude-opus-5-5": "Opus 5.5", "claude-haiku-5-5": "Haiku 5.5",
+  "gpt-6.1-sol": "GPT-6.1 Sol", "gpt-6-luna": "GPT-6 Luna", "gemini-3.8-flash": "Gemini 3.8 Flash", "muse-wonder-1.0": "Muse Wonder",
+  "deepseek-v4.1-flash": "DeepSeek V4.1", "glm-5.3": "GLM 5.3",
   "typesafe-ai/jev+mercury-2.5": "Jev + Mercury 2.5",
   "claude-sonnet-5": "Sonnet 5", "claude-opus-5": "Opus 5",
   "gpt-5.6-luna": "Luna", "gpt-5.6-sol": "SOL", "gpt-6-astra": "Astra", "gemini-3.6-flash": "Gemini 3.6",
 };
 const ARM_LABEL = {
   "wm-jev-mercury-v3": "WebMCP", "a11y-jev-mercury-ultrafast": "DOM (ultrafast)",
-  "wm-claude": "WebMCP", "wm-gpt": "WebMCP", "wm-gemini": "WebMCP",
+  "wm-meta": "WebMCP", "wm-chat": "WebMCP", "wm-claude": "WebMCP", "wm-gpt": "WebMCP", "wm-gemini": "WebMCP",
   "wm-stagehand-v4": "WebMCP/Stagehand v4", "wm-stagehand-v4-gemini": "WebMCP/Stagehand v4",
   "cu-claude": "CU", "cu-openai": "CU", "cu-gemini": "CU", "code-openai": "code exec",
   "a11y-stagehand": "accessibility tree", "dom-browseruse": "DOM + vision",
@@ -48,9 +51,9 @@ const KIND = (arm) => arm.startsWith("wm") ? "webmcp"
 
 // Model-matched pairs: each model's NATIVE WebMCP run against its own
 // computer-use run, so the comparison never crosses models.
-const NATIVE_WM = { "typesafe-ai/jev+mercury-2.5": "wm-jev-mercury-v3", "claude-sonnet-5": "wm-claude", "claude-opus-5": "wm-claude",
+const NATIVE_WM = { "claude-sonnet-5-5": "wm-claude", "claude-opus-5-5": "wm-claude", "claude-haiku-5-5": "wm-claude", "gpt-6.1-sol": "wm-gpt", "gpt-6-luna": "wm-gpt", "gemini-3.8-flash": "wm-gemini", "deepseek-v4.1-flash": "wm-chat", "glm-5.3": "wm-chat", "typesafe-ai/jev+mercury-2.5": "wm-jev-mercury-v3", "claude-sonnet-5": "wm-claude", "claude-opus-5": "wm-claude",
   "gpt-5.6-luna": "wm-gpt", "gpt-5.6-sol": "wm-gpt", "gpt-6-astra": "wm-gpt", "gemini-3.6-flash": "wm-gemini" };
-const NATIVE_CU = { "typesafe-ai/jev+mercury-2.5": "a11y-jev-mercury-ultrafast", "claude-sonnet-5": "cu-claude", "claude-opus-5": "cu-claude",
+const NATIVE_CU = { "claude-sonnet-5-5": "cu-claude", "claude-opus-5-5": "cu-claude", "claude-haiku-5-5": "cu-claude", "gpt-6.1-sol": "cu-openai", "gpt-6-luna": "cu-openai", "gemini-3.8-flash": "cu-gemini", "deepseek-v4.1-flash": "a11y-stagehand", "glm-5.3": "a11y-stagehand", "typesafe-ai/jev+mercury-2.5": "a11y-jev-mercury-ultrafast", "claude-sonnet-5": "cu-claude", "claude-opus-5": "cu-claude",
   "gpt-5.6-luna": "cu-openai", "gpt-5.6-sol": "cu-openai", "gpt-6-astra": "cu-openai", "gemini-3.6-flash": "cu-gemini" };
 // A model mapped above but not yet measured on BOTH arms is skipped, otherwise
 // aggregate([]) puts NaN in the SVG.
@@ -59,7 +62,7 @@ const expansionAgg = Object.keys(NATIVE_WM).filter((model) => has(NATIVE_WM[mode
   const label = MODEL_LABEL[model] ?? model;
   const pick = (arm) => canonRows.filter((r) => r.arm === arm && r.model === model);
   return [
-    aggregate(pick(NATIVE_CU[model]), `${label} \u00b7 ${model.startsWith("typesafe-") ? "page" : "CU"}`, false),
+    aggregate(pick(NATIVE_CU[model]), `${label} \u00b7 ${model.startsWith("typesafe-") || ["deepseek-v4.1-flash", "glm-5.3"].includes(model) ? "page" : "CU"}`, false),
     aggregate(pick(NATIVE_WM[model]), `${label} \u00b7 WebMCP`, true),
   ];
 });
@@ -108,7 +111,7 @@ const THEMES = {
 
 const PANELS = [
   ["Success rate — attempts passed", "success", (v) => v.toFixed(0) + "%", true],
-  ["Median cost / task", "cost", (v) => "$" + v.toFixed(v < .01 ? 4 : 3), false],
+  ["Median cost / task", "cost", (v) => "$" + v.toFixed(6), false],
   ["Median tokens processed / task", "tokens", (v) => Math.round(v).toLocaleString("en-US"), false],
   ["Median agent time / task", "agent", (v) => v.toFixed(1) + "s", false],
 ];
@@ -181,7 +184,7 @@ function leaderboard(themeName) {
 <rect x="${BAR_X}" y="${y + 5}" width="${width.toFixed(1)}" height="18" rx="2" fill="${fill(a)}"/>
 <text x="${SCORE_X}" y="${y + 19}" text-anchor="end" font-weight="700" fill="${t.label}">${a.score.toFixed(1)}</text>
 <text x="${PASS_X}" y="${y + 19}" text-anchor="end" fill="${t.label}">${a.success.toFixed(1)}%</text>
-<text x="${COST_X}" y="${y + 19}" text-anchor="end" fill="${t.label}">$${a.cost.toFixed(a.cost < .01 ? 4 : 3)}</text>
+<text x="${COST_X}" y="${y + 19}" text-anchor="end" fill="${t.label}">$${a.cost.toFixed(6)}</text>
 <text x="${TIME_X}" y="${y + 19}" text-anchor="end" fill="${t.label}">${a.agent.toFixed(1)}s</text>`;
   }).join("\n");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="system-ui,-apple-system,sans-serif" font-size="13">
@@ -205,7 +208,7 @@ ${rows}
 </svg>`;
 }
 
-const out = path.join(ROOT, "assets", "charts");
+const out = process.argv[3] ? path.resolve(process.argv[3]) : path.join(ROOT, "assets", "charts");
 fs.mkdirSync(out, { recursive: true });
 for (const theme of Object.keys(THEMES)) {
   const suffix = theme === "dark" ? "-dark" : "";

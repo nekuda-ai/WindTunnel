@@ -1,6 +1,7 @@
 import vm from "node:vm";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
+import { routerAccounting, responseRefused } from "../harness/openrouter.mjs";
 import { BASE_SYSTEM, samplingFor } from "./prompts.mjs";
 import { respond } from "./cu-openai.mjs";
 
@@ -66,7 +67,7 @@ const finalTextOf = (output) => output
   .map(({ text }) => text)
   .join("\n");
 
-export async function run({ task, capsule, page, model = MODEL }) {
+export async function run({ task, capsule, page, model = MODEL, transport = "direct", receipts = [], progress = {} }) {
   const started = performance.now();
   await page.setViewportSize(VIEWPORT);
   await page.goto(startUrl(task, capsule), { waitUntil: "domcontentloaded", timeout: 30_000 });
@@ -79,9 +80,10 @@ export async function run({ task, capsule, page, model = MODEL }) {
   let finalText = "";
   let failure = "";
   let model_snapshot = "";
+  let cost = 0;
   let turns = 0;
   let retries = 0, retry_wait_ms = 0, temperature = "default";
-  let effort = "", truncated = false;
+  let effort = "api-default", truncated = false, refusal = false;
   // Same context policy as the screenshot arms: only the SCREENSHOT_WINDOW most
   // recent tool outputs keep their images; older ones are replaced by a text stub.
   const history = [{ role: "user", content: task.prompt }];
@@ -102,28 +104,32 @@ export async function run({ task, capsule, page, model = MODEL }) {
     }
     turns++;
     const sampling = samplingFor(model);
-    const outcome = await respond({
+    let outcome;
+    try { outcome = await respond({
       model,
       instructions: withToday(SYSTEM),
       tools: [TOOL],
       input: windowed(),
       parallel_tool_calls: false,
       ...sampling.request,
-    });
+    }, transport, receipts); } catch (error) { failure = error.message; break; }
     const response = outcome.response;
     model_snapshot = response.model ?? model_snapshot;
     temperature = sampling.temperature;
     effort = response.reasoning?.effort ?? effort;
     if (response.status === "incomplete") truncated = true;
+    refusal ||= responseRefused(response);
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
     history.push(...response.output);
     const details = response.usage?.input_tokens_details ?? {};
     const cached = details.cached_tokens ?? 0, written = details.cache_write_tokens ?? 0;
+    cost += costFor(model, { input_tokens: (response.usage?.input_tokens ?? 0) - cached - written, output_tokens: response.usage?.output_tokens ?? 0, cached_input_tokens: cached, cache_creation_tokens: written });
     usage.input_tokens += (response.usage?.input_tokens ?? 0) - cached - written;
     usage.cached_input_tokens += cached;
     usage.cache_creation_tokens += written;
     usage.output_tokens += response.usage?.output_tokens ?? 0;
+    Object.assign(progress, { usage, cost, model_snapshot, transcript });
     transcript.push({ turn: turns, role: "assistant", content: response.output, usage: response.usage });
     finalText = finalTextOf(response.output) || finalText;
 
@@ -141,5 +147,5 @@ export async function run({ task, capsule, page, model = MODEL }) {
     if (ended) break;
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, effort, truncated, caching: "provider-managed" };
+  return { finalText, usage, transcript, cost, ...(transport === "openrouter" ? routerAccounting(receipts, costFor(model, usage)) : {}), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure: failure || (transport === "openrouter" ? routerAccounting(receipts, costFor(model, usage)).failure : ""), budget_exhausted: turns === limit, temperature, effort, truncated, refusal, caching: "provider-managed" };
 }

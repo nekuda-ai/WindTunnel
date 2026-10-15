@@ -16,7 +16,7 @@ function provenance() {
     return dirty ? `${head}-dirty` : head;
   } catch { return "unknown"; }
 }
-function hashes() {
+export function hashes() {
   const root = path.resolve(import.meta.dirname, "..");
   const taskFiles = fs.readdirSync(path.join(root, "tasks")).filter((file) => file.endsWith(".yaml")).sort();
   const goldenFiles = fs.readdirSync(path.join(root, "goldens")).filter((file) => file.endsWith(".patch")).sort();

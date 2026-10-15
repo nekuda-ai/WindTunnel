@@ -4,7 +4,7 @@ import path from "node:path";
 import { chromium } from "playwright";
 import { run as runScripted } from "../arms/scripted.mjs";
 import { run as runBrowserUse, TOOL_VERSION as BROWSERUSE_VERSION } from "../arms/browseruse.mjs";
-import { run as runCUClaude, TOOL_VERSION as CU_CLAUDE_VERSION } from "../arms/cu-claude.mjs";
+import { run as runCUClaude, versionFor as CU_CLAUDE_VERSION } from "../arms/cu-claude.mjs";
 import { run as runStagehand, TOOL_VERSION as STAGEHAND_VERSION } from "../arms/stagehand.mjs";
 import { run as runWMClaude } from "../arms/wm-claude.mjs";
 import { run as runWMGPT } from "../arms/wm-gpt.mjs";
@@ -15,12 +15,14 @@ import { run as runWMStagehandV4, TOOL_VERSION as WM_STAGEHAND_V4_VERSION } from
 import { run as runWMStagehandV4Gemini, TOOL_VERSION as WM_STAGEHAND_V4_GEMINI_VERSION } from "../arms/wm-stagehand-v4-gemini.mjs";
 import { run as runCUGemini, TOOL_VERSION as CU_GEMINI_VERSION } from "../arms/cu-gemini.mjs";
 import { run as runWMGemini, TOOL_VERSION as WM_GEMINI_VERSION } from "../arms/wm-gemini.mjs";
+import { run as runWMChat, TOOL_VERSION as WM_CHAT_VERSION } from "../arms/wm-chat.mjs";
+import { assertNativeAnthropic, modelSpec } from "./openrouter.mjs";
 import { bootCapsule } from "./capsule.mjs";
 import { runBatch } from "./run.mjs";
 import { resolveProfile, loadSites } from "./sites.mjs";
 import { loadTaskFile, loadTasks, resolveTask, taskFile } from "./tasks.mjs";
 import { writeReport } from "../scoring/report.mjs";
-import { isInfraRow } from "./lib.mjs";
+import { isInfraRow, isProviderSetupFailure, verdictFor } from "./lib.mjs";
 import { apiKeyEnvFor } from "../arms/prompts.mjs";
 
 const PRESETS = { smoke: { n: 1 }, lite: { n: 3 }, full: { n: 3 } };
@@ -36,6 +38,9 @@ const ARMS = {
   "dom-browseruse": { id: "dom-browseruse", run: runBrowserUse, model: "claude-sonnet-4-6", version: BROWSERUSE_VERSION, key: apiKeyEnvFor, paid: true },
   "a11y-stagehand": { id: "a11y-stagehand", run: runStagehand, model: "claude-sonnet-4-6", version: STAGEHAND_VERSION, key: apiKeyEnvFor, paid: true },
   "wm-claude": { id: "wm-claude", run: runWMClaude, model: "claude-sonnet-4-6", version: "@anthropic-ai/sdk", key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
+  "wm-chat": { id: "wm-chat", run: runWMChat, model: "deepseek-v4.1-flash", version: WM_CHAT_VERSION, key: "OPENROUTER_API_KEY", paid: true, webmcp: true, transport: "openrouter" },
+  "wm-meta": { id: "wm-meta", run: runWMGPT, model: "muse-wonder-1.0", version: "meta-responses-api", key: "MODEL_API_KEY", paid: true, webmcp: true },
+  "cu-meta": { id: "cu-meta", run: runCUOpenAI, model: "muse-wonder-1.0", version: "meta-computer", key: "MODEL_API_KEY", paid: true },
   "wm-gpt": { id: "wm-gpt", run: runWMGPT, model: "gpt-5.5", version: "responses-api", key: "OPENAI_API_KEY", paid: true, webmcp: true },
   "wm-stagehand": { id: "wm-stagehand", run: runWMStagehand, model: "claude-sonnet-4-6", version: WM_STAGEHAND_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
   "wm-stagehand-v4": { id: "wm-stagehand-v4", run: runWMStagehandV4, model: "claude-sonnet-4-6", version: WM_STAGEHAND_V4_VERSION, key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
@@ -59,10 +64,12 @@ export const USAGE = `Usage: node harness/cli.mjs [options]
   --perturbed                 Enable perturbations
   --label <name>              Label this run
   --model <arm=model>         Override a method model
+  --transport <direct|openrouter>  Explicit provider transport (default: direct)
+  --tool-version <arm=version> Override Claude computer tool version for controls
   --help                      Show this usage`;
 
 export function parseArgs(argv) {
-  const options = { preset: "smoke", sites: "lite", arms: ["scripted"], seed: 1, budget: Infinity, perturbed: false, models: {}, maxConsecutiveInfra: 2 };
+  const options = { preset: "smoke", sites: "lite", arms: ["scripted"], seed: 1, budget: Infinity, perturbed: false, models: {}, transport: "direct", toolVersions: {}, maxConsecutiveInfra: 2 };
   let explicitN = false;
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
@@ -81,6 +88,12 @@ export function parseArgs(argv) {
       else if (flag === "--budget") options.budget = Number(value);
       else if (flag === "--max-consecutive-infra") options.maxConsecutiveInfra = Number(value);
       else if (flag === "--label") options.label = value;
+      else if (flag === "--transport") options.transport = value;
+      else if (flag === "--tool-version") {
+        const [arm, version] = value.split("=");
+        if (arm !== "cu-claude" || !["computer_toolset_20260801", "computer_20251124"].includes(version)) throw new Error("--tool-version requires cu-claude=computer_toolset_20260801 or computer_20251124");
+        options.toolVersions[arm] = version;
+      }
       else if (flag === "--model") {
         const [arm, ...model] = value.split("=");
         if (!arm || !model.length) throw new Error("--model must be arm=model");
@@ -88,6 +101,8 @@ export function parseArgs(argv) {
       } else throw new Error(`unknown option: ${flag}`);
     }
   }
+  if (!["direct", "openrouter"].includes(options.transport)) throw new Error("--transport must be direct or openrouter");
+  if (!Number.isInteger(options.maxConsecutiveInfra) || options.maxConsecutiveInfra < 0) throw new Error("--max-consecutive-infra must be a non-negative integer");
   if (!PRESETS[options.preset]) throw new Error(`unknown preset: ${options.preset}`);
   if (!explicitN) options.n = PRESETS[options.preset].n;
   if (!Number.isInteger(options.n) || options.n < 1 || options.n % 2 === 0) throw new Error("--n must be a positive odd integer");
@@ -115,10 +130,16 @@ export function planRuns(options, env = process.env, methods = ARMS) {
     const method = methods[armId];
     if (!method) throw new Error(`unknown arm: ${armId}`);
     const model = options.models[armId] ?? method.model;
-    const key = typeof method.key === "function" ? method.key(model) : method.key;
+    const transport = method.transport ?? options.transport ?? "direct";
+    if (transport === "openrouter" && !["wm-claude", "wm-gpt", "wm-chat", "code-openai", "a11y-stagehand", "wm-meta"].includes(armId)) throw new Error(`${armId} requires direct transport`);
+    if (transport === "openrouter") modelSpec(model);
+    else if (method.key === "ANTHROPIC_API_KEY" || typeof method.key === "function" && apiKeyEnvFor(model) === "ANTHROPIC_API_KEY") assertNativeAnthropic(env);
+    const version = options.toolVersions?.[armId] ?? (typeof method.version === "function" ? method.version(model) : method.version);
+    const nativeKey = typeof method.key === "function" ? method.key(model) : method.key;
+    const key = transport === "openrouter" ? "OPENROUTER_API_KEY" : nativeKey;
     if (key && !env[key]) { notices.push(`Skipping ${armId}: ${key} is not set.`); continue; }
     if (method.paid && options.budget <= 0) { notices.push(`Skipping ${armId}: budget hard stop reached.`); continue; }
-    for (const siteId of sites) runs.push({ siteId, method: { ...method, model, key } });
+    for (const siteId of sites) runs.push({ siteId, method: { ...method, model, key, transport, version } });
   }
   return { runs, notices };
 }
@@ -142,8 +163,17 @@ function fakePage() {
 
 async function openPage(env) {
   if (env.WT_FAKE_LIFECYCLE === "1") return { newContext: async () => ({ newPage: async () => fakePage(), close: async () => {} }), close: async () => {} };
-  const browser = await chromium.launch({ headless: true, ...(env.WT_CHROME ? { executablePath: env.WT_CHROME } : {}) });
-  return browser;
+  let browser;
+  return {
+    async newContext(options) {
+      // A popup can poison Chromium screenshot capture after its context closes.
+      // Process isolation prevents one attempt from damaging later attempts.
+      await browser?.close();
+      browser = await chromium.launch({ headless: true, ...(env.WT_CHROME ? { executablePath: env.WT_CHROME } : {}) });
+      return browser.newContext(options);
+    },
+    close: async () => { await browser?.close(); },
+  };
 }
 
 export async function runBenchmark(argv, {
@@ -152,6 +182,12 @@ export async function runBenchmark(argv, {
   log = console.log,
   methods = ARMS,
   boot = bootCapsule,
+  onAttempt,
+  onStart,
+  onBatch,
+  resumeRows = [],
+  resumeCapsules = [],
+  shouldStop = () => false,
 } = {}) {
   const options = parseArgs(argv);
   if (options.help) { log(USAGE); return { options }; }
@@ -162,7 +198,18 @@ export async function runBenchmark(argv, {
     const missing = [...new Set(plan.runs.map(({ siteId }) => siteId))].filter((id) => !fs.existsSync(taskFile(id)));
     if (missing.length) throw new Error(`no task file for site(s): ${missing.join(", ")} — add tasks/<site>.yaml or pass --tasks <file>`);
   }
-  const rows = [], verdicts = [], capsules = [];
+  const rows = [], verdicts = [], capsules = [...resumeCapsules];
+  if (resumeRows.length) {
+    if (options.taskIds && new Set(options.taskIds).size !== options.taskIds.length) throw new Error("Resume requires unique task IDs");
+    const seen = new Set();
+    for (const row of resumeRows) {
+      const run = plan.runs.find(({ siteId, method }) => row.site === siteId && row.arm === method.id && row.model === method.model && row.transport === method.transport);
+      const key = JSON.stringify([row.site, row.arm, row.model, row.task_id, row.attempt_index]);
+      const tasks = run && (options.tasks ? loadTaskFile(options.tasks) : loadTasks(run.siteId));
+      if (!run || !tasks.some(t => t.id === row.task_id) || options.taskIds && !options.taskIds.includes(row.task_id) || !Number.isInteger(row.attempt_index) || row.attempt_index < 0 || row.attempt_index >= options.n || isInfraRow(row) || seen.has(key)) throw new Error("Invalid or duplicate resume attempt");
+      seen.add(key);
+    }
+  }
   let cost = 0;
   let budgetExceeded = false;
   // A provider outage produces a run of infrastructure failures. Continuing
@@ -181,15 +228,27 @@ export async function runBenchmark(argv, {
   const streamRow = (row) => {
     const { transcript, final_text, ...lean } = row;
     try { fs.appendFileSync(livePath, JSON.stringify(lean) + "\n"); } catch { /* journal is best-effort */ }
+    try { onAttempt?.(row); }
+    catch (error) { abortedReason = `spend journal failed: ${error.message}`; throw error; }
   };
   for (let index = 0; index < plan.runs.length; index++) {
     const { siteId, method } = plan.runs[index];
     if (abortedReason) break;
+    if (shouldStop()) { abortedReason = "paused by operator or time limit"; break; }
     if (method.paid && budgetExceeded) {
       log(`Skipping ${method.id}: budget hard stop reached ($${cost.toFixed(4)} > $${options.budget.toFixed(2)}).`);
       continue;
     }
     if (!method.run) { log(`Skipping ${method.id}: not yet implemented.`); continue; }
+    const saved = resumeRows.filter(row => row.site === siteId && row.arm === method.id && row.model === method.model);
+    const available = options.tasks ? loadTaskFile(options.tasks) : loadTasks(siteId);
+    const selected = options.taskIds ? available.filter(task => options.taskIds.includes(task.id)) : available;
+    if (saved.length === selected.length * options.n) {
+      rows.push(...saved);
+      verdicts.push(...selected.map(task => ({ site: siteId, taskId: task.id, tier: task.tier, method: method.id, ...verdictFor(saved.filter(row => row.task_id === task.id)) })));
+      log(`Resumed completed site: ${method.id} × ${siteId}`);
+      continue;
+    }
     const browser = await openPage(env);
     const { WT_WEBMCP: _ignored, ...armEnv } = env;
     if (method.webmcp) armEnv.WT_WEBMCP = "1";
@@ -206,11 +265,17 @@ export async function runBenchmark(argv, {
       const result = await runBatch({
         siteId, method, tasks, n: options.n, seed: options.seed, port: 3215 + index,
         model: method.model, perturbed: options.perturbed, browser,
+        resumeRows: saved, shouldStop, onStart,
         boot: (id, bootOptions) => boot(id, { ...bootOptions, env: armEnv }),
         onResult: (row) => {
           streamRow(row);
           if (isInfraRow(row)) {
             consecutiveInfra++;
+            if (isProviderSetupFailure(row.failure_category) || /provider-accounting:/.test(row.failure_category)) {
+              abortedReason = `provider setup/accounting failure: ${row.failure_category}`;
+              log(`ABORTING FLIGHT: ${abortedReason}`);
+              return false;
+            }
             if (options.maxConsecutiveInfra > 0 && consecutiveInfra >= options.maxConsecutiveInfra) {
               abortedReason = `${consecutiveInfra} consecutive infrastructure failures (last: ${row.failure_category})`;
               log(`ABORTING FLIGHT: ${abortedReason}`);
@@ -219,9 +284,10 @@ export async function runBenchmark(argv, {
           } else {
             consecutiveInfra = 0;
           }
+          if (shouldStop()) { abortedReason = "paused by operator or time limit"; return false; }
           if (!method.paid) return;
           cost += Number(row.est_cost_usd || 0);
-          if (cost > options.budget) {
+          if (cost >= options.budget) {
             budgetExceeded = true;
             abortedReason = abortedReason || `budget hard stop after ${row.task_id} ($${cost.toFixed(4)} > $${options.budget.toFixed(2)}) — flight is incomplete`;
             log(`Budget hard stop reached after ${row.task_id} ($${cost.toFixed(4)} > $${options.budget.toFixed(2)}).`);
@@ -234,6 +300,7 @@ export async function runBenchmark(argv, {
       // A failed teardown is an incident worth auditing after the flight — keep it
       // on the run record and in the live journal, not only on the console.
       capsules.push(result.teardown_error ? { ...result.capsule, teardown_error: result.teardown_error } : result.capsule);
+      await onBatch?.(result);
       if (result.teardown_error) {
         log(`Teardown failed for ${method.id} × ${siteId}: ${result.teardown_error}`);
         fs.appendFileSync(livePath, JSON.stringify({ teardown_failed: `${method.id} × ${siteId}`, error: result.teardown_error.slice(0, 300) }) + "\n");

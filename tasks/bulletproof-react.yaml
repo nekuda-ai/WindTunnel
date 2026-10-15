@@ -15,4 +15,5 @@ tasks:
     # ten arms, states a boundary outcome: not accessible / inaccessible /
     # redirect / restricted to signed-in members. An unqualified "accessible"
     # matches no alternative here.
-    predicate: { type: answer, matches: "(redirect|unauthorized|denied|forbidden|inaccessible|not\\W{0,4}accessible|(cannot|can'?t|could not|couldn'?t|unable to)[^.]{0,30}(access|reach|view|open|see)|not\\W{0,4}reachable|requires? (signing|sign|log|logging|authentication)|(must|need to|have to) (log|sign) in|restricted to signed|only visible to signed|blocked)" }
+    # Scope the contraction to an asserted private-app boundary while signed out.
+    predicate: { type: answer, matches: "(redirect|unauthorized|denied|forbidden|inaccessible|not\\W{0,4}accessible|(cannot|can'?t|could not|couldn'?t|unable to)[^.]{0,30}(access|reach|view|open|see)|not\\W{0,4}reachable|requires? (signing|sign|log|logging|authentication)|(must|need to|have to) (log|sign) in|restricted to signed|only visible to signed|blocked)|(?:^|[.!]\\s*)(?:Final answer:\\s*)?(?:No,\\s*)?(?:the\\s+)?private\\s+app\\s+isn['’]t\\s+accessible\\s+while\\s+signed\\s+out(?=[.!](?:\\s|$)|$)" }

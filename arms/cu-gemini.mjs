@@ -1,3 +1,4 @@
+import { boundedRequest, geminiGeneration } from "../harness/native-request.mjs";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
@@ -47,6 +48,7 @@ function addUsage(total, raw) {
 
 // ponytail: two Gemini arms need one REST endpoint, not a new SDK dependency.
 export async function respond(body) {
+  if (body.model === "gemini-4-argon") return boundedRequest(body);
   if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
   let retryWaitMs = 0;
   for (let attempt = 0; ; attempt++) {
@@ -169,7 +171,7 @@ export async function selfCheck(model = MODEL) {
   return { ok: true, model: response.model ?? model, version: TOOL_VERSION };
 }
 
-export async function run({ task, capsule, page, model = MODEL }) {
+export async function run({ task, capsule, page, model = MODEL, progress = {} }) {
   const started = performance.now();
   await page.setViewportSize(VIEWPORT);
   await page.goto(startUrl(task, capsule), { waitUntil: "domcontentloaded", timeout: 30_000 });
@@ -189,6 +191,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const limit = stepBudget(task, "cu", MAX_TURNS);
   const setupMs = performance.now() - started;
   const deadline = performance.now() + ATTEMPT_MS;
+  let truncated = false, refusal = false;
   let finalText = "", model_snapshot = "", turns = 0, retries = 0, retry_wait_ms = 0;
 
   while (turns < limit) {
@@ -198,21 +201,26 @@ export async function run({ task, capsule, page, model = MODEL }) {
       model,
       store: false,
       system_instruction: withToday(SYSTEM),
-      generation_config: { max_output_tokens: 4096 },
+      generation_config: geminiGeneration(model),
       input: windowedHistory(history),
       tools,
     });
     const interaction = outcome.response;
+    truncated ||= interaction.status === "incomplete";
+    refusal ||= (interaction.steps ?? []).some(step => step.type === "refusal" || (step.content ?? []).some(c => c.type === "refusal"));
     model_snapshot = interaction.model ?? model_snapshot;
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
     addUsage(usage, interaction.usage);
+    Object.assign(progress, { usage, cost: costFor(model, usage), model_snapshot, transcript });
     history.push(...(interaction.steps ?? []));
     transcript.push({ turn: turns, role: "assistant", content: interaction.steps, usage: interaction.usage });
     finalText = finalTextOf(interaction.steps) || finalText;
 
+    if (model === "gemini-4-argon" && (truncated || refusal)) break;
     const calls = (interaction.steps ?? []).filter(({ type }) => type === "function_call");
     if (!calls.length) break;
+    if (model === "gemini-4-argon" && calls.some(call => ["blocked", "require_confirmation"].includes(call.arguments?.safety_decision?.decision))) { refusal = true; break; }
     const results = [];
     for (const call of calls) {
       const decision = call.arguments?.safety_decision?.decision;
@@ -241,6 +249,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
 
   return {
     finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot,
+    truncated, refusal, effort: model === "gemini-4-argon" ? "medium" : "api-default",
     retries, retry_wait_ms, budget_exhausted: turns === limit, temperature: "default", caching: "provider-managed",
   };
 }

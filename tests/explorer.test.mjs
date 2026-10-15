@@ -60,7 +60,7 @@ test("explorer: interface summary includes every arm present and pools attempt r
   ];
   const html = renderExplorerHTML({ rows: rs, tasksBySite, canonical: true });
   const table = html.slice(html.indexOf('<table class="imp">'), html.indexOf("</table>", html.indexOf('<table class="imp">')));
-  for (const arm of ["wm-gemini", "cu-gemini", "wm-stagehand-v4"]) assert.ok(table.includes(arm), `${arm} missing from the interface summary`);
+  for (const label of ["WebMCP · Gemini", "cu-gemini", "wm-stagehand-v4"]) assert.ok(table.includes(label), `${label} missing from the interface summary`);
   // pooled 7/10 = 70% across the four WebMCP configs, whereas a median of
   // per-config rates (0, 100, 100, 100) would say 100%
   assert.match(html, /WebMCP passed <b>70\.0%<\/b> of attempts/);

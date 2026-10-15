@@ -108,6 +108,10 @@ SCHEMAS = {
     "transcripts": TRANSCRIPTS_SCHEMA,
 }
 EXPECTED_ROWS = {"attempts": 3087, "verdicts": 1029, "tasks": 49, "transcripts": 3087}
+REFRESH_FIELDS = [
+    ("transport", pa.string()), ("provider", pa.string()), ("provider_pin", pa.string()),
+    ("billed_cost_usd", pa.float64()), ("generation_ids", pa.string()), ("model_snapshot", pa.string()),
+]
 
 
 def nullable(value: str | None) -> str | None:
@@ -196,6 +200,8 @@ def build_attempts(csv_rows: list[dict[str, str]]) -> list[dict]:
             "source": nullable(raw["source"]),
             "timestamp": raw["timestamp"],
         })
+        if "transport" in SCHEMAS["attempts"].names:
+            rows[-1].update({name: number(raw.get(name)) if name == "billed_cost_usd" else nullable(raw.get(name)) for name, _ in REFRESH_FIELDS})
     return sorted(rows, key=lambda row: row["run_id"])
 
 
@@ -354,8 +360,8 @@ def main() -> None:
     shutil.copyfile(CANONICAL / "explorer.html", space_index)
 
     for path in paths:
-        print(f"{path.relative_to(REPO_ROOT)}: {pq.read_metadata(path).num_rows} rows, {path.stat().st_size} bytes, sha256={digest(path)}")
-    print(f"{space_index.relative_to(REPO_ROOT)}: copied byte-for-byte, sha256={digest(space_index)}")
+        print(f"{path}: {pq.read_metadata(path).num_rows} rows, {path.stat().st_size} bytes, sha256={digest(path)}")
+    print(f"{space_index}: copied byte-for-byte, sha256={digest(space_index)}")
 
 
 if __name__ == "__main__":

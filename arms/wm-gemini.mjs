@@ -1,3 +1,4 @@
+import { boundedRequest, geminiGeneration } from "../harness/native-request.mjs";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import { prepareWebMCPPage, listLiveTools, executeBridgeTool } from "./wm-claude.mjs";
@@ -33,7 +34,7 @@ export async function selfCheck(model = MODEL) {
   return { ok: true, model: response.model ?? model, version: TOOL_VERSION };
 }
 
-export async function run({ task, capsule, page, model = MODEL }) {
+export async function run({ task, capsule, page, model = MODEL, progress = {} }) {
   const started = performance.now();
   await prepareWebMCPPage(page, startUrl(task, capsule));
 
@@ -43,6 +44,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const limit = stepBudget(task, "webmcp", MAX_TURNS);
   const setupMs = performance.now() - started;
   const deadline = performance.now() + ATTEMPT_MS;
+  let truncated = false, refusal = false;
   let finalText = "", model_snapshot = "", turns = 0, previousTools = "", retries = 0, retry_wait_ms = 0;
 
   while (turns < limit) {
@@ -60,20 +62,24 @@ export async function run({ task, capsule, page, model = MODEL }) {
       model,
       store: false,
       system_instruction: withToday(SYSTEM),
-      generation_config: { max_output_tokens: 4096 },
+      generation_config: geminiGeneration(model),
       input: history,
       tools: geminiTools(liveTools),
     });
     const interaction = outcome.response;
+    truncated ||= interaction.status === "incomplete";
+    refusal ||= (interaction.steps ?? []).some(step => step.type === "refusal" || (step.content ?? []).some(c => c.type === "refusal"));
     model_snapshot = interaction.model ?? model_snapshot;
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
     const turnUsage = geminiUsage(interaction.usage);
     for (const key of Object.keys(usage)) usage[key] += turnUsage[key] ?? 0;
+    Object.assign(progress, { usage, cost: costFor(model, usage), model_snapshot, transcript });
     history.push(...(interaction.steps ?? []));
     transcript.push({ turn: turns, role: "assistant", content: interaction.steps, usage: interaction.usage });
     finalText = finalTextOf(interaction.steps) || finalText;
 
+    if (model === "gemini-4-argon" && (truncated || refusal)) break;
     const calls = (interaction.steps ?? []).filter(({ type }) => type === "function_call");
     if (!calls.length) break;
     for (const call of calls) {
@@ -96,6 +102,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
 
   return {
     finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot,
+    truncated, refusal, effort: model === "gemini-4-argon" ? "medium" : "api-default",
     retries, retry_wait_ms, budget_exhausted: turns === limit, temperature: "default", caching: "provider-managed",
   };
 }

@@ -3,8 +3,32 @@ import test from "node:test";
 import os from "node:os";
 import path from "node:path";
 import { mkdtemp, readdir, readFile } from "node:fs/promises";
+import { chromium } from "playwright";
 
 import { parseArgs, planRuns, runBenchmark } from "../harness/cli.mjs";
+
+test("attempts use separate browser processes so popup damage cannot leak across repeats", async (t) => {
+  t.mock.method(chromium, "launch", async () => {
+    let connected = true;
+    const browser = {
+      isConnected: () => connected,
+      close: async () => { connected = false; },
+      newContext: async () => {
+        const context = { newPage: async () => ({ context: () => context }), browser: () => browser, close: async () => {} };
+        return context;
+      },
+    };
+    return browser;
+  });
+  const browsers = [];
+  await runBenchmark(["--sites", "directory-9d8", "--arms", "fake", "--task-ids", "directory-search", "--n", "3"], {
+    env: {}, outputRoot: await mkdtemp(path.join(os.tmpdir(), "wt-browser-isolation-")), log: () => {},
+    methods: { fake: { id: "fake", model: "none", run: async ({ page }) => { browsers.push(page.context().browser()); return { finalText: "GitHub" }; } } },
+    boot: async (siteId) => ({ baseUrl: "about:blank", reset: async () => {}, down: async () => {}, meta: { siteId } }),
+  });
+  assert.equal(new Set(browsers).size, 3);
+  assert.ok(browsers.every(browser => !browser.isConnected()));
+});
 
 test("CLI plans lite scripted runs", () => {
   const options = parseArgs(["--sites", "lite", "--arms", "scripted"]);

@@ -1,0 +1,122 @@
+{
+  "release": "v1.3",
+  "configurations": 18,
+  "attempts": 2646,
+  "website_csv_sha256": "b21c99611a347236952d9cb702e93aa33d4e347aaf3e6e268623ddf966c93df4",
+  "base_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+  "base_run_sha256": "397e65ece79cbf5028cce0466318c3473b9f8c42b5e5bfc81290acba38a9f846",
+  "sources": [
+    {
+      "configuration": "claude-sonnet-5-5-wm-claude",
+      "sha256": "edfdb97f03a19652f94bfd2a972f87101f21f48c6fd9297d0470087dbaaf81e5",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "42100ed71ecea25e6643d3d15e43b41424fca79f7983e74f4a44e6c95b7a1fa6",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec",
+        "scorer_revision": "308555151e4411a6ddc71c2c292f19273d7ab6dd"
+      }
+    },
+    {
+      "configuration": "claude-sonnet-5-5-cu-claude",
+      "sha256": "60803a92a2b41ad0a61d52453ac1f207257283316ba5f87d22e06148ac7d207c",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "42100ed71ecea25e6643d3d15e43b41424fca79f7983e74f4a44e6c95b7a1fa6",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec",
+        "scorer_revision": "308555151e4411a6ddc71c2c292f19273d7ab6dd"
+      }
+    },
+    {
+      "configuration": "gpt-6.1-sol-wm-gpt",
+      "sha256": "88ef0d8fac178ec90b94cac407fcde3f79a7e2cd9e430285c298a660a59a4dca",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "gpt-6.1-sol-cu-openai",
+      "sha256": "2c353f9ef5b9afa1ce48740c5a7e702d90b7159a9d600e5a23e60d4d9c9667ea",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "gpt-6-luna-wm-gpt",
+      "sha256": "a762b5c602a701ea86c1088f36ca5f4ec0ceeb736c675d2cb353f640e7a80051",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "gpt-6-luna-cu-openai",
+      "sha256": "44a8f7a4019a327753a877b4fbfc5667d1ca25c9ac90e21c913b38775552fcd2",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "gemini-3.8-flash-wm-gemini",
+      "sha256": "47eaede7d6c1674d9ef9f6b2498650dfb3c04c8850e7ef895166fc72c7828b4d",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "claude-haiku-5-5-wm-claude",
+      "sha256": "2003c86fa234eb5be8991467815b13161ebb6ded7a0ac17fe8c99a990d756ded",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "claude-haiku-5-5-cu-claude",
+      "sha256": "d0242fc04830fc86190ae5012feed5f93e205e37a7ea2f29e060a8437a3aa071",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "gpt-6.1-sol-code",
+      "sha256": "0460e1d3edb597de8dd87320089c5a661107679a6fb7696eab32f823e7924fa7",
+      "options": {
+        "git_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
+        "refresh_hash": "5b1f09c75b9fe15a8fe0447e91dbcc610cbc1ea0e4df317c60e50667cbdc3cef",
+        "task_set_hash": "07aef320029195b45128a93364d7bbd7c45853ffb8fa5e54613d0dd37e4063d2",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    },
+    {
+      "configuration": "muse-wonder-1.0-wm-meta",
+      "sha256": "13081d0500a62b4ca72691ec98bac93443537fd56da244054d9b50ab393420ec",
+      "options": {
+        "git_revision": "93db3b15c3a986bcada6c68f611707d6aa021409",
+        "refresh_hash": "1552d2aa695afecc249151f651678636a1520f582b2f59dc91c433af696f6019",
+        "task_set_hash": "42100ed71ecea25e6643d3d15e43b41424fca79f7983e74f4a44e6c95b7a1fa6",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
+      }
+    }
+  ]
+}

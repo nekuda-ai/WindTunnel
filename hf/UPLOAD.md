@@ -1,5 +1,8 @@
 # Publishing the WindTunnel Hugging Face package
 
+For v1.3 updates to the existing `nekuda` dataset and Space, use
+[UPDATE.md](UPDATE.md). The instructions below describe the original package setup.
+
 Run these commands from the WindTunnel source repository root. They create exactly two public Hub repositories: one dataset and one static Space. They do not create a model repository or a submission service.
 
 ## 0. Create the packaging environment (once)

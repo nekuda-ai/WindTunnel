@@ -9,8 +9,7 @@
         "contains": [
           "bulletproof"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "react-auth-boundary",
@@ -18,16 +17,15 @@
       "prompt": "Check whether the private app is accessible while signed out; do not sign in.",
       "predicate": {
         "type": "answer",
-        "matches": "(redirect|unauthorized|denied|forbidden|inaccessible|not\\W{0,4}accessible|(cannot|can'?t|could not|couldn'?t|unable to)[^.]{0,30}(access|reach|view|open|see)|not\\W{0,4}reachable|requires? (signing|sign|log|logging|authentication)|(must|need to|have to) (log|sign) in|restricted to signed|only visible to signed|blocked)"
-      },
-      "params": {}
+        "matches": "(redirect|unauthorized|denied|forbidden|inaccessible|not\\W{0,4}accessible|(cannot|can'?t|could not|couldn'?t|unable to)[^.]{0,30}(access|reach|view|open|see)|not\\W{0,4}reachable|requires? (signing|sign|log|logging|authentication)|(must|need to|have to) (log|sign) in|restricted to signed|only visible to signed|blocked)|(?:^|[.!]\\s*)(?:Final answer:\\s*)?(?:No,\\s*)?(?:the\\s+)?private\\s+app\\s+isn['’]t\\s+accessible\\s+while\\s+signed\\s+out(?=[.!](?:\\s|$)|$)"
+      }
     }
   ],
   "directory-9d8": [
     {
       "id": "directory-search",
       "tier": "act-short",
-      "prompt": "Search the directory for a design tool and report its name.",
+      "prompt": "Search the directory for a {params.kind} tool and report its name.",
       "params": {
         "kind": "design"
       },
@@ -46,8 +44,7 @@
       "predicate": {
         "type": "answer",
         "matches": "\\b(github|react)\\b"
-      },
-      "params": {}
+      }
     },
     {
       "id": "directory-detail",
@@ -58,8 +55,7 @@
         "contains": [
           "collaborative"
         ]
-      },
-      "params": {}
+      }
     }
   ],
   "easyappointments": [
@@ -79,8 +75,7 @@
           "haircut",
           "massage"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-2",
@@ -97,8 +92,7 @@
           "35",
           "45"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-3",
@@ -114,8 +108,7 @@
         "contains": [
           "consultation"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-4",
@@ -131,8 +124,7 @@
         "contains": [
           "jane"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-5",
@@ -150,8 +142,7 @@
           "not missing",
           "available or missing"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-6",
@@ -174,8 +165,7 @@
             }
           }
         }
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-7",
@@ -193,8 +183,7 @@
             "customers": 2
           }
         }
-      },
-      "params": {}
+      }
     },
     {
       "id": "ea-8",
@@ -211,8 +200,7 @@
         "contains": [
           "james"
         ]
-      },
-      "params": {}
+      }
     }
   ],
   "hi-events": [
@@ -231,8 +219,7 @@
         "contains": [
           "online"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-2",
@@ -249,8 +236,7 @@
         "contains": [
           "state-conditioned"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-3",
@@ -268,8 +254,7 @@
           "sixteen",
           "16"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-4",
@@ -284,8 +269,7 @@
       "predicate": {
         "type": "answer",
         "matches": "record(ed|ing)s?[\\s\\S]{0,160}attendee|attendee[\\s\\S]{0,160}record"
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-10",
@@ -304,8 +288,7 @@
           "not absent",
           "present or absent"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-5",
@@ -324,8 +307,7 @@
           "not present",
           "present or absent"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-6",
@@ -340,8 +322,7 @@
       "predicate": {
         "type": "answer",
         "matches": "(max|maximum|limit|allowed)[^.]{0,40}\\b(4|four)\\b"
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-7",
@@ -360,8 +341,7 @@
             "orders": 1
           }
         }
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-8",
@@ -387,8 +367,7 @@
           "unable to log in",
           "never reached"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "hev-9",
@@ -407,8 +386,7 @@
             "orders": 1
           }
         }
-      },
-      "params": {}
+      }
     }
   ],
   "idurar-erp-crm": [
@@ -427,8 +405,7 @@
         "contains": [
           "acme"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-2",
@@ -445,8 +422,7 @@
         "contains": [
           "250"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-3",
@@ -463,8 +439,7 @@
         "contains": [
           "webmcp evaluation service"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-4",
@@ -481,8 +456,7 @@
         "contains": [
           "unpaid"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-5",
@@ -499,8 +473,7 @@
         "contains": [
           "billing@acme.example.test"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-8",
@@ -517,8 +490,7 @@
         "contains": [
           "250"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-6",
@@ -549,8 +521,7 @@
             }
           }
         }
-      },
-      "params": {}
+      }
     },
     {
       "id": "id-7",
@@ -577,8 +548,7 @@
             }
           }
         }
-      },
-      "params": {}
+      }
     }
   ],
   "learnhouse": [
@@ -596,8 +566,7 @@
         "contains": [
           "evaluation foundations"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "lh-2",
@@ -613,8 +582,7 @@
         "contains": [
           "applied practice"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "lh-3",
@@ -630,8 +598,7 @@
         "contains": [
           "what evaluation means"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "lh-5",
@@ -647,8 +614,7 @@
         "contains": [
           "deterministic"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "lh-6",
@@ -666,8 +632,7 @@
           "not missing",
           "available or missing"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "lh-7",
@@ -684,8 +649,7 @@
         "contains": [
           "what evaluation means"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "lh-8",
@@ -700,8 +664,7 @@
       "predicate": {
         "type": "answer",
         "matches": "(lessons?|activities)[^.]{0,40}\\b(4|four)\\b|\\b(4|four)\\b[^.]{0,40}(lessons?|activities)"
-      },
-      "params": {}
+      }
     }
   ],
   "nextjs-starter-medusa": [
@@ -722,8 +685,7 @@
           "sweatpants",
           "shorts"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-2",
@@ -739,8 +701,7 @@
         "contains": [
           "3-5 business days"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-3",
@@ -756,8 +717,7 @@
         "contains": [
           "no questions asked"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-9",
@@ -775,8 +735,7 @@
           "not missing",
           "available or missing"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-4",
@@ -792,8 +751,7 @@
         "contains": [
           "xl"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-6",
@@ -809,8 +767,7 @@
         "contains": [
           "empty"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-5",
@@ -828,8 +785,7 @@
             "carts": 1
           }
         }
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-7",
@@ -851,8 +807,7 @@
           "cart contains two items",
           "cart has two items"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "md-8",
@@ -870,8 +825,7 @@
             "orders": 1
           }
         }
-      },
-      "params": {}
+      }
     }
   ],
   "tailwind-nextjs-blog": [
@@ -885,8 +839,7 @@
           "tailwind nextjs starter blog",
           "multi-part posts"
         ]
-      },
-      "params": {}
+      }
     },
     {
       "id": "blog-read-author",
@@ -898,8 +851,7 @@
         "contains": [
           "azimuth"
         ]
-      },
-      "params": {}
+      }
     }
   ]
 }

@@ -236,7 +236,7 @@ Practical note: containers boot in minutes, not milliseconds, so the harness
 boots each site once per (site × method) batch and `reset`s between repeats
 rather than rebooting per run.
 
-The canonical board (v1.2) uses Sonnet 5, Opus 5, GPT-5.6 Luna, GPT-5.6 SOL,
+The historical board v1.2 used Sonnet 5, Opus 5, GPT-5.6 Luna, GPT-5.6 SOL,
 GPT-6 Astra, Gemini 3.6 Flash, and Jev + Mercury 2.5. Its 21 configurations produced 3,087
 attempts at a recorded total cost of $281.80 (see the README's [Cost](../README.md#cost) section). Other
 models are a natural thing for submitters to bring.
@@ -258,7 +258,7 @@ default** — it sends the model the DOM *and* a screenshot each step — so
 `dom-browseruse` is really a DOM+vision agent, not a DOM-only one — the
 strongest page-structure baseline (GPT-6 Astra's code execution is the
 strongest screen-driving result overall). That is the fair page-structure
-comparison for WebMCP: on the canonical board, Sonnet 5 on DOM + vision passes 145/147
+comparison for WebMCP: on the historical v1.2 board, Sonnet 5 on DOM + vision passes 145/147
 attempts and solves 48/49 tasks; native WebMCP for the same model passes
 147/147 and solves 49/49 while costing 23× less per median attempt, using
 12.5× fewer tokens, and running 4.3× faster.

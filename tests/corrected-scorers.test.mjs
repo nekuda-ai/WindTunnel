@@ -71,6 +71,9 @@ test("react-auth-boundary accepts an explicit not-accessible answer", async () =
       // Verbatim stored answers that must keep passing.
       "The private app is **not** accessible while signed out. When clicking \"Get started\", the app immediately redirects to the login page.",
       "Final answer: The private app is not accessible while signed out; discussions are only visible to signed-in team members.",
+      // Sonnet 5.5's correct stored answers use this contraction.
+      "Final answer: No, the private app isn't accessible while signed out. I didn't sign in.",
+      "The private app isn’t accessible while signed out.",
     ],
     // An unqualified "accessible" is the wrong answer and matches nothing.
     reject: [
@@ -82,6 +85,12 @@ test("react-auth-boundary accepts an explicit not-accessible answer", async () =
       "The browser is still in fullscreen mode. I can see the login page. I need to find a way to access the address bar. Let me try pressing Ctrl+L to focus the address bar.",
       // Prompt-echo: the task prompt itself contains "do not sign in".
       "The private app IS accessible. I followed the instruction: do not sign in.",
+      "The login button isn't accessible; the private app is accessible while signed out.",
+      "I do not know whether the private app isn't accessible while signed out.",
+      "Maybe the private app isn't accessible while signed out.",
+      "Someone said: the private app isn't accessible while signed out.",
+      "Expected final answer: The private app isn't accessible while signed out. I haven't checked.",
+      "The private app isn't accessible while signed out? I haven't checked.",
     ],
   });
 });
