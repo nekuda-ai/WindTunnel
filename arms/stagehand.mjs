@@ -2,6 +2,7 @@ import { Stagehand } from "@browserbasehq/stagehand";
 import { chromium } from "playwright";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
+import { modelSpec, openRouterFetch, routerAccounting, routerUsage, assertNativeAnthropic } from "../harness/openrouter.mjs";
 import { BASE_SYSTEM, MECHANICS, apiKeyEnvFor, providerFor, samplingFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "stagehand@3.6.0";
@@ -26,13 +27,19 @@ function snapshotCapture(seen) {
   };
 }
 
-function createStagehand(apiKey, model = DEFAULT_MODEL, seen = {}) {
+export function stagehandModel(apiKey, model, seen = {}, transport = "direct", receipts = []) {
+  if (transport === "openrouter") return { modelName: `openai/${modelSpec(model).openrouter_id}`, apiKey, baseURL: "https://openrouter.ai/api/v1", fetch: openRouterFetch(model, receipts) };
+  if (providerFor(model) === "anthropic") assertNativeAnthropic();
+  return { modelName: `${providerFor(model)}/${model}`, ...samplingFor(model).request, fetch: snapshotCapture(seen), ...(apiKey ? { apiKey } : {}) };
+}
+
+function createStagehand(apiKey, model = DEFAULT_MODEL, seen = {}, transport = "direct", receipts = []) {
   return new Stagehand({
     env: "LOCAL",
     disablePino: true,
     verbose: 0,
     domSettleTimeout: 3000,
-    model: { modelName: `${providerFor(model)}/${model}`, modelClientOptions: { ...samplingFor(model).request, fetch: snapshotCapture(seen) }, ...(apiKey ? { apiKey } : {}) },
+    model: stagehandModel(apiKey, model, seen, transport, receipts),
     localBrowserLaunchOptions: {
       headless: true,
       executablePath: process.env.WT_CHROME || chromium.executablePath(),
@@ -51,10 +58,10 @@ export async function selfCheck() {
   }
 }
 
-export async function run({ task, capsule, model = DEFAULT_MODEL }) {
+export async function run({ task, capsule, model = DEFAULT_MODEL, transport = "direct", receipts = [], progress = {} }) {
   const started = performance.now();
   const seen = {};
-  const stagehand = createStagehand(process.env[apiKeyEnvFor(model)], model, seen);
+  const stagehand = createStagehand(process.env[transport === "openrouter" ? "OPENROUTER_API_KEY" : apiKeyEnvFor(model)], model, seen, transport, receipts);
   try {
     await stagehand.init();
     const page = stagehand.context.activePage() ?? stagehand.context.pages()[0];
@@ -63,31 +70,34 @@ export async function run({ task, capsule, model = DEFAULT_MODEL }) {
     const result = await stagehand.agent({ mode: "dom", systemPrompt: withToday(SYSTEM) }).execute({
       instruction: task.prompt,
       maxSteps: stepBudget(task, "structured", 20),
+      signal: AbortSignal.timeout(600_000),
     });
     const metrics = result.usage ? null : await stagehand.metrics;
-    const usage = {
+    const usage = transport === "openrouter" ? routerUsage(receipts) : {
       input_tokens: result.usage?.input_tokens ?? metrics?.agentPromptTokens ?? metrics?.totalPromptTokens ?? 0,
       output_tokens: result.usage?.output_tokens ?? metrics?.agentCompletionTokens ?? metrics?.totalCompletionTokens ?? 0,
     };
     return {
       finalText: result.message ?? "",
       usage,
-      model_snapshot: seen.model ?? "",
-      // Stagehand 3.6 exposes no served model and does not forward a custom
-      // fetch through modelClientOptions, so the snapshot cannot be read
-      // in-band. scripts/verify-model.mjs proves the id resolves at the
-      // provider; this marks WHY the per-attempt field is empty rather than
-      // leaving it indistinguishable from an arm that simply failed to record.
-      snapshot_source: seen.model ? "provider-response" : "unavailable:stagehand@3.6",
+      model_snapshot: receipts.at(-1)?.model ?? seen.model ?? "",
+      // Capture the provider response because Stagehand's result omits it.
+      snapshot_source: receipts.length ? "provider-response" : seen.model ? "provider-response" : "unavailable:stagehand@3.6",
       transcript: result.actions ?? [],
       cost: costFor(model, usage),
+      ...(transport === "openrouter" ? routerAccounting(receipts, costFor(model, usage)) : {}),
+      failure: (result.success === false ? result.message : "") || (transport === "openrouter" ? routerAccounting(receipts, costFor(model, usage)).failure : ""),
       turns: result.actions?.length ?? 0,
       setupMs,
       budget_exhausted: (result.actions?.length ?? 0) >= stepBudget(task, "structured", 20),
       temperature: samplingFor(model).temperature,
       effort: "provider-default",
-      caching: "unsupported",
+      caching: transport === "openrouter" ? "provider-managed" : "unsupported",
     };
+  } catch (error) {
+    if (transport !== "openrouter") throw error;
+    const usage = routerUsage(receipts);
+    return { finalText: "", usage, model_snapshot: receipts.at(-1)?.model ?? "", ...routerAccounting(receipts, costFor(model, usage)), failure: error.message, turns: receipts.length, setupMs: 0 };
   } finally {
     await stagehand.close().catch(() => {});
   }

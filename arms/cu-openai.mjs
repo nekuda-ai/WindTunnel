@@ -1,5 +1,7 @@
+import { boundedRequest } from "../harness/native-request.mjs";
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
+import { requestOpenRouter, routerAccounting, responseRefused } from "../harness/openrouter.mjs";
 import { BASE_SYSTEM, MECHANICS, samplingFor } from "./prompts.mjs";
 
 export const TOOL_VERSION = "computer";
@@ -58,7 +60,15 @@ async function withModifiers(page, keys, callback) {
 }
 
 // ponytail: raw fetch to the Responses API — the loop needs one endpoint, not the openai SDK.
-export async function respond(body) {
+export async function respond(body, transport = "direct", receipts = []) {
+  if (body.model === "muse-wonder-1.0") {
+    if (transport === "openrouter" && body.tools?.some(tool => tool.type === "computer")) throw new Error("Muse computer use requires the direct Meta API; OpenRouter rejects this tool");
+    return boundedRequest(body, transport, receipts);
+  }
+  if (transport === "openrouter") {
+    if (body.tools?.some((tool) => tool.type === "computer" || tool.type === "computer_use_preview")) throw new Error("Native OpenAI computer tools require direct transport");
+    return requestOpenRouter("responses", body, receipts);
+  }
   let retryWaitMs = 0;
   for (let attempt = 0; ; attempt++) {
     let res;
@@ -138,7 +148,8 @@ const finalTextOf = (output) => output
   .map(({ text }) => text)
   .join("\n");
 
-export async function run({ task, capsule, page, model = MODEL }) {
+export async function run({ task, capsule, page, model = MODEL, transport = "direct", receipts = [], progress = {} }) {
+  const meta = model === "muse-wonder-1.0";
   const started = performance.now();
   await page.setViewportSize(VIEWPORT);
   await page.goto(startUrl(task, capsule), { waitUntil: "domcontentloaded", timeout: 30_000 });
@@ -150,20 +161,21 @@ export async function run({ task, capsule, page, model = MODEL }) {
   const transcript = [];
   // The task YAML's per-interface budget is authoritative; MAX_TURNS is only
   // the fallback when the task doesn't set one. Same rule in every arm.
-  const limit = stepBudget(task, "cu", MAX_TURNS);
+  const limit = meta ? Math.min(29, stepBudget(task, "cu", MAX_TURNS)) : stepBudget(task, "cu", MAX_TURNS);
   let finalText = "";
   let failure = "";
   let model_snapshot = "";
+  let cost = 0;
   let turns = 0;
   let retries = 0, retry_wait_ms = 0, temperature = "default";
-  let effort = "", truncated = false;
+  let effort = "api-default", truncated = false, refusal = false;
   // Both screenshot arms share one context policy: the model sees only the
   // SCREENSHOT_WINDOW most recent screenshots (matches cu-claude's prune).
   // History is replayed explicitly (the OpenAI Responses docs' supported
   // alternative to previous_response_id) with stale screenshots blanked to a
   // 1x1 image — the computer_call_output contract requires a screenshot, so a
   // text placeholder is not an option here.
-  const history = [{ role: "user", content: task.prompt }];
+  const history = [{ role: "user", content: meta ? [{ type: "input_text", text: task.prompt }, { type: "input_image", image_url: `data:image/png;base64,${(await page.screenshot()).toString("base64")}` }] : task.prompt }];
   const windowed = () => {
     const shots = history.filter((item) => item.type === "computer_call_output");
     const stale = new Set(shots.slice(0, Math.max(0, shots.length - SCREENSHOT_WINDOW)));
@@ -179,18 +191,20 @@ export async function run({ task, capsule, page, model = MODEL }) {
     }
     turns++;
     const sampling = samplingFor(model);
-    const outcome = await respond({
+    let outcome;
+    try { outcome = await respond({
       model,
       instructions: withToday(SYSTEM),
       tools,
-      input: windowed(),
+      input: meta ? history : windowed(),
       ...sampling.request,
-    });
+    }, transport, receipts); } catch (error) { failure = error.message; break; }
     const response = outcome.response;
     model_snapshot = response.model ?? model_snapshot;
     temperature = sampling.temperature;
     effort = response.reasoning?.effort ?? effort;
     if (response.status === "incomplete") truncated = true;
+    refusal ||= responseRefused(response);
     retries += outcome.retries;
     retry_wait_ms += outcome.retry_wait_ms;
     history.push(...response.output);
@@ -198,34 +212,45 @@ export async function run({ task, capsule, page, model = MODEL }) {
     const cached = details.cached_tokens ?? 0, written = details.cache_write_tokens ?? 0;
     // OpenAI's input_tokens INCLUDES cache reads and cache writes; split them
     // so each is priced at its own rate (Astra: $1 read, $12.50 write, $10 fresh).
+    cost += costFor(model, { input_tokens: (response.usage?.input_tokens ?? 0) - cached - written, output_tokens: response.usage?.output_tokens ?? 0, cached_input_tokens: cached, cache_creation_tokens: written });
     usage.input_tokens += (response.usage?.input_tokens ?? 0) - cached - written;
     usage.cached_input_tokens += cached;
     usage.cache_creation_tokens += written;
     usage.output_tokens += response.usage?.output_tokens ?? 0;
+    Object.assign(progress, { usage, cost, model_snapshot, transcript });
     transcript.push({ turn: turns, role: "assistant", content: response.output, usage: response.usage });
     finalText = finalTextOf(response.output) || finalText;
 
+    if (meta && (truncated || refusal)) break;
     const calls = response.output.filter(({ type }) => type === "computer_call");
     if (!calls.length) break;
     for (const call of calls) {
+      if (meta && call.pending_safety_checks?.length) { refusal = true; failure = "provider safety check requires review"; break; }
       for (const action of call.actions ?? []) {
-        try { await executeAction(page, action); }
-        catch (error) { transcript.push({ turn: turns, action, error: error.message }); }
+        const before = meta ? page.url() : "";
+        try {
+          if (meta && action.type === "click" && action.button === "back") await page.goBack();
+          else if (meta && action.type === "click" && action.button === "forward") await page.goForward();
+          else await executeAction(page, action);
+        }
+        catch (error) { transcript.push({ turn: turns, action, error: error.message }); if (meta) break; }
         transcript.push({ turn: turns, action });
+        if (meta && page.url() !== before) break;
       }
       history.push({
         type: "computer_call_output",
         call_id: call.call_id,
         // Sites are pinned local containers; safety checks are auto-acknowledged.
-        ...(call.pending_safety_checks?.length ? { acknowledged_safety_checks: call.pending_safety_checks } : {}),
+        ...(!meta && call.pending_safety_checks?.length ? { acknowledged_safety_checks: call.pending_safety_checks } : {}),
         output: {
           type: "computer_screenshot",
           image_url: `data:image/png;base64,${(await page.screenshot()).toString("base64")}`,
-          detail: "original",
+          ...(!meta ? { detail: "original" } : {}),
         },
       });
     }
+    if (meta && (refusal || truncated || failure)) break;
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, effort, truncated, caching: "provider-managed" };
+  return { finalText, usage, transcript, cost, ...(transport === "openrouter" ? routerAccounting(receipts, costFor(model, usage)) : {}), turns, setupMs, model_snapshot, retries, retry_wait_ms, failure, budget_exhausted: turns === limit, temperature, effort, truncated, refusal, caching: "provider-managed" };
 }

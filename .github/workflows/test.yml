@@ -16,11 +16,15 @@ jobs:
         node: ['20.11', '22']
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # The publication gate checks the frozen v1.2 commit.
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm test
+      - name: Verify published benchmark results
+        run: node scripts/verify-published-results.mjs
       - name: Verify published Jev traces
         run: python3 scripts/verify-jev-release.py
       - name: Verify portable Jev runners (no provider calls)

@@ -38,6 +38,13 @@ test("isInfraRow keeps infrastructure rows out of the verdict", () => {
   assert.equal(isInfraRow({ failure_category: "" }), false);
 });
 
+test("Chromium screenshot capture failure is infrastructure, including existing checkpoints", () => {
+  const message = "page.screenshot: Protocol error (Page.captureScreenshot): Unable to capture screenshot";
+  assert.equal(classifyFailure(message), "infra");
+  assert.equal(isInfraRow({ failure_category: `harness-agent: ${message}` }), true);
+  assert.equal(isInfraRow({ failure_category: `answer predicate failed: ${message}` }), false);
+});
+
 test("--max-consecutive-infra defaults to 2 and is configurable", () => {
   assert.equal(parseArgs([]).maxConsecutiveInfra, 2);
   assert.equal(parseArgs(["--max-consecutive-infra", "5"]).maxConsecutiveInfra, 5);

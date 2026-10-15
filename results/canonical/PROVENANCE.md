@@ -1,93 +1,36 @@
-# Provenance
+# WindTunnel v1.3 provenance
 
-This is a merged reference: the base full run plus targeted re-runs, merged
-per (site, method, task) cell with later runs superseding earlier ones. Source
-runs, in precedence order (later wins):
+18 configurations, 49 tasks, eight sites, seed 1, three attempts per cell:
+2,646 attempts and 882 majority verdicts. All published cohorts are complete.
 
-1. 2026-08-16-luna-full
-2. 2026-08-17-gemini-full
-3. 2026-08-17-opus5-full
-4. 2026-08-17-sol-full
-5. 2026-08-18-stagehand-v4-gemini-full
-6. 2026-08-19-sonnet5-wm-claude-full
-7. 2026-08-19-sonnet5-shv4-full
-8. 2026-08-19-sonnet5-cu-full
-9. 2026-08-19-sonnet5-a11y-full
-10. 2026-08-19-sonnet5-dom-full
-11. 2026-08-19-luna-a11y-full
-12. 2026-08-20-luna-dom-full
-13. 2026-08-20-sol-cu-600-full
-14. 2026-08-20-sonnet5-dom-topup
-15. 2026-08-20-rerun-cu-claude-claude-opus-5-directory-9d8
-16. 2026-08-20-rerun-cu-claude-claude-opus-5-idurar-erp-crm
-17. 2026-08-20-rerun-cu-claude-claude-opus-5-tailwind-nextjs-blog
-18. 2026-08-20-rerun-cu-gemini-gemini-36-flash-directory-9d8
-19. 2026-08-20-rerun-cu-gemini-gemini-36-flash-idurar-erp-crm
-20. 2026-08-20-rerun-cu-gemini-gemini-36-flash-tailwind-nextjs-blog
-21. 2026-08-20-rerun-cu-openai-gpt-56-luna-directory-9d8
-22. 2026-08-20-rerun-cu-openai-gpt-56-luna-idurar-erp-crm
-23. 2026-08-20-rerun-cu-openai-gpt-56-luna-tailwind-nextjs-blog
-24. 2026-08-20-rerun-cu-openai-gpt-56-sol-directory-9d8
-25. 2026-08-20-rerun-cu-openai-gpt-56-sol-idurar-erp-crm
-26. 2026-08-20-rerun-cu-openai-gpt-56-sol-tailwind-nextjs-blog
-27. 2026-08-20-rerun-wm-claude-claude-opus-5-directory-9d8
-28. 2026-08-20-rerun-wm-claude-claude-opus-5-idurar-erp-crm
-29. 2026-08-20-rerun-wm-claude-claude-opus-5-tailwind-nextjs-blog
-30. 2026-08-20-rerun-wm-gemini-gemini-36-flash-directory-9d8
-31. 2026-08-20-rerun-wm-gemini-gemini-36-flash-idurar-erp-crm
-32. 2026-08-20-rerun-wm-gemini-gemini-36-flash-tailwind-nextjs-blog
-33. 2026-08-20-rerun-wm-gpt-gpt-56-luna-directory-9d8
-34. 2026-08-20-rerun-wm-gpt-gpt-56-luna-idurar-erp-crm
-35. 2026-08-20-rerun-wm-gpt-gpt-56-luna-tailwind-nextjs-blog
-36. 2026-08-20-rerun-wm-gpt-gpt-56-sol-directory-9d8
-37. 2026-08-20-rerun-wm-gpt-gpt-56-sol-idurar-erp-crm
-38. 2026-08-20-rerun-wm-gpt-gpt-56-sol-tailwind-nextjs-blog
-39. 2026-08-20-rerun-wm-stagehand-v4-gemini-gemini-36-flash-directory-9d8
-40. 2026-08-20-rerun-wm-stagehand-v4-gemini-gemini-36-flash-idurar-erp-crm
-41. 2026-08-20-rerun-wm-stagehand-v4-gemini-gemini-36-flash-tailwind-nextjs-blog
-42. 2026-09-05-astra-full
-43. 2026-09-05-astra-rem-cu-openai
-44. 2026-09-06-astra-rem-code-openai
-45. 2026-09-06-v11-md8-wm-claude-claude-opus-5
-46. 2026-09-06-v11-md8-wm-claude-claude-sonnet-5
-47. 2026-09-06-v11-md8-wm-gemini-gemini-3.6-flash
-48. 2026-09-06-v11-md8-wm-gpt-gpt-5.6-luna
-49. 2026-09-06-v11-md8-wm-gpt-gpt-5.6-sol
-50. 2026-09-06-v11-md8-wm-gpt-gpt-6-astra
-51. 2026-09-06-v11-md8-wm-stagehand-v4-claude-sonnet-5
-52. 2026-09-06-v11-md8-wm-stagehand-v4-gemini-gemini-3.6-flash
-53. 2026-08-20-scorer-corrections
-54. 2026-09-18-jev-mercury
+Seven configurations are retained from v1.2 (Opus 5, GPT-6 Astra and Jev +
+Mercury 2.5). Their outcomes, usage, costs and timing are unchanged. Earlier
+boards remain in Git history at `5ca8644` and the named result folders.
 
-## Cells per source, by method
+Eleven new configurations use direct Anthropic, OpenAI, Google or Meta APIs.
+Per-source hashes, measurement revisions and frozen runtime/task/golden hashes
+are in [PROVENANCE.json](PROVENANCE.json); `source` identifies each attempt's
+cohort. Measurement revisions predate this consolidated publication commit.
+The published harness contains the measured request paths; publication and
+explorer changes do not rewrite those recorded hashes.
 
-An arm marked SPLIT draws cells from more than one source run — legitimate for
-gap-fills, but those cells were measured under that run's harness generation.
+A corrected signed-out-page expression promotes three Sonnet 5.5 WebMCP
+attempts and one computer-use attempt. No model request was repeated for this
+correction. Retained historical outcomes were checked and remain unchanged.
 
-```
-  wm-jev-mercury-v3 × typesafe-ai/jev+mercury-2.5 49×2026-09-18-jev-mercury
-  a11y-jev-mercury-ultrafast × typesafe-ai/jev+mercury-2.5 49×2026-09-18-jev-mercury
-  a11y-stagehand × claude-sonnet-5         49×2026-08-19-sonnet5-a11y-full
-  a11y-stagehand × gpt-5.6-luna            49×2026-08-19-luna-a11y-full
-  code-openai × gpt-6-astra          SPLIT 42×2026-09-05-astra-full  7×2026-09-06-astra-rem-code-openai
-  cu-claude × claude-opus-5          SPLIT 44×2026-08-17-opus5-full  2×2026-08-20-rerun-cu-claude-claude-opus-5-idurar-erp-crm  1×2026-08-20-rerun-cu-claude-claude-opus-5-tailwind-nextjs-blog  1×2026-08-20-rerun-cu-claude-claude-opus-5-directory-9d8  1×2026-08-20-scorer-corrections
-  cu-claude × claude-sonnet-5              49×2026-08-19-sonnet5-cu-full
-  cu-gemini × gemini-3.6-flash       SPLIT 43×2026-08-17-gemini-full  2×2026-08-20-scorer-corrections  2×2026-08-20-rerun-cu-gemini-gemini-36-flash-idurar-erp-crm  1×2026-08-20-rerun-cu-gemini-gemini-36-flash-tailwind-nextjs-blog  1×2026-08-20-rerun-cu-gemini-gemini-36-flash-directory-9d8
-  cu-openai × gpt-5.6-luna           SPLIT 44×2026-08-16-luna-full  2×2026-08-20-rerun-cu-openai-gpt-56-luna-idurar-erp-crm  1×2026-08-20-rerun-cu-openai-gpt-56-luna-tailwind-nextjs-blog  1×2026-08-20-rerun-cu-openai-gpt-56-luna-directory-9d8  1×2026-08-20-scorer-corrections
-  cu-openai × gpt-5.6-sol            SPLIT 45×2026-08-20-sol-cu-600-full  2×2026-08-20-rerun-cu-openai-gpt-56-sol-idurar-erp-crm  1×2026-08-20-rerun-cu-openai-gpt-56-sol-tailwind-nextjs-blog  1×2026-08-20-rerun-cu-openai-gpt-56-sol-directory-9d8
-  cu-openai × gpt-6-astra            SPLIT 32×2026-09-05-astra-full  17×2026-09-05-astra-rem-cu-openai
-  dom-browseruse × claude-sonnet-5   SPLIT 46×2026-08-19-sonnet5-dom-full  3×2026-08-20-sonnet5-dom-topup
-  dom-browseruse × gpt-5.6-luna            49×2026-08-20-luna-dom-full
-  wm-claude × claude-opus-5          SPLIT 43×2026-08-17-opus5-full  2×2026-08-20-rerun-wm-claude-claude-opus-5-idurar-erp-crm  1×2026-08-20-rerun-wm-claude-claude-opus-5-tailwind-nextjs-blog  1×2026-08-20-rerun-wm-claude-claude-opus-5-directory-9d8  1×2026-09-06-v11-md8-wm-claude-claude-opus-5  1×2026-08-20-scorer-corrections
-  wm-claude × claude-sonnet-5        SPLIT 48×2026-08-19-sonnet5-wm-claude-full  1×2026-09-06-v11-md8-wm-claude-claude-sonnet-5
-  wm-gemini × gemini-3.6-flash       SPLIT 43×2026-08-17-gemini-full  2×2026-08-20-rerun-wm-gemini-gemini-36-flash-idurar-erp-crm  1×2026-08-20-rerun-wm-gemini-gemini-36-flash-tailwind-nextjs-blog  1×2026-08-20-rerun-wm-gemini-gemini-36-flash-directory-9d8  1×2026-09-06-v11-md8-wm-gemini-gemini-3.6-flash  1×2026-08-20-scorer-corrections
-  wm-gpt × gpt-5.6-luna              SPLIT 43×2026-08-16-luna-full  2×2026-08-20-rerun-wm-gpt-gpt-56-luna-idurar-erp-crm  1×2026-08-20-rerun-wm-gpt-gpt-56-luna-tailwind-nextjs-blog  1×2026-08-20-rerun-wm-gpt-gpt-56-luna-directory-9d8  1×2026-09-06-v11-md8-wm-gpt-gpt-5.6-luna  1×2026-08-20-scorer-corrections
-  wm-gpt × gpt-5.6-sol               SPLIT 43×2026-08-17-sol-full  2×2026-08-20-rerun-wm-gpt-gpt-56-sol-idurar-erp-crm  1×2026-08-20-rerun-wm-gpt-gpt-56-sol-tailwind-nextjs-blog  1×2026-08-20-rerun-wm-gpt-gpt-56-sol-directory-9d8  1×2026-09-06-v11-md8-wm-gpt-gpt-5.6-sol  1×2026-08-20-scorer-corrections
-  wm-gpt × gpt-6-astra               SPLIT 48×2026-09-05-astra-full  1×2026-09-06-v11-md8-wm-gpt-gpt-6-astra
-  wm-stagehand-v4 × claude-sonnet-5  SPLIT 48×2026-08-19-sonnet5-shv4-full  1×2026-09-06-v11-md8-wm-stagehand-v4-claude-sonnet-5
-  wm-stagehand-v4-gemini × gemini-3.6-flash SPLIT 43×2026-08-18-stagehand-v4-gemini-full  2×2026-08-20-rerun-wm-stagehand-v4-gemini-gemini-36-flash-idurar-erp-crm  1×2026-08-20-rerun-wm-stagehand-v4-gemini-gemini-36-flash-tailwind-nextjs-blog  1×2026-08-20-rerun-wm-stagehand-v4-gemini-gemini-36-flash-directory-9d8  1×2026-09-06-v11-md8-wm-stagehand-v4-gemini-gemini-3.6-flash  1×2026-08-20-scorer-corrections
-```
+Opus 5.5 and Argon are excluded. Gemini 3.8 Flash and Muse Wonder have no
+computer-use score because the provider did not accept that interface.
+Smokes, provider diagnostics and infrastructure retries are outside this board.
+Genuine model failures remain, including Luna's unsolved task and Wonder's
+single turn-cap miss.
 
-Per-cell sources are in `run.json` (each verdict's `source` field).
+Costs are estimates from recorded token usage at measurement-time rates;
+retained historical costs are not repriced. Opus 5's older cache-write token
+counts are incomplete, so its total-token figures understate processed usage.
+Agent time excludes setup and reset. Settings and turn budgets vary by method;
+this is a fixed-task comparison, not a measure of all possible browser work.
 
-Board v1.2 adds two complete Jev + Mercury 2.5 cohorts (294 attempts). All prior scores and numeric metrics are unchanged. Published canonical artifacts now omit transcripts and redact fixture credentials from final answers and task prompts. Original task definitions and scoring are unchanged. See [Jev release provenance](../2026-09-18-jev-mercury/PROVENANCE.md) for versions, accounting, and reproduction limits.
+New public rows contain metrics and redacted final answers. Raw transcripts,
+encrypted reasoning, provider keys, fixture passwords, local paths and support
+probes are omitted. The existing separately published redacted Jev traces stay
+available under their original release.

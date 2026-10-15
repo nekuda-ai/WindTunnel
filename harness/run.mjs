@@ -1,6 +1,8 @@
 import { bootCapsule } from "./capsule.mjs";
 import { classifyFailure, newRunId, verdictFor } from "./lib.mjs";
 import { score } from "../scoring/predicates.mjs";
+import { routerAccounting, routerUsage } from "./openrouter.mjs";
+import { costFor } from "./lib.mjs";
 
 export const majority = (passes) => passes.filter(Boolean).length > passes.length / 2;
 
@@ -18,36 +20,52 @@ export async function runBatch({
   page,
   browser,
   onResult,
+  onStart,
+  resumeRows = [],
+  shouldStop = () => false,
 }) {
   const capsule = await boot(siteId, { seed, port, ...bootOptions });
   const rows = [];
   try {
     runs: for (const task of tasks) {
       for (let repeat = 0; repeat < n; repeat++) {
+        const prior = resumeRows.find(row => row.site === siteId && row.arm === method.id && row.model === model && row.task_id === task.id && row.attempt_index === repeat);
+        if (prior) { rows.push(prior); continue; }
+        if (shouldStop()) break runs;
         let resetMs = 0;
         // An arm blowing up (API overload, browser crash, missing tools) is a
         // failed attempt, not a failed run — record it and keep going, so paid
         // rows already collected still make it into the report.
         let result = {}, verdict, context;
+        const receipts = [], progress = {};
+        let started;
         try {
           const resetStarted = performance.now();
           await capsule.reset();
           resetMs = performance.now() - resetStarted;
+          if (shouldStop()) break runs;
           if (browser) {
             context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
             page = await context.newPage();
           }
-          const started = performance.now();
-          result = await method.run({ task, capsule, page, model });
+          started = performance.now();
+          await onStart?.({ site: siteId, arm: method.id, model, task_id: task.id, attempt_index: repeat });
+          result = await method.run({ task, capsule, page, model, transport: method.transport ?? "direct", toolVersion: method.version, receipts, progress });
           result.attemptMs = performance.now() - started;
           verdict = result.failure
             ? { pass: false, detail: `harness-${classifyFailure(result.failure)}: ${result.failure}` }
             : await score(task.predicate, capsule, result.finalText);
         } catch (error) {
-          const msg = error.message;
+          result = { ...progress, ...result, attemptMs: started ? performance.now() - started : 0 };
+          if (receipts.length) {
+            const usage = routerUsage(receipts);
+            result = { ...result, usage, model_snapshot: receipts.at(-1).model, ...routerAccounting(receipts, costFor(model, usage)) };
+          }
+          const msg = result.failure?.startsWith("provider-accounting:") ? result.failure : error.message;
           verdict = { pass: false, detail: `harness-${classifyFailure(msg)}: ${msg}` };
         } finally {
-          await context?.close();
+          try { await context?.close(); }
+          catch (error) { verdict = { pass: false, detail: `harness-infra: browser context close: ${error.message}` }; }
         }
         const attemptMs = result.attemptMs ?? 0;
         const setupMs = result.setupMs ?? 0;
@@ -57,11 +75,16 @@ export async function runBatch({
         const row = {
           run_id: newRunId(task.id, method.id),
           task_id: task.id,
+          attempt_index: repeat,
           arm: method.id,
           method: method.id,
           model,
           model_snapshot: result.model_snapshot ?? "",
-          tool_version: method.version ?? "local",
+          tool_version: result.tool_version ?? method.version ?? "local",
+          transport: result.transport ?? method.transport ?? "direct",
+          provider: result.provider ?? "", provider_pin: result.provider_pin ?? "",
+          billed_cost_usd: result.billed_cost_usd ?? "",
+          generation_ids: JSON.stringify(result.generation_ids ?? []),
           site: siteId,
           start_url: capsule.baseUrl,
           success: verdict.pass,
@@ -88,7 +111,7 @@ export async function runBatch({
           caching: result.caching ?? "unsupported",
           tokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
           est_cost_usd: result.cost ?? 0,
-          cost_estimated: result.cost_estimated ?? "",
+          cost_estimated: result.cost_estimated ?? (method.paid ? true : ""),
           retries: result.retries ?? 0,
           retry_wait_ms: result.retry_wait_ms ?? 0,
           budget_exhausted: result.budget_exhausted ?? false,

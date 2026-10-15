@@ -1,72 +1,29 @@
 # Model comparison
 
-Two sections: the **current canonical board** (v1.2, regenerated from
-`canonical/results.csv`) and a **historical snapshot** of the expansion runs as
-they were measured at the time. Definitions match the README: infrastructure
-rows excluded, success per attempt, tokens are total processed (uncached input
-+ cache reads + cache writes + output), time is median agent time. Board
-versions and what changed between them: [`../CHANGELOG.md`](../CHANGELOG.md).
+Current board v1.3, generated from `canonical/results.csv`. Tasks are solved
+by majority vote; costs and agent times are medians across all valid attempts.
+See [provenance](canonical/PROVENANCE.md) and [changes](../CHANGELOG.md).
 
-## Current canonical board (v1.2) — paired setups per model
-
-| Interface | Model | Attempt success | Tasks solved | Median cost / attempt | Median tokens / attempt | Median agent time |
-|---|---|---:|---:|---:|---:|---:|
-| DOM (ultrafast) (no WebMCP) | Jev + Mercury 2.5 | 51.7% (76/147) | 25/49 | $0.0008 | 13,892 | 5.4s |
-| WebMCP | Jev + Mercury 2.5 | 95.9% (141/147) | 49/49 | $0.0011 | 9,793 | 3.2s |
-| Computer use | GPT-5.6 Luna | 91.2% (134/147) | 45/49 | $0.017 | 20,914 | 18.3s |
-| Computer use | GPT-5.6 SOL | 91.2% (134/147) | 46/49 | $0.063 | 16,235 | 27.3s |
-| Computer use | Gemini 3.6 Flash | 88.4% (130/147) | 43/49 | $0.020 | 23,857 | 33.7s |
-| Computer use | Claude Opus 5 | 91.2% (134/147) | 45/49 | $0.139 | 47,141 | 50.4s |
-| Computer use | GPT-6 Astra | 91.8% (135/147) | 45/49 | $0.261 | 20,560 | 20.8s |
-| Code execution | GPT-6 Astra | 100.0% (147/147) | 49/49 | $0.119 | 10,982 | 16.4s |
-| WebMCP | GPT-5.6 Luna | 99.3% (146/147) | 49/49 | $0.002 | 2,596 | 5.7s |
-| WebMCP | GPT-5.6 SOL | 98.6% (145/147) | 49/49 | $0.012 | 2,573 | 9.3s |
-| WebMCP | Gemini 3.6 Flash | 100.0% (147/147) | 49/49 | $0.004 | 4,453 | 7.2s |
-| WebMCP | Claude Opus 5 | 100.0% (147/147) | 49/49 | $0.014 | 4,770 | 9.8s |
-| WebMCP | GPT-6 Astra | 99.3% (146/147) | 49/49 | $0.017 | 2,575 | 6.3s |
-
-### Majority-task success (current board)
-
-| Interface | GPT-5.6 Luna | GPT-5.6 SOL | Gemini 3.6 Flash | Claude Opus 5 | GPT-6 Astra |
-|---|---:|---:|---:|---:|---:|
-| Computer use | 45/49 | 46/49 | 43/49 | 45/49 | 45/49 |
-| WebMCP | 49/49 | 49/49 | 49/49 | 49/49 | 49/49 |
-
-Code execution (GPT-6 Astra only): 49/49. Jev + Mercury 2.5: 49/49 with WebMCP; 25/49 with DOM controls.
-
-### Tracked canonical cost (current board)
-
-| Model | Paired setups tracked cost |
-|---|---:|
-| Jev + Mercury 2.5 (DOM controls + WebMCP) | $0.45 |
-| GPT-5.6 Luna | $5.57 |
-| GPT-5.6 SOL | $26.52 |
-| Gemini 3.6 Flash | $6.39 |
-| Claude Opus 5 | $34.37 |
-| GPT-6 Astra | $70.02 |
-| GPT-6 Astra incl. code execution | $105.55 |
-
-### Takeaways (current board)
-
-- Every native WebMCP configuration solves 49/49 tasks; Gemini 3.6 Flash and
-  Claude Opus 5 pass all 147 attempts, Luna and Astra 146/147, SOL 145/147.
-  Until v1.1 the Medusa checkout task capped every WebMCP row at 48/49 by
-  construction (see the changelog).
-- Jev + Mercury 2.5 leads the composite score with WebMCP at $0.0011 and 3.2s per median attempt. Its page setup costs less ($0.0008) but solves only 25/49 tasks. These use different harnesses; the comparison does not isolate the interface. Unknown usage and excluded infrastructure costs are listed in the [release provenance](2026-09-18-jev-mercury/PROVENANCE.md).
-- Computer use tops out at 91.8% attempt success (GPT-6 Astra); no
-  screenshot configuration solves more than 46/49 tasks. Turn-cap hits on the
-  screenshot arms: GPT-5.6 Luna 11, GPT-5.6 SOL 12, Gemini 3.6 Flash 22, Claude Opus 5 27, GPT-6 Astra 11.
-- Astra is the first model measured with OpenAI's code-execution interface
-  alongside screenshots and WebMCP. Its screenshot row is the most expensive on
-  the board ($0.261 per median attempt — roughly 2× SOL's input price and 1.7×
-  its output price, more turns per task, and cache reads on only 1 of 147
-  attempts) for a mid-pack 45/49.
-- OpenAI's recommended code-execution mode is the strongest screen-driving
-  result measured here: 147/147 attempts and 49/49 tasks at $0.119 and 16.4s.
-  Same model, same tasks, native WebMCP is 6.9× cheaper, 4.3× lighter and
-  2.6× faster at the same 49/49.
-- Astra was the most expensive model to measure: $105.55 across its three arms
-  (computer use $66.69, code execution $35.53, WebMCP $3.33).
+| Configuration | Interface | Solved | Attempts | Turn-cap | Median cost | Median tokens | Median s |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Haiku 5.5 | WebMCP | 49/49 | 147/147 | 0 | $0.000251 | 5,153 | 3.7 |
+| GPT-6 Luna | WebMCP | 48/49 | 144/147 | 0 | $0.000194 | 2,525 | 5.0 |
+| Jev + Mercury 2.5 | WebMCP | 49/49 | 141/147 | 0 | $0.001064 | 9,793 | 3.2 |
+| Sonnet 5.5 | WebMCP | 49/49 | 147/147 | 0 | $0.003530 | 5,046 | 4.2 |
+| GPT-6.1 Sol | WebMCP | 49/49 | 147/147 | 0 | $0.003432 | 2,502 | 8.0 |
+| Gemini 3.8 Flash | WebMCP | 49/49 | 147/147 | 0 | $0.003638 | 3,799 | 8.3 |
+| GPT-6 Astra | WebMCP | 49/49 | 146/147 | 0 | $0.017100 | 2,575 | 6.3 |
+| Muse Wonder | WebMCP | 49/49 | 146/147 | 1 | $0.015549 | 5,236 | 8.2 |
+| Claude Opus 5 | WebMCP | 49/49 | 147/147 | 0 | $0.014013 | 4,770 | 9.8 |
+| GPT-6.1 Sol | Code execution | 49/49 | 147/147 | 0 | $0.019001 | 10,503 | 16.5 |
+| GPT-6 Luna | Computer use | 41/49 | 128/147 | 9 | $0.002112 | 21,177 | 19.4 |
+| Haiku 5.5 | Computer use | 41/49 | 123/147 | 0 | $0.001698 | 37,601 | 16.0 |
+| GPT-6 Astra | Code execution | 49/49 | 147/147 | 0 | $0.118676 | 10,982 | 16.4 |
+| Sonnet 5.5 | Computer use | 47/49 | 140/147 | 3 | $0.031641 | 37,339 | 19.7 |
+| GPT-6.1 Sol | Computer use | 45/49 | 134/147 | 14 | $0.039839 | 20,797 | 20.8 |
+| Jev + Mercury 2.5 | DOM (ultrafast) | 25/49 | 76/147 | 19 | $0.000778 | 13,892 | 5.4 |
+| GPT-6 Astra | Computer use | 45/49 | 135/147 | 11 | $0.260780 | 20,560 | 20.8 |
+| Claude Opus 5 | Computer use | 45/49 | 134/147 | 27 | $0.138857 | 47,141 | 50.4 |
 
 ## Historical snapshot — expansion runs as measured at the time
 

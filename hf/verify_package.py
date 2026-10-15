@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import getpass
 import hashlib
+import json
 import os
 import re
 import subprocess
@@ -17,17 +18,28 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import yaml
 
-from build_dataset import CANARY, EXPECTED_ROWS, SCHEMAS
+from build_dataset import CANARY, EXPECTED_ROWS, SCHEMAS, REFRESH_FIELDS
 
 
 HF_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = HF_ROOT.parent
 DATA_DIR = HF_ROOT / "dataset" / "data"
+SOURCE = REPO_ROOT / "results" / "canonical"
+EXPECTED_CONFIGURATIONS = 21
+REFRESH = json.loads((HF_ROOT / "REFRESH.json").read_text()) if (HF_ROOT / "REFRESH.json").exists() else None
+if REFRESH:
+    if REFRESH["release"] != "v1.3" or type(REFRESH["configurations"]) is not int or REFRESH["configurations"] < 1:
+        raise ValueError("Unexpected model-refresh package")
+    EXPECTED_CONFIGURATIONS = REFRESH["configurations"]
+    EXPECTED_ROWS = {"attempts": EXPECTED_CONFIGURATIONS * 147, "verdicts": EXPECTED_CONFIGURATIONS * 49, "tasks": 49, "transcripts": EXPECTED_CONFIGURATIONS * 147}
+    SCHEMAS = {**SCHEMAS, "attempts": pa.schema(list(SCHEMAS["attempts"]) + [pa.field(*field) for field in REFRESH_FIELDS])}
 CONFIGS = {name: f"data/{name}.parquet" for name in SCHEMAS}
 ALLOWED_LOCAL_HOSTS = {
     "easyappointments.local", "invoice.local", "invoicing.local", "gmail.local", "erp.local",
 }
 SECRET_PATTERNS = [
+    ("Meta provider key", re.compile(r"LLM" r"[_|]\d+[_|][A-Za-z0-9_-]{10,}")),
+    ("OpenRouter key", re.compile(r"sk-" r"or-v1-[A-Za-z0-9_-]{10,}")),
     ("Anthropic provider key", re.compile(r"sk-" r"ant-api\d\d-[A-Za-z0-9_-]{10,}")),
     ("OpenAI project/service key", re.compile(r"sk-" r"(?:proj|svcacct)-[A-Za-z0-9_-]{10,}")),
     ("Google provider key", re.compile(r"AI" r"zaSy[A-Za-z0-9_-]{33}")),
@@ -65,6 +77,12 @@ def check_files() -> str:
     missing = sorted(path for path in required if not (HF_ROOT / path).is_file())
     if missing:
         raise AssertionError(f"missing: {', '.join(missing)}")
+    if REFRESH:
+        for name in ("score_answers.py", "PROVENANCE.json", "LICENSE"):
+            if sha256(HF_ROOT / name) != sha256(HF_ROOT / "dataset" / name):
+                raise AssertionError(f"dataset/{name} differs from the verified package")
+        if sha256(HF_ROOT / "LICENSE") != sha256(HF_ROOT / "space/LICENSE"):
+            raise AssertionError("Space license differs from the package")
     return f"{len(required)} required files present"
 
 
@@ -123,11 +141,15 @@ def check_dimensions() -> str:
         "configurations": len({(row["arm"], row["model"]) for row in attempts}),
         "sites": len({row["site"] for row in attempts}),
     }
-    expected = {"attempts": 3087, "verdicts": 1029, "tasks": 49, "configurations": 21, "sites": 8}
+    expected = {"attempts": EXPECTED_ROWS["attempts"], "verdicts": EXPECTED_ROWS["verdicts"], "tasks": 49, "configurations": EXPECTED_CONFIGURATIONS, "sites": 8}
     if counts != expected:
         raise AssertionError(f"dimensions {counts!r} != {expected!r}")
-    if len({(row["configuration"], row["site"], row["task_id"]) for row in verdicts}) != 1029:
+    if len({(row["configuration"], row["site"], row["task_id"]) for row in verdicts}) != EXPECTED_ROWS["verdicts"]:
         raise AssertionError("duplicate verdict cell")
+    from collections import Counter
+    cells = Counter((row["configuration"], row["site"], row["task_id"]) for row in attempts)
+    if set(cells.values()) != {3} or len(cells) != EXPECTED_ROWS["verdicts"]:
+        raise AssertionError("attempt cells must have exactly three repeats")
     return ", ".join(f"{key}={value}" for key, value in counts.items())
 
 
@@ -169,6 +191,11 @@ def check_sensitive_data() -> str:
     usernames = {getpass.getuser(), Path.home().name, os.environ.get("USER", "")}
     usernames -= {"", "root", "runner", "ubuntu", "user"}
     findings = []
+    # Exported prompts must never expose the seeded login password.
+    for row in pq.read_table(DATA_DIR / "tasks.parquet").to_pylist():
+        for match in re.finditer(r"password(?:\s*[:=]\s*|\s+(?:is\s+)?)[`\"']?([^\s,`\"']+)", row["prompt"], re.I):
+            if not re.fullmatch(r"\[redacted\][.;]?", match[1]):
+                findings.append(f"tasks:{row['task_id']}: unredacted fixture password")
     strings = 0
     for path in sorted(HF_ROOT.rglob("*")):
         if not path.is_file() or "__pycache__" in path.parts:
@@ -193,9 +220,10 @@ def check_sensitive_data() -> str:
 
 
 def check_space() -> str:
-    source = REPO_ROOT / "results" / "canonical" / "explorer.html"
+    source = SOURCE / "explorer.html"
     target = HF_ROOT / "space" / "index.html"
-    if sha256(source) != sha256(target):
+    expected = REFRESH["explorer_sha256"] if REFRESH else sha256(source)
+    if expected != sha256(target):
         raise AssertionError("space/index.html is not a byte-for-byte copy of canonical explorer.html")
     return f"self-contained explorer preserved ({target.stat().st_size} bytes)"
 

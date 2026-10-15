@@ -11,12 +11,12 @@ export const MECHANICS = { webmcp: "You operate the site exclusively through its
 // Opus 5 also thinks by default, but its rows were already measured at 4096 and
 // are retained in this refresh — changing it would alter a configuration
 // mid-generation, so only Sonnet 5 moves.
-export const maxTokensFor = (model) => String(model).startsWith("claude-sonnet-5") ? 16384 : 4096;
+export const maxTokensFor = (model) => /^claude-(?:sonnet-5|(?:opus|haiku)-5[.-]5)/.test(String(model).split("/").at(-1)) ? 16384 : 4096;
 
-export const providerFor = (model) => /^gpt-/.test(String(model)) ? "openai"
+export const providerFor = (model) => /^muse-/.test(String(model)) ? "meta" : /^gpt-/.test(String(model)) ? "openai"
   : /^gemini/.test(String(model)) ? "google" : "anthropic";
 export const apiKeyEnvFor = (model) =>
-  ({ openai: "OPENAI_API_KEY", google: "GEMINI_API_KEY", anthropic: "ANTHROPIC_API_KEY" })[providerFor(model)];
+  ({ meta: "MODEL_API_KEY", openai: "OPENAI_API_KEY", google: "GEMINI_API_KEY", anthropic: "ANTHROPIC_API_KEY" })[providerFor(model)];
 
 export const SAMPLING_LEGACY = /^claude-(sonnet-4-[0-6]|opus-4-[0-6]|haiku-4)/;
 export const claudeSampling = (model) => SAMPLING_LEGACY.test(String(model))

@@ -1,6 +1,7 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
 import Anthropic from "@anthropic-ai/sdk";
+import { assertNativeAnthropic, nativeAnthropicOptions, openRouterFetch, routerAccounting } from "../harness/openrouter.mjs";
 import { BASE_SYSTEM, MECHANICS, claudeSampling, withCacheBreakpoint, maxTokensFor } from "./prompts.mjs";
 
 const MODEL = "claude-sonnet-4-6";
@@ -77,11 +78,15 @@ function anthropicTools(tools) {
   });
 }
 
-export async function run({ task, capsule, page, model = MODEL }) {
+export async function run({ task, capsule, page, model = MODEL, transport = "direct", receipts = [], progress = {} }) {
   const started = performance.now();
   await prepareWebMCPPage(page, startUrl(task, capsule));
 
-  const client = new Anthropic({ maxRetries: 6 });
+  if (transport === "direct") assertNativeAnthropic();
+  const client = new Anthropic(transport === "openrouter"
+    ? { maxRetries: 6, apiKey: process.env.OPENROUTER_API_KEY, baseURL: "https://openrouter.ai/api", fetch: openRouterFetch(model, receipts) }
+    : nativeAnthropicOptions());
+  let cost = 0;
   const sampling = claudeSampling(model);
   const messages = [{ role: "user", content: task.prompt }];
   const usage = { input_tokens: 0, output_tokens: 0, cached_input_tokens: 0, cache_creation_tokens: 0 };
@@ -89,7 +94,7 @@ export async function run({ task, capsule, page, model = MODEL }) {
   // The task YAML's per-interface budget is authoritative; MAX_TURNS is only
   // the fallback when the task doesn't set one. Same rule in every arm.
   const limit = stepBudget(task, "webmcp", MAX_TURNS);
-  let finalText = "";
+  let finalText = "", failure = "";
   let model_snapshot = "";
   let lastStopReason = "";
   let turns = 0;
@@ -108,7 +113,8 @@ export async function run({ task, capsule, page, model = MODEL }) {
     }
 
     turns++;
-    const response = await client.messages.create({
+    let response;
+    try { response = await client.messages.create({
       model,
       max_tokens: maxTokensFor(model),
       ...sampling.request,
@@ -116,11 +122,13 @@ export async function run({ task, capsule, page, model = MODEL }) {
       tools: anthropicTools(tools),
       tool_choice: { type: "auto", disable_parallel_tool_use: true },
       messages: withCacheBreakpoint(messages),
-    });
+    }); } catch (error) { failure = error.message; break; }
     model_snapshot = response.model ?? model_snapshot;
     lastStopReason = response.stop_reason ?? lastStopReason;
+    cost += costFor(model, { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens, cached_input_tokens: response.usage.cache_read_input_tokens, cache_creation_tokens: response.usage.cache_creation_input_tokens });
     usage.input_tokens += response.usage.input_tokens ?? 0;
     usage.output_tokens += response.usage.output_tokens ?? 0;
+    Object.assign(progress, { usage, cost, model_snapshot, transcript });
     usage.cached_input_tokens += response.usage.cache_read_input_tokens ?? 0;
     usage.cache_creation_tokens += response.usage.cache_creation_input_tokens ?? 0;
     messages.push({ role: "assistant", content: response.content });
@@ -149,7 +157,8 @@ export async function run({ task, capsule, page, model = MODEL }) {
     await page.waitForTimeout(300);
   }
 
-  return { finalText, usage, transcript, cost: costFor(model, usage), turns, setupMs, model_snapshot,
+  return { finalText, usage, transcript, cost, ...(transport === "openrouter" ? routerAccounting(receipts, cost) : {}), turns, setupMs, model_snapshot,
+    failure: failure || (transport === "openrouter" ? routerAccounting(receipts, cost).failure : ""),
     budget_exhausted: turns === limit, temperature: sampling.temperature, caching: "enabled",
     stop_reason: lastStopReason, refusal: lastStopReason === "refusal", truncated: lastStopReason === "max_tokens",
     // No explicit effort is sent, so the model runs at the API default

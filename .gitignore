@@ -1,4 +1,5 @@
-node_modules/
+node_modules
+
 .venv-browseruse/
 .env
 .env.*
@@ -20,3 +21,7 @@ watchdog-status.json
 
 # packaging venv for the Hugging Face release (see hf/UPLOAD.md)
 .hfenv/
+
+# Private model-refresh smokes, receipts, ledger and checkpoints
+results/model-refresh-private/
+results/model-refresh-release-*/

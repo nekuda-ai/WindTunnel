@@ -1,5 +1,11 @@
 # WindTunnel changelog
 
+## v1.3 - 2026-10-15
+
+Added Haiku 5.5, Sonnet 5.5, GPT-6 Luna, GPT-6.1 Sol, Gemini 3.8 Flash and Muse Wonder. Haiku 5.5 leads the combined success, cost and speed score. The board has 18 configurations and 2,646 attempts.
+
+Retired Sonnet 5, GPT-5.6 and Gemini 3.6 from the current board; their published history stays available. Corrected four Sonnet 5.5 scoring misses (three WebMCP, one computer use); older published outcomes and costs are unchanged. Opus 5 stays while Opus 5.5 refusals are reviewed. Gemini 3.8 Flash and Muse Wonder have WebMCP results only. New raw transcripts and reasoning are omitted; fixture credentials are redacted.
+
 ## v1.2 - 2026-09-18
 
 Added Jev + Mercury 2.5 with WebMCP (49/49 tasks) and ultrafast DOM controls without WebMCP (25/49). The board now has 21 configurations and 3,087 attempts. Earlier scores are unchanged. Published data omits raw transcripts and redacts fixture credentials.
