@@ -1,8 +1,8 @@
 {
-  "release": "v1.3",
-  "configurations": 18,
-  "attempts": 2646,
-  "website_csv_sha256": "b21c99611a347236952d9cb702e93aa33d4e347aaf3e6e268623ddf966c93df4",
+  "release": "v1.4",
+  "configurations": 19,
+  "attempts": 2793,
+  "website_csv_sha256": "f5873f05e6a710a106463803bdc6c2b4a19186ec15fcac8940494cd1a1ea6fe4",
   "base_revision": "ca23b549a4ff93a584edf1f0870b95bd0534c593",
   "base_run_sha256": "397e65ece79cbf5028cce0466318c3473b9f8c42b5e5bfc81290acba38a9f846",
   "sources": [
@@ -117,6 +117,24 @@
         "task_set_hash": "42100ed71ecea25e6643d3d15e43b41424fca79f7983e74f4a44e6c95b7a1fa6",
         "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec"
       }
+    },
+    {
+      "configuration": "deepseek-v4.1-flash-1017-wm-chat",
+      "sha256": "32179738521a5ffa4d1764404f61ce0705d9659270450faa05a82de31615c38d",
+      "options": {
+        "git_revision": "dd928f83fc524a593ba3aabcc6fc45e92f55f8af",
+        "refresh_hash": "ef916f0610439379e706c47cce326ea3c97f95ff2d930e9a59674a64ba8fdbfa",
+        "task_set_hash": "42100ed71ecea25e6643d3d15e43b41424fca79f7983e74f4a44e6c95b7a1fa6",
+        "goldens_hash": "88421834fd03b608de6ec39ec125305c9f468f9f9729e801b29aef317eb3f2ec",
+        "seed": 1,
+        "n": 3,
+        "transport": "openrouter"
+      },
+      "provider": "Fireworks",
+      "provider_pin": "fireworks",
+      "effort": "high"
     }
-  ]
+  ],
+  "previous_release_revision": "0983d0e8008c4b9e3de89d621d1a4e41bc8e5b63",
+  "previous_release_run_sha256": "111aeda1d6acc9032ad6e11d3fb25c34fddaea0f4c7d24bb6d73a831bd20f11c"
 }

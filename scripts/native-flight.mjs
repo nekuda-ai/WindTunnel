@@ -14,6 +14,7 @@ import { setRequestBudget } from "../harness/native-request.mjs";
 let directory = path.join(root, "results/model-refresh-private/native-flight");
 let statePath = path.join(directory, "status.json"), stopPath = path.join(directory, "STOP");
 const lockPath = path.join(os.tmpdir(), "windtunnel-model-refresh.lock");
+export const flightConfigurations = refresh.configurations.filter(config => /^(claude-|gpt-|gemini-|muse-|deepseek-)/.test(config.model)).map(config => ({ ...config, transport: /^(muse-|deepseek-)/.test(config.model) ? config.transport : "direct" }));
 const cellKey = row => JSON.stringify([row.site, row.arm, row.model, row.task_id, row.attempt_index]);
 
 export function readCheckpoint(file, fingerprint, { strictBilling = false } = {}) {
@@ -97,7 +98,7 @@ async function main() {
   if (process.env.WT_FAKE_LIFECYCLE || process.env.WT_MANUAL_BASEURL) throw new Error("Live flight rejects fake/manual environments");
   if (execFileSync("git", ["status", "--porcelain"], { cwd: root, encoding: "utf8" }).trim()) throw new Error("Commit the harness before live flight");
   execFileSync("docker", ["info"], { stdio: "ignore" });
-  const native = refresh.configurations.filter(config => /^(claude-|gpt-|gemini-|muse-)/.test(config.model)).map(config => ({ ...config, transport: config.model.startsWith("muse-") ? config.transport : "direct" }));
+  const native = flightConfigurations;
   const ids = options.ids?.split(",") ?? ["gpt-6-luna-wm-gpt", "gpt-6-luna-cu-openai", "claude-haiku-5-5-wm-claude", "claude-haiku-5-5-cu-claude"];
   const selected = ids.map(id => { const config = native.find(config => config.id === id); if (!config) throw new Error(`Unknown native config ${id}`); return config; });
   if (new Set(ids).size !== ids.length) throw new Error("Duplicate config IDs");

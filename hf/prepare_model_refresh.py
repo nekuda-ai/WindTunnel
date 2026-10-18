@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and verify a local v1.3 HF package. Never upload or touch v1.2."""
+"""Prepare and verify a local HF package from a reviewed canonical board. Never upload."""
 import argparse
 import collections
 import json
@@ -21,8 +21,9 @@ def main():
     source, output = args.source.resolve(), args.output.resolve()
     run = json.loads((source / "run.json").read_text())
     configurations = len({(row["arm"], row["model"]) for row in run["rows"]})
-    if run["options"].get("release") != "v1.3" or not configurations or len(run["rows"]) != configurations * 147 or len(run["verdicts"]) != configurations * 49:
-        raise ValueError("Expected a validated v1.3 board with 49 tasks and three attempts per configuration")
+    release = run["options"].get("release")
+    if release not in {"v1.3", "v1.4"} or not configurations or len(run["rows"]) != configurations * 147 or len(run["verdicts"]) != configurations * 49:
+        raise ValueError("Expected a validated board with 49 tasks and three attempts per configuration")
     if output.exists():
         raise ValueError("Choose a fresh output directory")
     origin = Path(__file__).resolve().parent
@@ -39,7 +40,7 @@ def main():
         for name in ("score_answers.py", "PROVENANCE.json", "LICENSE"):
             shutil.copyfile(output / name, output / "dataset" / name)
         shutil.copyfile(output / "LICENSE", output / "space/LICENSE")
-        metadata = {"release": "v1.3", "configurations": configurations, "explorer_sha256": build.digest(source / "explorer.html")}
+        metadata = {"release": release, "configurations": configurations, "explorer_sha256": build.digest(source / "explorer.html")}
         (output / "REFRESH.json").write_text(json.dumps(metadata, indent=2) + "\n")
         frontmatter = (origin / "dataset/README.md").read_text().split("\n---\n", 1)[0] + "\n---\n"
         attempts = collections.defaultdict(list)
@@ -55,7 +56,7 @@ def main():
             cost = statistics.median(float(row["est_cost_usd"]) for row in rows)
             seconds = statistics.median(float(row["agent_s"] if row.get("agent_s") not in (None, "") else row["wall_clock_s"]) for row in rows)
             table.append(f"| {model} | {build.interface(arm)} | {solved}/49 | {passes}/147 | ${cost:.6f} | {seconds:.1f} |")
-        card = f"""\n# WindTunnel v1.3
+        card = f"""\n# WindTunnel {release}
 
 {configurations} model/interface configurations, 49 tasks, eight sites, seed 1, three attempts per cell and a 600-second agent cap.
 
@@ -71,7 +72,7 @@ Contamination canary: {build.CANARY}. Do not train on this benchmark.
 """
         (output / "dataset/README.md").write_text(frontmatter + card)
         space_metadata = (origin / "space/README.md").read_text().split("\n---\n", 1)[0] + "\n---\n"
-        (output / "space/README.md").write_text(space_metadata + f"\n# WindTunnel v1.3\n\nStatic explorer: {configurations} configurations, 49 tasks, eight sites, {configurations * 147} attempts.\n")
+        (output / "space/README.md").write_text(space_metadata + f"\n# WindTunnel {release}\n\nStatic explorer: {configurations} configurations, 49 tasks, eight sites, {configurations * 147} attempts.\n")
         shutil.copyfile(origin / "UPDATE.md", output / "UPLOAD.md")
         subprocess.run([sys.executable, str(output / "verify_package.py")], check=True)
     except BaseException:

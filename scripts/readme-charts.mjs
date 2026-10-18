@@ -35,6 +35,7 @@ const MODEL_LABEL = {
   "claude-sonnet-5-5": "Sonnet 5.5", "claude-opus-5-5": "Opus 5.5", "claude-haiku-5-5": "Haiku 5.5",
   "gpt-6.1-sol": "GPT-6.1 Sol", "gpt-6-luna": "GPT-6 Luna", "gemini-3.8-flash": "Gemini 3.8 Flash", "muse-wonder-1.0": "Muse Wonder",
   "deepseek-v4.1-flash": "DeepSeek V4.1", "glm-5.3": "GLM 5.3",
+  "deepseek-v4.1-flash-1017": "DeepSeek V4.1 Flash-1017",
   "typesafe-ai/jev+mercury-2.5": "Jev + Mercury 2.5",
   "claude-sonnet-5": "Sonnet 5", "claude-opus-5": "Opus 5",
   "gpt-5.6-luna": "Luna", "gpt-5.6-sol": "SOL", "gpt-6-astra": "Astra", "gemini-3.6-flash": "Gemini 3.6",

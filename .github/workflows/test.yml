@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # The publication gate checks the frozen v1.2 commit.
+          fetch-depth: 0 # The publication gate checks frozen earlier releases.
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}

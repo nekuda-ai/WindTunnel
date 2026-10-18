@@ -1,5 +1,9 @@
 # WindTunnel changelog
 
+## v1.4 - 2026-10-18
+
+Added DeepSeek V4.1 Flash-1017 with WebMCP (49/49 tasks). The board now has 19 configurations and 2,793 attempts.
+
 ## v1.3 - 2026-10-15
 
 Added Haiku 5.5, Sonnet 5.5, GPT-6 Luna, GPT-6.1 Sol, Gemini 3.8 Flash and Muse Wonder. Haiku 5.5 leads the combined success, cost and speed score. The board has 18 configurations and 2,646 attempts.

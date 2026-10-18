@@ -1,13 +1,19 @@
-# WindTunnel v1.3 provenance
+# WindTunnel v1.4 provenance
 
-18 configurations, 49 tasks, eight sites, seed 1, three attempts per cell:
-2,646 attempts and 882 majority verdicts. All published cohorts are complete.
+19 configurations, 49 tasks, eight sites, seed 1, three attempts per cell:
+2,793 attempts and 931 majority verdicts. All published cohorts are complete.
+
+All 18 v1.3 configurations retain their outcomes, usage, costs and timing.
+Flash-1017 adds 147 WebMCP attempts through OpenRouter, pinned to Fireworks
+with high reasoning and no provider fallback. Its page-structure run is
+incomplete and excluded.
 
 Seven configurations are retained from v1.2 (Opus 5, GPT-6 Astra and Jev +
 Mercury 2.5). Their outcomes, usage, costs and timing are unchanged. Earlier
 boards remain in Git history at `5ca8644` and the named result folders.
 
-Eleven new configurations use direct Anthropic, OpenAI, Google or Meta APIs.
+The v1.3 update added eleven configurations through direct Anthropic, OpenAI,
+Google or Meta APIs.
 Per-source hashes, measurement revisions and frozen runtime/task/golden hashes
 are in [PROVENANCE.json](PROVENANCE.json); `source` identifies each attempt's
 cohort. Measurement revisions predate this consolidated publication commit.
@@ -24,7 +30,8 @@ Smokes, provider diagnostics and infrastructure retries are outside this board.
 Genuine model failures remain, including Luna's unsolved task and Wonder's
 single turn-cap miss.
 
-Costs are estimates from recorded token usage at measurement-time rates;
+Flash-1017 costs use OpenRouter-reported billing receipts. Other costs are
+estimates from recorded token usage at measurement-time rates;
 retained historical costs are not repriced. Opus 5's older cache-write token
 counts are incomplete, so its total-token figures understate processed usage.
 Agent time excludes setup and reset. Settings and turn budgets vary by method;

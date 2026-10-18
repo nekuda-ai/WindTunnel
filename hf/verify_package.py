@@ -28,7 +28,7 @@ SOURCE = REPO_ROOT / "results" / "canonical"
 EXPECTED_CONFIGURATIONS = 21
 REFRESH = json.loads((HF_ROOT / "REFRESH.json").read_text()) if (HF_ROOT / "REFRESH.json").exists() else None
 if REFRESH:
-    if REFRESH["release"] != "v1.3" or type(REFRESH["configurations"]) is not int or REFRESH["configurations"] < 1:
+    if REFRESH["release"] not in {"v1.3", "v1.4"} or type(REFRESH["configurations"]) is not int or REFRESH["configurations"] < 1:
         raise ValueError("Unexpected model-refresh package")
     EXPECTED_CONFIGURATIONS = REFRESH["configurations"]
     EXPECTED_ROWS = {"attempts": EXPECTED_CONFIGURATIONS * 147, "verdicts": EXPECTED_CONFIGURATIONS * 49, "tasks": 49, "transcripts": EXPECTED_CONFIGURATIONS * 147}

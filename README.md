@@ -9,7 +9,7 @@
 
 **Benchmark WebMCP against other methods browser agents use to interact with websites.**
 
-**WebMCP solves 48-49 of 49 tasks, with 3.1× faster median execution and 9× lower median cost than other methods.**
+**WebMCP solves 48-49 of 49 tasks, with 3.4× faster median execution and 9× lower median cost than other methods.**
 
 [Quick start](#quick-start) · [Results](#results) · [Run data](results/) · [Methodology](docs/SPEC.md) · [Cost](#cost) · [WebMCP spec](https://github.com/webmachinelearning/webmcp)
 
@@ -17,7 +17,7 @@
 [![benchmark](https://img.shields.io/badge/benchmark-49%20tasks%20%C3%97%208%20sites-a9c1a0?style=flat-square&labelColor=2f3336)](tasks/)
 [![built on](https://img.shields.io/badge/built%20on-WebMCP-a9c1a0?style=flat-square&labelColor=2f3336)](https://github.com/webmachinelearning/webmcp)
 [![tests](https://img.shields.io/github/actions/workflow/status/nekuda-ai/WindTunnel/test.yml?branch=main&style=flat-square&label=tests&color=a9c1a0&labelColor=2f3336)](https://github.com/nekuda-ai/WindTunnel/actions/workflows/test.yml)
-[![results](https://img.shields.io/badge/results-18%20configurations%20%C2%B7%202%2C646%20attempts-eaa47c?style=flat-square&labelColor=2f3336)](#results)
+[![results](https://img.shields.io/badge/results-19%20configurations%20%C2%B7%202%2C793%20attempts-eaa47c?style=flat-square&labelColor=2f3336)](#results)
 
 </div>
 
@@ -64,18 +64,18 @@ A browser agent can operate a website through four main interfaces:
 
 ## Results
 
-**Canonical board v1.3: 2026-10-15** - 18 configurations × 49 tasks across eight
-sites × three attempts = **2,646 attempts** and **882 majority verdicts**, with
+**Canonical board v1.4: 2026-10-18** - 19 configurations × 49 tasks across eight
+sites × three attempts = **2,793 attempts** and **931 majority verdicts**, with
 a 600s per-attempt cap. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 **Haiku 5.5 takes first place** on the combined success, cost, and speed score:
-147/147 attempts passed, $0.000251 and 3.7s per median attempt. Eight of the nine
+147/147 attempts passed, $0.000251 and 3.7s per median attempt. Nine of the ten
 WebMCP configurations solve 49/49 tasks; GPT-6 Luna solves 48/49. Both
 code-execution configurations also solve 49/49.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/charts/balanced-leaderboard-dark.svg">
-  <img src="assets/charts/balanced-leaderboard.svg" alt="WindTunnel leaderboard: 18 configurations ranked by success, cost and speed. Haiku 5.5 with WebMCP ranks first." width="100%">
+  <img src="assets/charts/balanced-leaderboard.svg" alt="WindTunnel leaderboard: 19 configurations ranked by success, cost and speed. Haiku 5.5 with WebMCP ranks first." width="100%">
 </picture>
 
 <sub>Regenerate with `node scripts/readme-charts.mjs`.</sub>
@@ -87,6 +87,7 @@ and [interactive explorer](results/canonical/explorer.html).
 | Configuration | Interface | Solved | Attempts | Turn-cap | Median cost | Median tokens | Median s |
 |---|---|---:|---:|---:|---:|---:|---:|
 | Haiku 5.5 | WebMCP | 49/49 | 147/147 | 0 | $0.000251 | 5,153 | 3.7 |
+| DeepSeek V4.1 Flash-1017 | WebMCP | 49/49 | 147/147 | 0 | $0.000539 | 4,154 | 3.3 |
 | GPT-6 Luna | WebMCP | 48/49 | 144/147 | 0 | $0.000194 | 2,525 | 5.0 |
 | Jev + Mercury 2.5 | WebMCP | 49/49 | 141/147 | 0 | $0.001064 | 9,793 | 3.2 |
 | Sonnet 5.5 | WebMCP | 49/49 | 147/147 | 0 | $0.003530 | 5,046 | 4.2 |
@@ -111,12 +112,12 @@ and reset. Tokens include uncached input, cache reads, cache writes and output.
 Historical Opus 5 cache-write tokens were under-recorded; its recorded costs are
 preserved.</sub>
 
-**WebMCP is 3.1× faster and 9× cheaper at the median.** These compare the median
+**WebMCP is 3.4× faster and 9× cheaper at the median.** These compare the median
 WebMCP configuration with the median configuration using another interface;
 each configuration has equal weight. Composite scores weight attempt success
 60%, log-normalized cost 20%, and log-normalized agent time 20%.
 
-**Turn-cap hits:** 1/1,323 WebMCP attempts versus 83/1,323 other-interface
+**Turn-cap hits:** 1/1,470 WebMCP attempts versus 83/1,323 other-interface
 attempts. Across the six same-model WebMCP/computer-use pairs, the counts are
 0 versus 64 out of 882 attempts on each side. Interface-specific turn budgets
 remain in force.
@@ -179,10 +180,10 @@ Each task also carries a per-interface turn budget — a screenshot agent needs
 
 ## The methods
 
-The board has 18 configurations: nine with WebMCP and nine using screenshots,
+The board has 19 configurations: ten with WebMCP and nine using screenshots,
 DOM controls, or code execution. Models are Haiku 5.5, Sonnet 5.5, Opus 5,
 GPT-6 Luna, GPT-6.1 Sol, GPT-6 Astra, Gemini 3.8 Flash, Muse Wonder, and
-Jev + Mercury 2.5. Every configuration uses the same 49 tasks and scoring.
+Jev + Mercury 2.5, and DeepSeek V4.1 Flash-1017. Every configuration uses the same 49 tasks and scoring.
 
 Jev makes decisions; Mercury writes arguments or field values and the final answer.
 The WebMCP and ultrafast page setups use separate frozen harnesses, so this is a
@@ -206,12 +207,12 @@ interface:
 
 | Interface | Configurations | Median tokens | Median cost |
 |---|---:|---:|---:|
-| WebMCP | 9 | 2,502–9,793 | $0.000194–$0.017100 |
+| WebMCP | 10 | 2,502–9,793 | $0.000194–$0.017100 |
 | Code execution | 2 | 10,503–10,982 | $0.019001–$0.118676 |
 | Computer use | 6 | 20,560–47,141 | $0.001698–$0.260780 |
 | DOM (ultrafast) | 1 | 13,892 | $0.000778 |
 
-The current board contains **$173.50 in recorded attempt costs**, including retained
+The current board contains **$173.61 in recorded attempt costs**, including retained
 measurements. This excludes smokes, discarded infrastructure attempts and
 provider diagnostics; it is not the total campaign bill. Costs use recorded
 usage and rates at measurement time.
