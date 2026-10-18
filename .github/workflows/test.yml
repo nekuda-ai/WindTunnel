@@ -17,11 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # The publication gate checks the frozen v1.2 commit.
+          fetch-depth: 0 # The publication gate checks frozen earlier releases.
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm test
       - name: Verify published benchmark results
         run: node scripts/verify-published-results.mjs
