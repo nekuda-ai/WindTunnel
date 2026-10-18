@@ -33,9 +33,11 @@ export function stagehandModel(apiKey, model, seen = {}, transport = "direct", r
   return { modelName: `${providerFor(model)}/${model}`, ...samplingFor(model).request, fetch: snapshotCapture(seen), ...(apiKey ? { apiKey } : {}) };
 }
 
-function createStagehand(apiKey, model = DEFAULT_MODEL, seen = {}, transport = "direct", receipts = []) {
+export function createStagehand(apiKey, model = DEFAULT_MODEL, seen = {}, transport = "direct", receipts = []) {
   return new Stagehand({
     env: "LOCAL",
+    experimental: true,
+    disableAPI: true,
     disablePino: true,
     verbose: 0,
     domSettleTimeout: 3000,

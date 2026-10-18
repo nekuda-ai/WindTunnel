@@ -7,7 +7,7 @@ import { parseArgs, planRuns, runBenchmark } from "../harness/cli.mjs";
 import { executeAction, versionFor, run as runComputer } from "../arms/cu-claude.mjs";
 import { run as runClaude } from "../arms/wm-claude.mjs";
 import { run as runChat } from "../arms/wm-chat.mjs";
-import { stagehandModel } from "../arms/stagehand.mjs";
+import { stagehandModel, createStagehand } from "../arms/stagehand.mjs";
 import { Stagehand } from "@browserbasehq/stagehand";
 import fs from "node:fs";
 import os from "node:os";
@@ -164,6 +164,19 @@ test("Claude toolset handles modifiers, key repeats, mouse buttons and crop", as
   assert.equal(calls.filter(([type]) => type === "key").length, 4);
   assert.equal((await executeAction(p, { action: "cursor_position" }, cursor)).text, "X=10, Y=20");
   await assert.rejects(executeAction(p, { action: "zoom", region: [1, 1, -1, -1] }), /Invalid zoom/);
+});
+
+test("local Stagehand honors agent cancellation before making a paid request", async () => {
+  const old = process.env.OPENROUTER_API_KEY;
+  process.env.OPENROUTER_API_KEY = "test-router";
+  const stagehand = createStagehand("test-router", "deepseek-v4.1-flash-1017", {}, "openrouter");
+  const original = globalThis.fetch;
+  try {
+    await stagehand.init();
+    globalThis.fetch = async () => { throw new Error("Unexpected paid API request"); };
+    const result = await stagehand.agent({ mode: "dom" }).execute({ instruction: "Do nothing.", signal: AbortSignal.abort(new Error("test cancelled")) }).catch(error => ({ message: error.message }));
+    assert.match(result.message, /test cancelled|aborted/i);
+  } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; await stagehand.close().catch(() => {}); }
 });
 
 test("Stagehand's installed SDK uses the pinned router transport and captures its receipt", async () => {
