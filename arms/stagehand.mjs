@@ -91,7 +91,7 @@ export async function run({ task, capsule, model = DEFAULT_MODEL, transport = "d
       setupMs,
       budget_exhausted: (result.actions?.length ?? 0) >= stepBudget(task, "structured", 20),
       temperature: samplingFor(model).temperature,
-      effort: "provider-default",
+      effort: transport === "openrouter" ? modelSpec(model).reasoning?.effort ?? "provider-default" : "provider-default",
       caching: transport === "openrouter" ? "provider-managed" : "unsupported",
     };
   } catch (error) {

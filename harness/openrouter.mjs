@@ -59,7 +59,7 @@ export function routerUsage(receipts) {
 
 export function routingBody(body, model = body.model) {
   const spec = modelSpec(model);
-  return { ...body, model: spec.openrouter_id, provider: { only: [spec.provider], order: [spec.provider], allow_fallbacks: false, require_parameters: true }, plugins: [] };
+  return { ...body, ...(spec.reasoning ? { reasoning: spec.reasoning } : {}), model: spec.openrouter_id, provider: { only: [spec.provider], order: [spec.provider], allow_fallbacks: false, require_parameters: true }, plugins: [] };
 }
 
 // Native SDKs and Stagehand retain their own request shapes. This fetch only

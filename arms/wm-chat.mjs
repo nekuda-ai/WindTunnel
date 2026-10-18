@@ -1,6 +1,6 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
-import { requestOpenRouter, routerAccounting } from "../harness/openrouter.mjs";
+import { requestOpenRouter, routerAccounting, modelSpec } from "../harness/openrouter.mjs";
 import { prepareWebMCPPage, listLiveTools, executeBridgeTool } from "./wm-claude.mjs";
 import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
 
@@ -51,5 +51,5 @@ export async function run({ task, capsule, page, model, receipts = [], progress 
   }
   const accounting = routerAccounting(receipts, costFor(model, usage));
   return { finalText, usage, transcript, turns, setupMs, model_snapshot, retries, retry_wait_ms, ...accounting,
-    failure: failure || accounting.failure, budget_exhausted: turns === limit, truncated, temperature: "default", effort: "api-default", caching: "provider-managed" };
+    failure: failure || accounting.failure, budget_exhausted: turns === limit, truncated, temperature: "default", effort: modelSpec(model).reasoning?.effort ?? "api-default", caching: "provider-managed" };
 }

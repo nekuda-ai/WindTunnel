@@ -23,9 +23,38 @@ const page = { context: () => context, async goto() {}, async waitForFunction() 
   async evaluate(_fn, input) { return input ? { ok: true } : [{ name: "noop", inputSchema: { type: "object", properties: {} } }]; } };
 const task = { id: "t", prompt: "Call noop, then finish.", tier: "answer" }, capsule = { baseUrl: "http://fake" };
 
-test("matrix plans all 22 configurations, without Grok or missing-key skips", () => {
+test("Flash 1017 flight preserves OpenRouter and pins Fireworks with high reasoning", async () => {
+  const { flightConfigurations = [] } = await import("../scripts/native-flight.mjs");
+  const configs = flightConfigurations.filter(c => c.model === "deepseek-v4.1-flash-1017");
+  assert.deepEqual(configs.map(c => c.arm).sort(), ["a11y-stagehand", "wm-chat"]);
+  for (const config of configs) {
+    const plan = planRuns(parseArgs(argsFor(config, 10, "test", false)), { OPENROUTER_API_KEY: "test-router" });
+    assert.equal(plan.notices.length, 0);
+    assert.equal(plan.runs.length, 8);
+    assert(plan.runs.every(r => r.method.transport === "openrouter"));
+  }
+  const original = globalThis.fetch, old = process.env.OPENROUTER_API_KEY;
+  process.env.OPENROUTER_API_KEY = "test-router";
+  try {
+    globalThis.fetch = async (_url, init) => {
+      const body = JSON.parse(init.body);
+      assert.equal(body.model, "deepseek/deepseek-v4.1-flash-1017");
+      assert.deepEqual(body.provider.only, ["fireworks"]);
+      assert.equal(body.provider.allow_fallbacks, false);
+      assert.equal(body.reasoning.effort, "high");
+      return json({ id: "gen-flash-1017", model: body.model, provider: "Fireworks", usage: { prompt_tokens: 100, completion_tokens: 10, cost: 0.0001 }, choices: [{ finish_reason: "stop", message: { role: "assistant", content: "Final answer: done" } }] });
+    };
+    const result = await runChat({ task, capsule, page, model: "deepseek-v4.1-flash-1017" });
+    assert.equal(result.failure, "");
+    assert.equal(result.effort, "high");
+    assert.equal(result.provider_pin, "fireworks");
+    assert.equal(result.cost_estimated, false);
+  } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
+});
+
+test("matrix plans all 24 configurations, without Grok or missing-key skips", () => {
   assert.deepEqual(parseArgs(argsFor(refresh.configurations[0], 1, "test", true)).taskIds, ["md-1", "md-5"]);
-  assert.equal(refresh.configurations.length, 22);
+  assert.equal(refresh.configurations.length, 24);
   assert.equal(refresh.configurations.filter((c) => c.role === "current").length, 17);
   assert(!JSON.stringify(refresh).toLowerCase().includes("grok"));
   for (const c of refresh.configurations) {
