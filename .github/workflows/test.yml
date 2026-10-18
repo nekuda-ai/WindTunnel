@@ -22,7 +22,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       - run: npm test
       - name: Verify published benchmark results
         run: node scripts/verify-published-results.mjs

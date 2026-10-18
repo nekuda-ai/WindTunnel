@@ -172,7 +172,6 @@ test("local Stagehand honors agent cancellation before making a paid request", a
   const stagehand = createStagehand("test-router", "deepseek-v4.1-flash-1017", {}, "openrouter");
   const original = globalThis.fetch;
   try {
-    await stagehand.init();
     globalThis.fetch = async () => { throw new Error("Unexpected paid API request"); };
     const result = await stagehand.agent({ mode: "dom" }).execute({ instruction: "Do nothing.", signal: AbortSignal.abort(new Error("test cancelled")) }).catch(error => ({ message: error.message }));
     assert.match(result.message, /test cancelled|aborted/i);
