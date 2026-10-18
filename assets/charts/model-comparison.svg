@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1158 930" width="1158" height="930" font-family="system-ui,-apple-system,sans-serif" font-size="13">
 <text x="18" y="33" font-size="14" font-weight="600" fill="#1f2328">WindTunnel — WebMCP vs. page operation</text>
-<text x="18" y="50" font-size="11.5" fill="#57606a">49 tasks × 8 sites × 3 attempts · 600s per-attempt agent cap · 2,646 attempts</text>
+<text x="18" y="50" font-size="11.5" fill="#57606a">49 tasks × 8 sites × 3 attempts · 600s per-attempt agent cap · 2,793 attempts</text>
 <line x1="18" y1="56" x2="1140" y2="56" stroke="#d0d7de" stroke-width="1"/>
 <text x="18" y="74" font-size="13.5" font-weight="600" fill="#1f2328">Success rate — attempts passed</text>
 <line x1="18" y1="82" x2="504" y2="82" stroke="#d0d7de" stroke-width="1"/>

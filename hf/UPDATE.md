@@ -4,18 +4,18 @@ Preparation is local. Upload only after the reviewed website board is final.
 The existing repositories are `nekuda/windtunnel` (dataset) and
 `nekuda/windtunnel-results-explorer` (static Space).
 
-## Prepare from the website board
+## Prepare from the reviewed canonical board
 
 From the packaging checkout, activate its existing environment:
 
 ```bash
 source .hfenv/bin/activate
-python hf/prepare_refresh_source.py "$BOARD_CSV" "$RUN_REPO" "$SOURCE_DIR"
-python hf/prepare_model_refresh.py "$SOURCE_DIR" "$PACKAGE_DIR"
+node scripts/verify-published-results.mjs
+python hf/prepare_model_refresh.py results/canonical "$PACKAGE_DIR"
 ```
 
-Set those four paths to the reviewed website CSV, run checkout, and two fresh
-output folders. Source hashes, three attempts per task, and website metrics are
+Set `PACKAGE_DIR` to a fresh output folder. The reviewed website CSV must match
+`results/canonical/results.csv`. Source hashes and three attempts per task are
 checked before packaging. Incomplete runs and smoke tests stay out.
 
 ## Review the package
@@ -48,8 +48,8 @@ files. Existing remote history is preserved.
 
 ```bash
 hf auth whoami
-hf upload nekuda/windtunnel dataset . --repo-type dataset --commit-message "Update WindTunnel v1.3 results"
-hf upload nekuda/windtunnel-results-explorer space . --repo-type space --commit-message "Update WindTunnel v1.3 explorer"
+hf upload nekuda/windtunnel dataset . --repo-type dataset --commit-message "Update WindTunnel v1.4 results"
+hf upload nekuda/windtunnel-results-explorer space . --repo-type space --commit-message "Update WindTunnel v1.4 explorer"
 ```
 
 ## Verify the uploaded bytes

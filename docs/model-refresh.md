@@ -1,6 +1,6 @@
 # Model refresh
 
-v1.3 adds six models to the current board. Results and exclusions are in the
+v1.4 adds DeepSeek V4.1 Flash-1017 with WebMCP to the current board. Results and exclusions are in the
 [root changelog](../CHANGELOG.md) and [provenance](../results/canonical/PROVENANCE.md).
 The manifest also contains preparation-only configurations; it is not a list
 of published results.
