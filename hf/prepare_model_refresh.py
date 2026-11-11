@@ -22,7 +22,7 @@ def main():
     run = json.loads((source / "run.json").read_text())
     configurations = len({(row["arm"], row["model"]) for row in run["rows"]})
     release = run["options"].get("release")
-    if release not in {"v1.3", "v1.4"} or not configurations or len(run["rows"]) != configurations * 147 or len(run["verdicts"]) != configurations * 49:
+    if release not in {"v1.3", "v1.4", "v1.5"} or not configurations or len(run["rows"]) != configurations * 147 or len(run["verdicts"]) != configurations * 49:
         raise ValueError("Expected a validated board with 49 tasks and three attempts per configuration")
     if output.exists():
         raise ValueError("Choose a fresh output directory")

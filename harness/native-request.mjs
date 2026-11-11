@@ -14,20 +14,24 @@ export const geminiGeneration = model => model === "gemini-4-argon"
 
 // ponytail: sequential flight shares one meter; parallel flights need separate meters.
 // Input reservation is an engineering bound, not a provider-certified token count.
-export async function boundedRequest(body, transport = "direct", receipts = []) {
+export async function boundedRequest(body, transport = "direct", receipts = [], format = "responses") {
   if (blocked) throw new Error("provider-accounting: previous request is uncertain; meter blocked");
   const google = body.model === "gemini-4-argon";
-  if (!google && body.model !== "muse-wonder-1.0") throw new Error("Unsupported bounded model");
+  const metaChat = format === "chat/completions" && body.model === "muse-ember-1.0" && transport === "direct";
+  if (format !== "responses" && !metaChat || !google && body.model !== "muse-wonder-1.0" && !metaChat) throw new Error("Unsupported bounded model or format");
   if (google && Date.now() >= Date.parse("2026-12-01T00:00:00Z")) throw new Error("provider-accounting: refresh expired Argon introductory prices");
   const key = google ? "GEMINI_API_KEY" : transport === "openrouter" ? "OPENROUTER_API_KEY" : "MODEL_API_KEY";
   if (!process.env[key]) throw new Error(`${key} is not set`);
-  body = google ? { ...body, generation_config: geminiGeneration(body.model) }
+  body = metaChat ? { ...body, max_tokens: 16384 } : google ? { ...body, generation_config: geminiGeneration(body.model) }
     : { ...body, store: false, max_output_tokens: 16384, include: ["reasoning.encrypted_content"] };
   const text = JSON.stringify(body);
   const images = (text.match(/"type":"(?:input_image|computer_screenshot|image)"/g) ?? []).length;
+  const inputReservation = Buffer.byteLength(text) + 16384 * (images + 1);
+  // ponytail: this smoke supports Ember's <=200K price tier; add tier pricing before larger contexts.
+  if (metaChat && inputReservation > 200_000) throw new Error("Direct Ember chat exceeds the supported short-context pricing bound");
   const reserved = costFor(body.model, {
-    input_tokens: Buffer.byteLength(text) + 16384 * (images + 1),
-    output_tokens: google ? body.generation_config.max_output_tokens : body.max_output_tokens,
+    input_tokens: inputReservation,
+    output_tokens: metaChat ? body.max_tokens : google ? body.generation_config.max_output_tokens : body.max_output_tokens,
   });
   if (reserved > remaining) throw new Error("provider-accounting: request budget would be exceeded before inference");
   remaining -= reserved;
@@ -35,25 +39,27 @@ export async function boundedRequest(body, transport = "direct", receipts = []) 
     const init = { method: "POST", body: text, signal: AbortSignal.timeout(600_000) };
     const response = transport === "openrouter"
       ? await openRouterFetch(body.model, receipts)("https://openrouter.ai/api/v1/responses", init)
-      : await fetch(google ? "https://generativelanguage.googleapis.com/v1beta/interactions" : "https://api.meta.ai/v1/responses", {
+      : await fetch(google ? "https://generativelanguage.googleapis.com/v1beta/interactions" : `https://api.meta.ai/v1/${format}`, {
         ...init, headers: google ? { "content-type": "application/json", "x-goog-api-key": process.env[key] }
           : { "content-type": "application/json", authorization: `Bearer ${process.env[key]}` },
       });
     if (!response.ok) throw new Error(`${transport === "openrouter" ? "OpenRouter" : google ? "Gemini" : "Meta"} ${response.status}: ${(await response.text()).slice(0, 500)}`);
     const result = await response.json(), u = result.usage ?? {};
+    if (metaChat && (result.model !== body.model || !result.id)) throw new Error("provider-accounting: missing request id or unexpected served Meta model");
     if (!google) for (const item of result.output ?? []) if (item.type === "reasoning" && item.summary == null) item.summary = [];
-    const input = google ? u.total_input_tokens : u.input_tokens;
-    const output = google ? u.total_output_tokens : u.output_tokens;
-    const cached = google ? u.total_cached_tokens ?? 0 : u.input_tokens_details?.cached_tokens ?? 0;
+    const input = metaChat ? u.prompt_tokens : google ? u.total_input_tokens : u.input_tokens;
+    const output = metaChat ? u.completion_tokens : google ? u.total_output_tokens : u.output_tokens;
+    const cached = metaChat ? u.prompt_tokens_details?.cached_tokens ?? 0 : google ? u.total_cached_tokens ?? 0 : u.input_tokens_details?.cached_tokens ?? 0;
     const thought = google ? u.total_thought_tokens ?? 0 : 0;
     const tools = google ? u.total_tool_use_tokens ?? 0 : 0;
     if (![input, output, cached, thought, tools].every(n => typeof n === "number" && Number.isFinite(n) && n >= 0) || cached > input + tools || input + output + thought <= 0) throw new Error("provider-accounting: invalid or missing token usage");
+    if (metaChat && input > 200_000) throw new Error("provider-accounting: unexpected long-context Meta usage");
     const receipt = receipts.at(-1);
     if (transport === "openrouter" && (!receipt || receipt.problems.length)) throw new Error(`provider-accounting: ${receipt?.problems.join("; ") ?? "missing receipt"}`);
     const cost = transport === "openrouter" ? receipt.cost : costFor(body.model, { input_tokens: input + tools - cached, output_tokens: output + thought, cached_input_tokens: cached });
     if (!Number.isFinite(cost) || cost < 0 || cost > reserved) throw new Error("provider-accounting: receipt exceeds request reservation");
     spent += cost; remaining += reserved - cost;
-    return { response: result, retries: 0, retry_wait_ms: 0 };
+    return { response: result, cost, retries: 0, retry_wait_ms: 0 };
   } catch (error) {
     blocked = true; // Do not retry a possibly billed request or release its reservation.
     throw new Error(`provider-accounting: uncertain request; ${error.message}`);

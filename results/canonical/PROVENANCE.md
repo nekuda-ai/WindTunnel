@@ -1,9 +1,16 @@
-# WindTunnel v1.4 provenance
+# WindTunnel v1.5 provenance
 
-19 configurations, 49 tasks, eight sites, seed 1, three attempts per cell:
-2,793 attempts and 931 majority verdicts. All published cohorts are complete.
+20 configurations, 49 tasks, eight sites, seed 1, three attempts per cell:
+2,940 attempts and 980 majority verdicts. All published cohorts are complete.
 
-All 18 v1.3 configurations retain their outcomes, usage, costs and timing.
+All 19 v1.4 configurations retain their outcomes, usage, costs and timing.
+Muse Ember adds 147 WebMCP attempts through the direct Meta API with high
+reasoning: 144 attempts passed and 48/49 tasks solved. All three About-page
+author misses are retained; no retries or provider refusals were recorded.
+Costs are estimates from returned token usage. The Google/OpenRouter cohort
+and incomplete Stagehand runs are excluded.
+
+The v1.4 update retained all 18 v1.3 configurations.
 Flash-1017 adds 147 WebMCP attempts through OpenRouter, pinned to Fireworks
 with high reasoning and no provider fallback. Its page-structure run is
 incomplete and excluded.

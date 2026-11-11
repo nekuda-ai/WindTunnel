@@ -52,9 +52,9 @@ test("Flash 1017 flight preserves OpenRouter and pins Fireworks with high reason
   } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
 });
 
-test("matrix plans all 24 configurations, without Grok or missing-key skips", () => {
+test("matrix plans all 27 configurations, without Grok or missing-key skips", () => {
   assert.deepEqual(parseArgs(argsFor(refresh.configurations[0], 1, "test", true)).taskIds, ["md-1", "md-5"]);
-  assert.equal(refresh.configurations.length, 24);
+  assert.equal(refresh.configurations.length, 27);
   assert.equal(refresh.configurations.filter((c) => c.role === "current").length, 17);
   assert(!JSON.stringify(refresh).toLowerCase().includes("grok"));
   for (const c of refresh.configurations) {
@@ -78,6 +78,34 @@ test("pricing chooses the longest prefix and normalizes OpenRouter IDs", () => {
   assert.equal(costFor("gpt-6-luna", { input_tokens: 1000, output_tokens: 1000 }), 0.0006);
   assert.ok(Math.abs(costFor("claude-haiku-5-5", { input_tokens: 99_999 }) - 0.0099999) < 1e-12);
   assert.equal(costFor("claude-haiku-5-5", { input_tokens: 100_000 }), 0.05);
+});
+
+test("Ember uses the same pinned Google transport and reasoning for both interfaces", async () => {
+  const { flightConfigurations } = await import("../scripts/native-flight.mjs");
+  const configs = flightConfigurations.filter(c => c.model === "muse-ember-1.0" && c.transport === "openrouter");
+  assert.deepEqual(configs.map(c => c.arm).sort(), ["a11y-stagehand", "wm-chat"]);
+  for (const config of configs) {
+    const plan = planRuns(parseArgs(argsFor(config, 1, "ember-check", true)), { OPENROUTER_API_KEY: "test-router" });
+    assert.equal(plan.notices.length, 0);
+    assert(plan.runs.every(r => r.method.transport === "openrouter" && r.method.key === "OPENROUTER_API_KEY"));
+  }
+  const original = globalThis.fetch, receipts = [];
+  try {
+    globalThis.fetch = async (_url, init) => {
+      const body = JSON.parse(init.body);
+      assert.equal(body.model, "meta/muse-ember");
+      assert.deepEqual(body.provider.only, ["google-vertex/global"]);
+      assert.equal(body.provider.allow_fallbacks, false);
+      assert.equal(body.reasoning.effort, "high");
+      return json({ id: "gen-ember", model: body.model, provider: "Google", usage: { prompt_tokens: 100, completion_tokens: 10, cost: 0.000015 } });
+    };
+    await openRouterFetch("muse-ember-1.0", receipts, env)("https://openrouter.ai/api/v1/chat/completions", { method: "POST", body: JSON.stringify({ model: "muse-ember-1.0" }) });
+    assert.equal(routerAccounting(receipts, 1).failure, "");
+    assert.equal(routerAccounting(receipts, 1).cost, 0.000015);
+    assert.equal(receipts[0].provider_pin, "google-vertex/global");
+    assert.match(receiptOf({ id: "gen-wrong-provider", model: "meta/muse-ember", provider: "Meta", usage: { prompt_tokens: 100, completion_tokens: 10, cost: 0.000015 } }, "muse-ember-1.0").problems.join("; "), /unexpected served provider Meta/);
+    assert.equal(costFor("muse-ember-1.0", { input_tokens: 1000, output_tokens: 1000 }), 0.0006);
+  } finally { globalThis.fetch = original; }
 });
 
 test("OpenRouter errors are infrastructure; task timeouts remain model outcomes", () => {
@@ -135,18 +163,20 @@ test("Chat Completions WebMCP preserves reasoning and completes a tool roundtrip
   } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
 });
 
-test("Anthropic-compatible WebMCP retains cache writes and router receipts", async () => {
+test("Google-hosted Sonnet calibration retains cache writes and router receipts", async () => {
   const original = globalThis.fetch, old = process.env.OPENROUTER_API_KEY;
   let calls = 0; process.env.OPENROUTER_API_KEY = "test-router";
   try {
     globalThis.fetch = async (_url, init) => {
       const body = JSON.parse(init.body); calls++;
-      assert.equal(body.model, "anthropic/claude-opus-5.5"); assert.equal(body.max_tokens, 16384);
-      return json({ id: `gen-${calls}`, type: "message", role: "assistant", model: body.model, provider: "Anthropic", stop_reason: calls === 1 ? "tool_use" : "end_turn", usage: { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 30, cache_read_input_tokens: 20, cost: 0.01 }, content: calls === 1 ? [{ type: "tool_use", id: "tool-1", name: "noop", input: {} }] : [{ type: "text", text: "Final answer: done" }] });
+      assert.equal(body.model, "anthropic/claude-sonnet-5"); assert.equal(body.max_tokens, 16384);
+      assert.deepEqual(body.provider.only, ["google-vertex/global"]); assert.equal(body.provider.allow_fallbacks, false);
+      return json({ id: `gen-${calls}`, type: "message", role: "assistant", model: body.model, provider: "Google", stop_reason: calls === 1 ? "tool_use" : "end_turn", usage: { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 30, cache_read_input_tokens: 20, cost: 0.01 }, content: calls === 1 ? [{ type: "tool_use", id: "tool-1", name: "noop", input: {} }] : [{ type: "text", text: "Final answer: done" }] });
     };
-    const result = await runClaude({ task, capsule, page, model: "claude-opus-5-5", transport: "openrouter" });
+    const result = await runClaude({ task, capsule, page, model: refresh.calibration.model, transport: "openrouter" });
     assert.equal(result.usage.cache_creation_tokens, 60); assert.equal(result.cost, 0.02);
     assert.equal(result.failure, ""); assert.equal(calls, 2);
+    assert.equal(result.provider_pin, "google-vertex/global");
   } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
 });
 

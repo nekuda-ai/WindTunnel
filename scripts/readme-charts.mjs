@@ -33,7 +33,7 @@ const CANON = process.argv[2] ?? "canonical";
 const canonRows = loadRows(CANON);
 const MODEL_LABEL = {
   "claude-sonnet-5-5": "Sonnet 5.5", "claude-opus-5-5": "Opus 5.5", "claude-haiku-5-5": "Haiku 5.5",
-  "gpt-6.1-sol": "GPT-6.1 Sol", "gpt-6-luna": "GPT-6 Luna", "gemini-3.8-flash": "Gemini 3.8 Flash", "muse-wonder-1.0": "Muse Wonder",
+  "gpt-6.1-sol": "GPT-6.1 Sol", "gpt-6-luna": "GPT-6 Luna", "gemini-3.8-flash": "Gemini 3.8 Flash", "muse-wonder-1.0": "Muse Wonder", "muse-ember-1.0": "Muse Ember",
   "deepseek-v4.1-flash": "DeepSeek V4.1", "glm-5.3": "GLM 5.3",
   "deepseek-v4.1-flash-1017": "DeepSeek V4.1 Flash-1017",
   "typesafe-ai/jev+mercury-2.5": "Jev + Mercury 2.5",
@@ -42,7 +42,7 @@ const MODEL_LABEL = {
 };
 const ARM_LABEL = {
   "wm-jev-mercury-v3": "WebMCP", "a11y-jev-mercury-ultrafast": "DOM (ultrafast)",
-  "wm-meta": "WebMCP", "wm-chat": "WebMCP", "wm-claude": "WebMCP", "wm-gpt": "WebMCP", "wm-gemini": "WebMCP",
+  "wm-meta": "WebMCP", "wm-meta-chat": "WebMCP", "wm-chat": "WebMCP", "wm-claude": "WebMCP", "wm-gpt": "WebMCP", "wm-gemini": "WebMCP",
   "wm-stagehand-v4": "WebMCP/Stagehand v4", "wm-stagehand-v4-gemini": "WebMCP/Stagehand v4",
   "cu-claude": "CU", "cu-openai": "CU", "cu-gemini": "CU", "code-openai": "code exec",
   "a11y-stagehand": "accessibility tree", "dom-browseruse": "DOM + vision",

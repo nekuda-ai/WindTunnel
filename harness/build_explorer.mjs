@@ -34,14 +34,14 @@ const SITE_TYPE = (() => {
 const METHOD_LABEL = {
   "wm-jev-mercury-v3": "WebMCP", "a11y-jev-mercury-ultrafast": "DOM (ultrafast)",
   "wm-chat": "WebMCP", "wm-claude": "WebMCP · Claude", "wm-gpt": "WebMCP · GPT", "code-openai": "Code execution · GPT",
-  "wm-meta": "WebMCP", "wm-gemini": "WebMCP",
+  "wm-meta": "WebMCP", "wm-meta-chat": "WebMCP", "wm-gemini": "WebMCP",
   "wm-stagehand": "WebMCP · Stagehand", "cu-claude": "Computer use · Claude",
   "cu-openai": "Computer use · GPT", "dom-browseruse": "Browser Use · DOM + screenshot",
   "a11y-stagehand": "Page structure · Stagehand (a11y)", "scripted": "Scripted (no-LLM)",
 };
 const CLASS = (a) => a.startsWith("wm") ? "webmcp" : a.startsWith("cu") ? "cu" : a.startsWith("code") ? "code" : a === "scripted" ? "scripted" : "struct";
 const MODEL_LABEL = {
-  "muse-wonder-1.0": "Muse Wonder", "gemini-4-argon": "Gemini 4 Argon",
+  "muse-wonder-1.0": "Muse Wonder", "muse-ember-1.0": "Muse Ember", "gemini-4-argon": "Gemini 4 Argon",
   "claude-sonnet-5-5": "Sonnet 5.5", "claude-opus-5-5": "Opus 5.5", "claude-haiku-5-5": "Haiku 5.5",
   "gpt-6.1-sol": "GPT-6.1 Sol", "gpt-6-luna": "GPT-6 Luna", "gemini-3.8-flash": "Gemini 3.8",
   "deepseek-v4.1-flash": "DeepSeek V4.1", "glm-5.3": "GLM 5.3",

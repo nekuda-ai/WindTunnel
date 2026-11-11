@@ -1,12 +1,14 @@
 import { startUrl, stepBudget, withToday } from "../harness/tasks.mjs";
 import { costFor } from "../harness/lib.mjs";
-import { requestOpenRouter, routerAccounting, modelSpec } from "../harness/openrouter.mjs";
+import { requestOpenRouter, routerAccounting, modelSpec, responseRefused } from "../harness/openrouter.mjs";
+import { boundedRequest } from "../harness/native-request.mjs";
 import { prepareWebMCPPage, listLiveTools, executeBridgeTool } from "./wm-claude.mjs";
 import { BASE_SYSTEM, MECHANICS } from "./prompts.mjs";
 
 export const TOOL_VERSION = "openrouter-chat-completions";
 
-export async function run({ task, capsule, page, model, receipts = [], progress = {} }) {
+export async function run({ task, capsule, page, model, transport = "openrouter", receipts = [], progress = {} }) {
+  if (transport !== "openrouter" && (transport !== "direct" || model !== "muse-ember-1.0")) throw new Error("Unsupported direct chat model");
   const started = performance.now();
   await prepareWebMCPPage(page, startUrl(task, capsule));
   const setupMs = performance.now() - started;
@@ -15,6 +17,8 @@ export async function run({ task, capsule, page, model, receipts = [], progress 
   const messages = [{ role: "system", content: withToday(`${BASE_SYSTEM} ${MECHANICS.webmcp}`) }, { role: "user", content: task.prompt }];
   const usage = { input_tokens: 0, output_tokens: 0, cached_input_tokens: 0, cache_creation_tokens: 0 };
   const transcript = [];
+  const generationIds = [];
+  let cost = 0, refusal = false;
   let turns = 0, finalText = "", failure = "", truncated = false, model_snapshot = "", retries = 0, retry_wait_ms = 0;
   while (turns < limit) {
     if (performance.now() >= deadline) { failure = "attempt timeout: 600s agent budget"; break; }
@@ -23,7 +27,12 @@ export async function run({ task, capsule, page, model, receipts = [], progress 
     const tools = live.map(({ name, description, inputSchema }) => ({ type: "function", function: { name, description: description ?? "", parameters: inputSchema ?? { type: "object", properties: {} } } }));
     turns++;
     let outcome;
-    try { outcome = await requestOpenRouter("chat/completions", { model, messages, tools, tool_choice: "auto", max_tokens: 16384 }, receipts); }
+    try {
+      const body = { model, messages, tools, tool_choice: "auto", max_tokens: 16384 };
+      outcome = transport === "direct"
+        ? await boundedRequest({ ...body, reasoning_effort: modelSpec(model).reasoning.effort }, "direct", [], "chat/completions")
+        : await requestOpenRouter("chat/completions", body, receipts);
+    }
     catch (error) { failure = error.message; break; }
     const response = outcome.response, details = response.usage?.prompt_tokens_details ?? {};
     retries += outcome.retries; retry_wait_ms += outcome.retry_wait_ms;
@@ -32,12 +41,17 @@ export async function run({ task, capsule, page, model, receipts = [], progress 
     usage.cached_input_tokens += cached; usage.cache_creation_tokens += written;
     usage.output_tokens += response.usage?.completion_tokens ?? 0;
     model_snapshot = response.model ?? model_snapshot;
+    cost += outcome.cost ?? 0;
+    if (response.id) generationIds.push(response.id);
+    refusal ||= responseRefused(response);
+    Object.assign(progress, { usage, cost, model_snapshot, transcript });
     const choice = response.choices?.[0];
     if (!choice?.message) { failure = "provider-accounting: empty chat completion"; break; }
     truncated ||= choice.finish_reason === "length";
     messages.push(choice.message);
     transcript.push({ turn: turns, role: "assistant", content: choice.message, usage: response.usage });
     finalText = choice.message.content || finalText;
+    if (transport === "direct" && (truncated || refusal)) break;
     const calls = choice.message.tool_calls ?? [];
     if (!calls.length) break;
     for (const call of calls) {
@@ -49,7 +63,8 @@ export async function run({ task, capsule, page, model, receipts = [], progress 
     }
     await page.waitForTimeout(300);
   }
-  const accounting = routerAccounting(receipts, costFor(model, usage));
+  const accounting = transport === "openrouter" ? routerAccounting(receipts, costFor(model, usage))
+    : { transport: "direct", provider: "Meta", provider_pin: "api.meta.ai", generation_ids: generationIds, cost, cost_estimated: true, refusal, failure: "" };
   return { finalText, usage, transcript, turns, setupMs, model_snapshot, retries, retry_wait_ms, ...accounting,
     failure: failure || accounting.failure, budget_exhausted: turns === limit, truncated, temperature: "default", effort: modelSpec(model).reasoning?.effort ?? "api-default", caching: "provider-managed" };
 }
