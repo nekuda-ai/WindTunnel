@@ -52,9 +52,9 @@ test("Flash 1017 flight preserves OpenRouter and pins Fireworks with high reason
   } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
 });
 
-test("matrix plans all 26 configurations, without Grok or missing-key skips", () => {
+test("matrix plans all 27 configurations, without Grok or missing-key skips", () => {
   assert.deepEqual(parseArgs(argsFor(refresh.configurations[0], 1, "test", true)).taskIds, ["md-1", "md-5"]);
-  assert.equal(refresh.configurations.length, 26);
+  assert.equal(refresh.configurations.length, 27);
   assert.equal(refresh.configurations.filter((c) => c.role === "current").length, 17);
   assert(!JSON.stringify(refresh).toLowerCase().includes("grok"));
   for (const c of refresh.configurations) {
@@ -82,7 +82,7 @@ test("pricing chooses the longest prefix and normalizes OpenRouter IDs", () => {
 
 test("Ember uses the same pinned Google transport and reasoning for both interfaces", async () => {
   const { flightConfigurations } = await import("../scripts/native-flight.mjs");
-  const configs = flightConfigurations.filter(c => c.model === "muse-ember-1.0");
+  const configs = flightConfigurations.filter(c => c.model === "muse-ember-1.0" && c.transport === "openrouter");
   assert.deepEqual(configs.map(c => c.arm).sort(), ["a11y-stagehand", "wm-chat"]);
   for (const config of configs) {
     const plan = planRuns(parseArgs(argsFor(config, 1, "ember-check", true)), { OPENROUTER_API_KEY: "test-router" });

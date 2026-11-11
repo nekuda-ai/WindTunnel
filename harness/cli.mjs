@@ -39,6 +39,7 @@ const ARMS = {
   "a11y-stagehand": { id: "a11y-stagehand", run: runStagehand, model: "claude-sonnet-4-6", version: STAGEHAND_VERSION, key: apiKeyEnvFor, paid: true },
   "wm-claude": { id: "wm-claude", run: runWMClaude, model: "claude-sonnet-4-6", version: "@anthropic-ai/sdk", key: "ANTHROPIC_API_KEY", paid: true, webmcp: true },
   "wm-chat": { id: "wm-chat", run: runWMChat, model: "deepseek-v4.1-flash", version: WM_CHAT_VERSION, key: "OPENROUTER_API_KEY", paid: true, webmcp: true, transport: "openrouter" },
+  "wm-meta-chat": { id: "wm-meta-chat", run: runWMChat, model: "muse-ember-1.0", version: "meta-chat-completions", key: "MODEL_API_KEY", paid: true, webmcp: true },
   "wm-meta": { id: "wm-meta", run: runWMGPT, model: "muse-wonder-1.0", version: "meta-responses-api", key: "MODEL_API_KEY", paid: true, webmcp: true },
   "cu-meta": { id: "cu-meta", run: runCUOpenAI, model: "muse-wonder-1.0", version: "meta-computer", key: "MODEL_API_KEY", paid: true },
   "wm-gpt": { id: "wm-gpt", run: runWMGPT, model: "gpt-5.5", version: "responses-api", key: "OPENAI_API_KEY", paid: true, webmcp: true },

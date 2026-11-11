@@ -690,6 +690,14 @@
       "role": "candidate"
     },
     {
+      "id": "muse-ember-1.0-wm-meta-chat",
+      "model": "muse-ember-1.0",
+      "arm": "wm-meta-chat",
+      "transport": "direct",
+      "effort": "high",
+      "role": "candidate"
+    },
+    {
       "id": "muse-ember-1.0-wm-chat",
       "model": "muse-ember-1.0",
       "arm": "wm-chat",
