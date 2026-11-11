@@ -32,7 +32,9 @@ export function receiptOf(response, model) {
   const problems = [];
   if (!provider) problems.push("missing served provider");
   const normalize = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (provider && normalize(provider) !== normalize(spec.provider.split("/")[0])) problems.push(`unexpected served provider ${provider}`);
+  const providerSlug = spec.provider.split("/")[0];
+  const providerName = providerSlug === "google-vertex" ? "Google" : providerSlug;
+  if (provider && normalize(provider) !== normalize(providerName)) problems.push(`unexpected served provider ${provider}`);
   if (!served || !(served === spec.openrouter_id || served === spec.id || served.startsWith(spec.openrouter_id + "-") || served.startsWith(spec.id + "-"))) problems.push(`unexpected served model ${served}`);
   if (typeof billed !== "number" || !Number.isFinite(billed) || billed < 0) problems.push("missing billed cost");
   if (metadata?.attempt > 1 || metadata?.strategy === "fallback") problems.push("unexpected routing fallback");

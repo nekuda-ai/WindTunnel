@@ -80,7 +80,7 @@ test("pricing chooses the longest prefix and normalizes OpenRouter IDs", () => {
   assert.equal(costFor("claude-haiku-5-5", { input_tokens: 100_000 }), 0.05);
 });
 
-test("Ember uses the same pinned Meta transport and reasoning for both interfaces", async () => {
+test("Ember uses the same pinned Google transport and reasoning for both interfaces", async () => {
   const { flightConfigurations } = await import("../scripts/native-flight.mjs");
   const configs = flightConfigurations.filter(c => c.model === "muse-ember-1.0");
   assert.deepEqual(configs.map(c => c.arm).sort(), ["a11y-stagehand", "wm-chat"]);
@@ -94,14 +94,16 @@ test("Ember uses the same pinned Meta transport and reasoning for both interface
     globalThis.fetch = async (_url, init) => {
       const body = JSON.parse(init.body);
       assert.equal(body.model, "meta/muse-ember");
-      assert.deepEqual(body.provider.only, ["meta"]);
+      assert.deepEqual(body.provider.only, ["google-vertex/global"]);
       assert.equal(body.provider.allow_fallbacks, false);
       assert.equal(body.reasoning.effort, "high");
-      return json({ id: "gen-ember", model: body.model, provider: "Meta", usage: { prompt_tokens: 100, completion_tokens: 10, cost: 0.000015 } });
+      return json({ id: "gen-ember", model: body.model, provider: "Google", usage: { prompt_tokens: 100, completion_tokens: 10, cost: 0.000015 } });
     };
     await openRouterFetch("muse-ember-1.0", receipts, env)("https://openrouter.ai/api/v1/chat/completions", { method: "POST", body: JSON.stringify({ model: "muse-ember-1.0" }) });
     assert.equal(routerAccounting(receipts, 1).failure, "");
     assert.equal(routerAccounting(receipts, 1).cost, 0.000015);
+    assert.equal(receipts[0].provider_pin, "google-vertex/global");
+    assert.match(receiptOf({ id: "gen-wrong-provider", model: "meta/muse-ember", provider: "Meta", usage: { prompt_tokens: 100, completion_tokens: 10, cost: 0.000015 } }, "muse-ember-1.0").problems.join("; "), /unexpected served provider Meta/);
     assert.equal(costFor("muse-ember-1.0", { input_tokens: 1000, output_tokens: 1000 }), 0.0006);
   } finally { globalThis.fetch = original; }
 });
