@@ -462,6 +462,37 @@
         "reasoning",
         "max_tokens"
       ]
+    },
+    {
+      "id": "muse-ember-1.0",
+      "openrouter_id": "meta/muse-ember",
+      "provider": "meta",
+      "prices": [
+        0.1,
+        0.5,
+        0.004,
+        0.125
+      ],
+      "price_overrides": [],
+      "price_date": "2026-11-11",
+      "input_modalities": [
+        "text",
+        "image",
+        "video",
+        "file",
+        "audio"
+      ],
+      "reasoning": {
+        "effort": "high"
+      },
+      "supported_parameters": [
+        "tools",
+        "tool_choice",
+        "reasoning",
+        "max_tokens",
+        "structured_outputs",
+        "response_format"
+      ]
     }
   ],
   "configurations": [
@@ -653,6 +684,22 @@
     {
       "id": "deepseek-v4.1-flash-1017-a11y-stagehand",
       "model": "deepseek-v4.1-flash-1017",
+      "arm": "a11y-stagehand",
+      "transport": "openrouter",
+      "effort": "high",
+      "role": "candidate"
+    },
+    {
+      "id": "muse-ember-1.0-wm-chat",
+      "model": "muse-ember-1.0",
+      "arm": "wm-chat",
+      "transport": "openrouter",
+      "effort": "high",
+      "role": "candidate"
+    },
+    {
+      "id": "muse-ember-1.0-a11y-stagehand",
+      "model": "muse-ember-1.0",
       "arm": "a11y-stagehand",
       "transport": "openrouter",
       "effort": "high",
