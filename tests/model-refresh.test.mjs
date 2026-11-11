@@ -163,18 +163,20 @@ test("Chat Completions WebMCP preserves reasoning and completes a tool roundtrip
   } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
 });
 
-test("Anthropic-compatible WebMCP retains cache writes and router receipts", async () => {
+test("Google-hosted Sonnet calibration retains cache writes and router receipts", async () => {
   const original = globalThis.fetch, old = process.env.OPENROUTER_API_KEY;
   let calls = 0; process.env.OPENROUTER_API_KEY = "test-router";
   try {
     globalThis.fetch = async (_url, init) => {
       const body = JSON.parse(init.body); calls++;
-      assert.equal(body.model, "anthropic/claude-opus-5.5"); assert.equal(body.max_tokens, 16384);
-      return json({ id: `gen-${calls}`, type: "message", role: "assistant", model: body.model, provider: "Anthropic", stop_reason: calls === 1 ? "tool_use" : "end_turn", usage: { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 30, cache_read_input_tokens: 20, cost: 0.01 }, content: calls === 1 ? [{ type: "tool_use", id: "tool-1", name: "noop", input: {} }] : [{ type: "text", text: "Final answer: done" }] });
+      assert.equal(body.model, "anthropic/claude-sonnet-5"); assert.equal(body.max_tokens, 16384);
+      assert.deepEqual(body.provider.only, ["google-vertex/global"]); assert.equal(body.provider.allow_fallbacks, false);
+      return json({ id: `gen-${calls}`, type: "message", role: "assistant", model: body.model, provider: "Google", stop_reason: calls === 1 ? "tool_use" : "end_turn", usage: { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 30, cache_read_input_tokens: 20, cost: 0.01 }, content: calls === 1 ? [{ type: "tool_use", id: "tool-1", name: "noop", input: {} }] : [{ type: "text", text: "Final answer: done" }] });
     };
-    const result = await runClaude({ task, capsule, page, model: "claude-opus-5-5", transport: "openrouter" });
+    const result = await runClaude({ task, capsule, page, model: refresh.calibration.model, transport: "openrouter" });
     assert.equal(result.usage.cache_creation_tokens, 60); assert.equal(result.cost, 0.02);
     assert.equal(result.failure, ""); assert.equal(calls, 2);
+    assert.equal(result.provider_pin, "google-vertex/global");
   } finally { globalThis.fetch = original; if (old === undefined) delete process.env.OPENROUTER_API_KEY; else process.env.OPENROUTER_API_KEY = old; }
 });
 

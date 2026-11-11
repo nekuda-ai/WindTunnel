@@ -376,7 +376,7 @@
     {
       "id": "claude-sonnet-5",
       "openrouter_id": "anthropic/claude-sonnet-5",
-      "provider": "anthropic",
+      "provider": "google-vertex/global",
       "prices": [
         2.0,
         10.0,
