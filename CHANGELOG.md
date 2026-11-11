@@ -1,5 +1,9 @@
 # WindTunnel changelog
 
+## v1.5 - 2026-11-11
+
+Added Muse Ember via Meta with WebMCP (48/49 tasks). The board now has 20 configurations and 2,940 attempts.
+
 ## v1.4 - 2026-10-18
 
 Added DeepSeek V4.1 Flash-1017 with WebMCP (49/49 tasks). The board now has 19 configurations and 2,793 attempts.

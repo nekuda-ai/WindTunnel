@@ -48,8 +48,8 @@ files. Existing remote history is preserved.
 
 ```bash
 hf auth whoami
-hf upload nekuda/windtunnel dataset . --repo-type dataset --commit-message "Update WindTunnel v1.4 results"
-hf upload nekuda/windtunnel-results-explorer space . --repo-type space --commit-message "Update WindTunnel v1.4 explorer"
+hf upload nekuda/windtunnel dataset . --repo-type dataset --commit-message "Update WindTunnel v1.5 results"
+hf upload nekuda/windtunnel-results-explorer space . --repo-type space --commit-message "Update WindTunnel v1.5 explorer"
 ```
 
 ## Verify the uploaded bytes
